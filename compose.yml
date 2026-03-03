@@ -1,0 +1,48 @@
+services:
+  backend:
+    image: ${DOCKER_IMAGE_BE}
+    restart: always
+    ports:
+      - "8000:8000"
+    build:
+      context: .
+      dockerfile: hydroponic_be/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      MQTT_BROKER: broker
+    depends_on:
+      db:
+        condition: service_healthy
+      broker:
+        condition: service_started
+  frontend:
+    image: ${DOCKER_IMAGE_FE}
+    restart: always
+    ports:
+      - "3000:3000"
+    build:
+      context: .
+      dockerfile: hydroponic_fe/Dockerfile
+  db:
+    image: "postgres:latest"
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  broker:
+    image: "eclipse-mosquitto:latest"
+    restart: always
+    ports:
+      - "1883:1883" # Standard MQTT port
+      - "9001:9001" # WebSockets port
+volumes:
+  pgdata:
+    driver: local
