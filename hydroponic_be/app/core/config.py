@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # --- PostgreSQL Settings ---
-    POSTGRES_SERVER: str = "@db:5432"
+    POSTGRES_SERVER: str = "db:5432"
     POSTGRES_USER: str = "admin_lab"
     POSTGRES_PASSWORD: str = "admin123"
     POSTGRES_DB: str = "hydroponic_db"

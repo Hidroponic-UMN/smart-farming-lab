@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
@@ -10,8 +10,8 @@ WORKDIR /app/
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-COPY ./hydroponic_be/pyproject.toml ./hydroponic_be/uv.lock ./
-RUN uv sync --frozen --no-install-project --no-dev
+COPY ./hydroponic_be/.python-version ./hydroponic_be/pyproject.toml ./hydroponic_be/uv.lock ./
+RUN uv sync --no-install-project --no-dev
 
 # 5. Copy the rest of the code
 COPY ./hydroponic_be/app /app/hydroponic_be/app
