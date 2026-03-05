@@ -1,11 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.routes import telemetry
-# from app.core.config import settings
+from app.api.routes import logs
 
 api_router = APIRouter()
-api_router.include_router(telemetry.router)
-
-
-# if settings.ENVIRONMENT == "local":
-#     api_router.include_router(private.router)
+api_router.include_router(logs.router)

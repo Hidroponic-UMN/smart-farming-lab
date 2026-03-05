@@ -12,24 +12,23 @@ class Settings(BaseSettings):
     POSTGRES_USER: str = "admin_lab"
     POSTGRES_PASSWORD: str = "admin123"
     POSTGRES_DB: str = "hydroponic_db"
-    DATABASE_URL: str | None = None
+    DATABASE_URL: str = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}/{POSTGRES_DB}"
 
-    @field_validator("DATABASE_URL", mode="before")
-    @classmethod
-    def assemble_db_connection(cls, v: str | None, values: Any) -> Any:
-        if isinstance(v, str):
-            return v
-        # Menyusun URL: postgresql://user:pass@server/db
-        return f"postgresql://{values.data.get('POSTGRES_USER')}:{values.data.get('POSTGRES_PASSWORD')}@{values.data.get('POSTGRES_SERVER')}/{values.data.get('POSTGRES_DB')}"
+    # @field_validator("DATABASE_URL", mode="before")
+    # @classmethod
+    # def assemble_db_connection(cls, v: str | None, values: Any) -> Any:
+    #     if isinstance(v, str):
+    #         return v
+    #     # Menyusun URL: postgresql://user:pass@server/db
+    #     return f"postgresql://{values.data.get('POSTGRES_USER')}:{values.data.get('POSTGRES_PASSWORD')}@{values.data.get('POSTGRES_SERVER')}/{values.data.get('POSTGRES_DB')}"
 
     # --- MQTT Settings ---
-    MQTT_BROKER: str = ""
+    MQTT_BROKER: str = "broker" # Nama di compose lu
     MQTT_PORT: int = 1883
-    MQTT_TOPIC: str = "hydroponic/racks/+" # Menggunakan wildcard + untuk semua rak
-    MQTT_USERNAME: str | None = None
-    MQTT_PASSWORD: str | None = None
+    MQTT_TOPIC: str = "hydroponic/master/#" # Menggunakan wildcard + untuk semua rak
+    MQTT_USERNAME: str = "admin_lab"
+    MQTT_PASSWORD: str = "admin123"
 
-    # Mengambil value dari file .env
     model_config = SettingsConfigDict(
         env_file=".env", 
         env_file_encoding="utf-8", 
