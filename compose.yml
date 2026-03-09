@@ -1,31 +1,33 @@
 services:
-  backend:
-    image: ${DOCKER_IMAGE_BE}
-    restart: always
-    ports:
-      - "8000:8000"
-    build:
-      context: .
-      dockerfile: hydroponic_be/Dockerfile
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      MQTT_BROKER: broker
-    depends_on:
-      db:
-        condition: service_healthy
-      broker:
-        condition: service_started
-  frontend:
-    image: ${DOCKER_IMAGE_FE}
-    restart: always
-    ports:
-      - "3000:3000"
-    build:
-      context: .
-      dockerfile: hydroponic_fe/Dockerfile
+  # backend:
+  #   image: ${DOCKER_IMAGE_BE}
+  #   restart: always
+  #   ports:
+  #     - "8000:8000"
+  #   build:
+  #     context: .
+  #     dockerfile: hydroponic_be/Dockerfile
+  #   environment:
+  #     DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}
+  #     MQTT_BROKER: broker
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     broker:
+  #       condition: service_started
+  # frontend:
+  #   image: ${DOCKER_IMAGE_FE}
+  #   restart: always
+  #   ports:
+  #     - "3000:3000"
+  #   build:
+  #     context: .
+  #     dockerfile: hydroponic_fe/Dockerfile
   db:
     image: "postgres:16-alpine"
     restart: always
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}

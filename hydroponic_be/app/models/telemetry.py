@@ -1,21 +1,33 @@
-from sqlmodel import Field, SQLModel, Relationship
-from datetime import datetime, timezone
-from typing import Optional, Dict, Any, List
+from sqlmodel import Field, SQLModel, Relationship, DateTime
+from typing import Optional, Dict, Any, List, TYPE_CHECKING
+from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy import Column, Integer, ForeignKey
 
-class Rack(SQLModel, table=True):
+from app.utils.utils_time import get_utc_now, datetime
+
+if TYPE_CHECKING:
+    from app.models.command import CmdLog
+
+
+class RegisterMicroController(SQLModel):
+    desc: Dict[str, Any] = Field(default_factory=dict, sa_type=JSONB)
+    mac_addr: str
+
+class TelemetryMicroController(SQLModel):
+    mac_addr: str
+    data: dict[str, Any]
+
+class Device(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    desc: Optional[str] = None
+    desc: Dict[str, Any] = Field(default_factory=dict, sa_type=JSONB)
+    mac_addr: str
+    logs: List["DataLog"] = Relationship(back_populates="device")
+    logs_cmd: List["CmdLog"] = Relationship(back_populates="device")
 
-    logs: List["Log"] = Relationship(back_populates="rack")
+class DataLogBase(SQLModel):
+    timestamp: datetime = Field(sa_column=Column(DateTime(timezone=True), primary_key=True), default_factory=get_utc_now)
+    data_log: Dict[str, Any] = Field(default_factory=dict, sa_type=JSONB)
+    device_id: int = Field(foreign_key="device.id", index=True, primary_key=True)
 
-class LogBase(SQLModel):
-    id: Optional[int] = Field(default=None, primary_key=True)
-
-class Log(LogBase, table=True):
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), index=True)
-    data_log: Dict[str, Any] = Field(default={}, sa_type=JSONB)
-
-    rack_id: int = Field(sa_column=Column(Integer, ForeignKey("rack.id"), index=True))
-    rack: Optional[Rack] = Relationship(back_populates="logs")
+class DataLog(DataLogBase, table=True):
+    device: Device = Relationship(back_populates="logs")

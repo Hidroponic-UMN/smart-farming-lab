@@ -5,7 +5,7 @@ from app.models.telemetry import *
 
 engine = create_engine(
     settings.DATABASE_URL, 
-    echo=False,
+    echo=True,
     pool_size=10, 
     max_overflow=20
 )

@@ -5,23 +5,25 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
-from app.db.session import engine, SQLModel
+from app.db.session import engine, Session, SQLModel
 from app.services.mqtt_worker import mqtt_worker
-
+from app.utils.utils_seeding import seeding_commands
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    SQLModel.metadata.create_all(bind=engine) #Alembic will autogenerate it
+    with Session(engine) as db:
+        seeding_commands(db)
+
     mqtt_worker.connect()
-    mqtt_worker.loop_start()
-    print("🚀 MQTT Worker started & Database tables verified.")
+    mqtt_worker.start()
+
+    print("MQTT Worker started & Database tables verified.")
     
     yield
 
-    mqtt_worker.loop_stop()
-    mqtt_worker.disconnect()
-    print("🛑 MQTT Worker disconnected.")
-
-SQLModel.metadata.create_all(bind=engine)
+    mqtt_worker.stop()
+    print("MQTT Worker disconnected.")
 
 app = FastAPI(
     title="Smart-Hydroponic",

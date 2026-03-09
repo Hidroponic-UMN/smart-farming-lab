@@ -1,6 +1,4 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import field_validator
-from typing import Any
 
 class Settings(BaseSettings):
     # --- Project Settings ---
@@ -8,24 +6,16 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # --- PostgreSQL Settings ---
-    POSTGRES_SERVER: str = "db:5432"
+    POSTGRES_SERVER: str = "localhost:5432"
     POSTGRES_USER: str = "admin_lab"
     POSTGRES_PASSWORD: str = "admin123"
     POSTGRES_DB: str = "hydroponic_db"
     DATABASE_URL: str = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}/{POSTGRES_DB}"
 
-    # @field_validator("DATABASE_URL", mode="before")
-    # @classmethod
-    # def assemble_db_connection(cls, v: str | None, values: Any) -> Any:
-    #     if isinstance(v, str):
-    #         return v
-    #     # Menyusun URL: postgresql://user:pass@server/db
-    #     return f"postgresql://{values.data.get('POSTGRES_USER')}:{values.data.get('POSTGRES_PASSWORD')}@{values.data.get('POSTGRES_SERVER')}/{values.data.get('POSTGRES_DB')}"
-
     # --- MQTT Settings ---
-    MQTT_BROKER: str = "broker" # Nama di compose lu
+    MQTT_BROKER: str = "localhost" # Nama di compose lu
     MQTT_PORT: int = 1883
-    MQTT_TOPIC: str = "hydroponic/master/#" # Menggunakan wildcard + untuk semua rak
+    MQTT_TOPIC: str = "hydroponic/master"
     MQTT_USERNAME: str = "admin_lab"
     MQTT_PASSWORD: str = "admin123"
 
