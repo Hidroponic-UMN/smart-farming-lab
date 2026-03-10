@@ -8,7 +8,7 @@ import io
 
 from app.db.session import get_session
 from app.crud import telemetry as crud_logs
-from app.models.telemetry import DataLogBase, DataLog
+from app.models.telemetry import DataLogBase
 
 router = APIRouter(
     tags=["data logs"],
