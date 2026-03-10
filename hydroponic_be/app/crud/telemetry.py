@@ -33,12 +33,24 @@ def read_all_log(db: Session, limit: int | None, start_date: datetime | None, en
     return res
 
 def read_latest_device_log_data(db: Session):
+    latest_subq = (
+        select(
+            DataLog.device_id,
+            func.max(DataLog.timestamp).label("max_ts")
+        )
+        .group_by(col(DataLog.device_id))
+    ).subquery()
+
     statement = (
         select(
             col(DataLog.device_id),
             col(DataLog.data_log),
             func.timezone('Asia/Jakarta', col(DataLog.timestamp)).label("timestamp")
-        ).distinct(col(DataLog.device_id)).order_by(col(DataLog.device_id), desc(col(DataLog.timestamp))).limit(limit=1) # type: ignore
+        ).join(
+            latest_subq,
+            (col(DataLog.device_id) == latest_subq.c.device_id) &
+            (col(DataLog.timestamp) == latest_subq.c.max_ts)
+        ) # type: ignore
     )
     res = db.exec(statement=statement).all()
 
