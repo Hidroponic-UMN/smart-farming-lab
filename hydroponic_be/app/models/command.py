@@ -1,11 +1,9 @@
 from enum import Enum
 
 from sqlmodel import Field, SQLModel, Relationship, DateTime
-from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
-from typing import Optional, Dict, Any, List, TYPE_CHECKING
+from datetime import datetime
+from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import Column
-from sqlalchemy.dialects.postgresql import JSONB
 
 from app.utils.utils_time import get_utc_now, datetime
 

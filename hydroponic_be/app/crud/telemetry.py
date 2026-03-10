@@ -1,38 +1,76 @@
 from sqlmodel import Session, select, desc, col
 from sqlalchemy import func
 from fastapi import HTTPException
+from datetime import datetime, timezone
+from typing import Sequence, Any
 
-from app.models.telemetry import DataLog, Device
+from app.models.telemetry import DataLog
 
-def read_latest_device_logs_data(db: Session):
+def read_all_log(db: Session, limit: int | None, start_date: datetime | None, end_date: datetime | None) -> Sequence[Any]:
     statement = (
         select(
             col(DataLog.device_id),
             col(DataLog.data_log),
-            func.timezone('Asia/Jakarta', col(DataLog.timestamp)).label("timestamp")
-        ).distinct(col(DataLog.device_id)).order_by(col(DataLog.device_id), desc(col(DataLog.timestamp))) # type: ignore
+            func.timezone('Asia/Jakarta', DataLog.timestamp).label("timestamp")
+        ).distinct(col(DataLog.device_id)).order_by(desc(DataLog.timestamp), col(DataLog.device_id))
     )
-    res = db.exec(statement=statement).all()
 
-    if not res:
+    if limit:
+        statement = statement.limit(limit=limit)
+    if start_date:
+        start_date = start_date.astimezone(timezone.utc)
+        statement = statement.where(DataLog.timestamp >= start_date)
+    if end_date:
+        end_date = end_date.astimezone(timezone.utc)
+        statement = statement.where(DataLog.timestamp <= end_date)
+
+    res = db.exec(statement=statement).all()
+    if len(res) == 0:
         raise HTTPException(
-            status_code=501,
+            status_code=504,
             detail="No data"
         )
     return res
 
-def read_log_by_device_id(db: Session, device_id: int, limit: int):
+def read_latest_device_log_data(db: Session):
     statement = (
         select(
             col(DataLog.device_id),
             col(DataLog.data_log),
             func.timezone('Asia/Jakarta', col(DataLog.timestamp)).label("timestamp")
-        ).where(col(DataLog.device_id) == device_id).order_by(desc(col(DataLog.timestamp))).limit(limit=limit) # type: ignore
+        ).distinct(col(DataLog.device_id)).order_by(col(DataLog.device_id), desc(col(DataLog.timestamp))).limit(limit=1) # type: ignore
     )
+    res = db.exec(statement=statement).all()
+
+    if not res:
+        raise HTTPException(
+            status_code=504,
+            detail="No data"
+        )
+    return res
+
+def read_log_by_device_id(db: Session, device_id: int, limit: int | None, start_date: datetime | None, end_date: datetime | None):
+    statement = (
+        select(
+            col(DataLog.device_id),
+            col(DataLog.data_log),
+            func.timezone('Asia/Jakarta', col(DataLog.timestamp)).label("timestamp")
+        ).where(col(DataLog.device_id) == device_id).order_by(desc(col(DataLog.timestamp))) # type: ignore
+    )
+
+    if limit:
+        statement = statement.limit(limit=limit)
+    if start_date:
+        start_date = start_date.astimezone(timezone.utc)
+        statement = statement.where(DataLog.timestamp >= start_date)
+    if end_date:
+        end_date = end_date.astimezone(timezone.utc)
+        statement = statement.where(DataLog.timestamp <= end_date)
+
     res = db.exec(statement=statement).all()
     if not res:
         raise HTTPException(
-            status_code=501,
+            status_code=504,
             detail="No data"
         )
     return res
