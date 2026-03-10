@@ -1,24 +1,74 @@
-from typing import Annotated, List
-
+from typing import Annotated, List, Sequence
+from datetime import datetime
 from fastapi import APIRouter, Depends, Path, Query
 from sqlmodel import Session
+from fastapi.responses import StreamingResponse
+import csv
+import io
+
 from app.db.session import get_session
 from app.crud import telemetry as crud_logs
-from app.models.telemetry import DataLogBase
+from app.models.telemetry import DataLogBase, DataLog
 
 router = APIRouter(
     tags=["data logs"],
     prefix="/datalogs"
 )
 
-@router.get("/", response_model=List[DataLogBase])
-def read_latest_logs(db: Annotated[Session, Depends(get_session)]):
-    return crud_logs.read_latest_device_logs_data(db=db)
 
-@router.get("/{device_id}/", response_model=List[DataLogBase])
-def read_latest_logs_by_device_id(
+
+@router.get("/", response_model=List[DataLogBase])
+def read_all_log_data(
+    db: Annotated[Session, Depends(get_session)],
+    limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
+    start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
+    end_date: Annotated[datetime | None, Query(title="End Date")] = None
+):
+    return crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date)
+
+
+
+@router.get("/export/{file_type}")
+def download_all_log_data(
+    file_type: Annotated[str, Path(title="Export File type", default='csv')],
+    db: Annotated[Session, Depends(get_session)],
+    limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
+    start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
+    end_date: Annotated[datetime | None, Query(title="End Date")] = None
+):
+    file_type = 'csv'
+    rows: Sequence[DataLogBase] = crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date)
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    writer.writerow(["device_id", "data_log", "timestamp"])
+
+    for r in rows:
+        writer.writerow([r.device_id, r.data_log, r.timestamp])
+    
+    output.seek(0)
+    return StreamingResponse(
+        output,
+        media_type=f"text/{file_type}",
+        headers={
+            "Content-Disposition": f"attachment; filename=datalog.{file_type}"
+        }
+    )
+
+
+
+@router.get("/latest", response_model=List[DataLogBase])
+def read_latest_log_all_devices(db: Annotated[Session, Depends(get_session)]):
+    return crud_logs.read_latest_device_log_data(db=db)
+
+
+
+@router.get("/{device_id}", response_model=List[DataLogBase])
+def read_data_logs_by_device_id(
     device_id: Annotated[int, Path(title="ID's of the device", ge=1, le=5)],
     db: Annotated[Session, Depends(get_session)],
-    limit: Annotated[int, Query(title="Limit to retrieve the data", ge=1)] = 1
+    limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
+    start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
+    end_date: Annotated[datetime | None, Query(title="End Date")] = None
 ):
-    return crud_logs.read_log_by_device_id(db=db, device_id=device_id, limit=limit)
+    return crud_logs.read_log_by_device_id(db=db, device_id=device_id, limit=limit, start_date=start_date, end_date=end_date)

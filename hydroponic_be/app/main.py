@@ -11,7 +11,7 @@ from app.utils.utils_seeding import seeding_commands
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    SQLModel.metadata.create_all(bind=engine) #Alembic will autogenerate it
+    SQLModel.metadata.create_all(bind=engine) #Comment this, Alembic will autogenerate it
     with Session(engine) as db:
         seeding_commands(db)
 

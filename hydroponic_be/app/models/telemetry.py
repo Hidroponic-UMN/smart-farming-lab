@@ -25,9 +25,9 @@ class Device(SQLModel, table=True):
     logs_cmd: List["CmdLog"] = Relationship(back_populates="device")
 
 class DataLogBase(SQLModel):
-    timestamp: datetime = Field(sa_column=Column(DateTime(timezone=True), primary_key=True), default_factory=get_utc_now)
-    data_log: Dict[str, Any] = Field(default_factory=dict, sa_type=JSONB)
     device_id: int = Field(foreign_key="device.id", index=True, primary_key=True)
+    data_log: Dict[str, Any] = Field(default_factory=dict, sa_type=JSONB)
+    timestamp: datetime = Field(sa_column=Column(DateTime(timezone=True), primary_key=True), default_factory=get_utc_now)
 
 class DataLog(DataLogBase, table=True):
     device: Device = Relationship(back_populates="logs")
