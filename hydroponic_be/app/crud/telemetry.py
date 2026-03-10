@@ -49,7 +49,7 @@ def read_latest_device_log_data(db: Session):
         )
     return res
 
-def read_log_by_device_id(db: Session, device_id: int, limit: int | None, start_date: datetime | None, end_date: datetime | None):
+def read_log_by_device_id(db: Session, device_id: int, limit: int | None, start_date: datetime | None, end_date: datetime | None) -> Sequence[Any]:
     statement = (
         select(
             col(DataLog.device_id),

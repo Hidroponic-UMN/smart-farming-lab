@@ -79,7 +79,7 @@ def send_cmd_to_rack_id(db: Session, device_id: int, command: CmdInput):
         detail="MQTT broker not connected"
     )
 
-def read_log_by_device_id(db: Session, device_id: int, limit: int | None, start_date: datetime | None, end_date: datetime | None):
+def read_log_by_device_id(db: Session, device_id: int, limit: int | None, start_date: datetime | None, end_date: datetime | None) -> Sequence[Any]:
     statement = (
         select(
             CmdLog.command_id,

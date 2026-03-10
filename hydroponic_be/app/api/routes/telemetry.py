@@ -15,10 +15,12 @@ router = APIRouter(
     prefix="/datalogs"
 )
 
+file_export_name: str = 'Telemetry_Log'
+
 
 
 @router.get("/", response_model=List[DataLogBase])
-def read_all_log_data(
+def read_all_data_log(
     db: Annotated[Session, Depends(get_session)],
     limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
     start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
@@ -28,7 +30,25 @@ def read_all_log_data(
 
 
 
-@router.get("/export/{file_type}")
+@router.get("/{device_id}", response_model=List[DataLogBase])
+def read_data_logs_by_device_id(
+    device_id: Annotated[int, Path(title="ID's of the device", ge=1, le=5)],
+    db: Annotated[Session, Depends(get_session)],
+    limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
+    start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
+    end_date: Annotated[datetime | None, Query(title="End Date")] = None
+):
+    return crud_logs.read_log_by_device_id(db=db, device_id=device_id, limit=limit, start_date=start_date, end_date=end_date)
+
+
+
+@router.get("/latest", response_model=List[DataLogBase])
+def read_latest_log_all_devices(db: Annotated[Session, Depends(get_session)]):
+    return crud_logs.read_latest_device_log_data(db=db)
+
+
+
+@router.get("/exports/{file_type}")
 def download_all_log_data(
     file_type: Annotated[str, Path(title="Export File type", default='csv')],
     db: Annotated[Session, Depends(get_session)],
@@ -51,24 +71,36 @@ def download_all_log_data(
         output,
         media_type=f"text/{file_type}",
         headers={
-            "Content-Disposition": f"attachment; filename=datalog.{file_type}"
+            "Content-Disposition": f"attachment; filename=all_{file_export_name}.{file_type}"
         }
     )
 
 
 
-@router.get("/latest", response_model=List[DataLogBase])
-def read_latest_log_all_devices(db: Annotated[Session, Depends(get_session)]):
-    return crud_logs.read_latest_device_log_data(db=db)
-
-
-
-@router.get("/{device_id}", response_model=List[DataLogBase])
-def read_data_logs_by_device_id(
-    device_id: Annotated[int, Path(title="ID's of the device", ge=1, le=5)],
+@router.get("/export/{device_id}/{file_type}")
+def download_all_log_data_by_device_id(
+    file_type: Annotated[str, Path(title="Export File type", default='csv')],
+    device_id: Annotated[int, Path(title="Device Id", ge=1, le=5)],
     db: Annotated[Session, Depends(get_session)],
     limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
     start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
     end_date: Annotated[datetime | None, Query(title="End Date")] = None
 ):
-    return crud_logs.read_log_by_device_id(db=db, device_id=device_id, limit=limit, start_date=start_date, end_date=end_date)
+    file_type = 'csv'
+    rows: Sequence[DataLogBase] = crud_logs.read_log_by_device_id(db=db, device_id=device_id, limit=limit, start_date=start_date, end_date=end_date)
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow(["device_id", "data_log", "timestamp"])
+
+    for r in rows:
+        writer.writerow([r.device_id, r.data_log, r.timestamp])
+    
+    output.seek(0)
+    return StreamingResponse(
+        output,
+        media_type=f"text/{file_type}",
+        headers={
+            "Content-Disposition": f"attachment; filename=id_{device_id}_{file_export_name}.{file_type}"
+        }
+    )
