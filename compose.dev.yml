@@ -1,0 +1,58 @@
+services:
+  # backend:
+  #   image: ${DOCKER_IMAGE_BE}
+  #   restart: always
+  #   ports:
+  #     - "8000:8000"
+  #   build:
+  #     context: .
+  #     dockerfile: hydroponic_be/Dockerfile
+  #   environment:
+  #     DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  #     MQTT_BROKER: broker
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     broker:
+  #       condition: service_started
+  # frontend:
+  #   image: ${DOCKER_IMAGE_FE}
+  #   restart: always
+  #   ports:
+  #     - "3000:3000"
+  #   build:
+  #     context: .
+  #     dockerfile: hydroponic_fe/Dockerfile
+  db:
+    image: "postgres:16-alpine"
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  broker:
+    image: "eclipse-mosquitto:2"
+    restart: always
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config/mosquitto-docker.conf:/mosquitto/config/mosquitto-docker.conf
+      - ./mosquitto/config/passwd:/mosquitto/config/passwd
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+volumes:
+  mosquitto_data:
+    driver: local
+  mosquitto_log:
+    driver: local
+  pgdata:
+    driver: local
