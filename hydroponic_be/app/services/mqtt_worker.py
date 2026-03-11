@@ -3,7 +3,7 @@ import threading
 import paho.mqtt.client as mqtt
 from typing import Callable, Dict
 
-from app.core.config_dev import settings
+from app.core.config import settings
 from app.services.mqtt_handler import registering_handler, telemetry_handler, command_handler, ack_command_handler
 
 class MQTTWorker:
