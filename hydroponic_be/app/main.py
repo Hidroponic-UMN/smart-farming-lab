@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-# from fastapi.routing import APIRoute
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
