@@ -9,4 +9,4 @@ if [ "$#" -lt "$EXP_ARG" ]; then
 fi
 
 uv run alembic revision --autogenerate -m "$1"
-uv run alembic upgrade head
+# uv run alembic upgrade head

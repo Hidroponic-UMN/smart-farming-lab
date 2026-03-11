@@ -44,7 +44,7 @@ def read_command_logs_by_device_id(
 
 @router.get("/exports/{file_type}")
 def download_all_log_data(
-    file_type: Annotated[str, Path(title="Export File type", default='csv')],
+    file_type: Annotated[str, Path(title="Export File type")],
     db: Annotated[Session, Depends(get_session)],
     limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
     start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
@@ -73,7 +73,7 @@ def download_all_log_data(
 
 @router.get("/export/{device_id}/{file_type}")
 def download_all_log_data_by_device_id(
-    file_type: Annotated[str, Path(title="Export File type", default='csv')],
+    file_type: Annotated[str, Path(title="Export File type")],
     device_id: Annotated[int, Path(title="Device Id", ge=1, le=5)],
     db: Annotated[Session, Depends(get_session)],
     limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
