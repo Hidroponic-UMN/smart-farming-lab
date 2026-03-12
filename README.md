@@ -11,6 +11,10 @@ or
 ````
     docker compose -f compose.dev.yml up
 ````
+or running start.dev.sh for local dev
+````
+    sudo bash start.dev.sh
+````
 
 **2.** Run Local BackEnd
 ````
@@ -24,7 +28,13 @@ or
     npm install
     npm run dev
 ````
-*note*: Please make sure you have downloaded uv, npm and docker
+
+*note*: Please make sure you already have uv, npm and docker
+
+**4.** Stop Docker Local Dev
+````
+    sudo bash stop.dev.sh
+````
 
 ---
 
