@@ -41,12 +41,12 @@ class CmdStat(SQLModel, table=True):
     logs: List["CmdLog"] = Relationship(back_populates="cmd_stat")
 
 class CmdLogBase(SQLModel):
-    command_id: int = Field(foreign_key="cmddef.id")
-    status_id: int = Field(foreign_key="cmdstat.id")
+    command_id: int = Field(foreign_key="cmddef.id", index=True)
+    status_id: int = Field(foreign_key="cmdstat.id", index=True)
     device_id: int = Field(foreign_key="device.id", index=True)
 
     created_by: str = Field(default="system")
-    timestamp: datetime = Field(sa_column=Column(DateTime(timezone=True), index=True), default_factory=get_utc_now)
+    timestamp: datetime = Field(sa_column=Column(DateTime(timezone=True)), default_factory=get_utc_now)
 
 class CmdLog(CmdLogBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
