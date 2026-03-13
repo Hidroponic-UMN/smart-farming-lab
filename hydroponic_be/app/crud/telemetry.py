@@ -53,7 +53,6 @@ def read_latest_device_log_data(db: Session):
         ) # type: ignore
     )
     res = db.exec(statement=statement).all()
-    print(res)
 
     if not res:
         raise HTTPException(

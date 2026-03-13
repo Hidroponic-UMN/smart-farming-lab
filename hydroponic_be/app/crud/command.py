@@ -17,7 +17,7 @@ def read_all_log(db: Session, limit: int | None, start_date: datetime | None, en
             CmdLog.device_id,
             CmdLog.created_by,
             func.timezone('Asia/Jakarta', CmdLog.timestamp).label("timestamp"),
-        ).distinct(col(CmdLog.device_id)).order_by(desc(CmdLog.timestamp), CmdLog.device_id) # type: ignore
+        ).order_by(desc(CmdLog.timestamp), CmdLog.device_id) # type: ignore
     )
 
     if limit:
