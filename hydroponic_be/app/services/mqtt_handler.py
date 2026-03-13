@@ -36,6 +36,8 @@ def telemetry_handler(payload):
 
     mac_addr = payload["mac_addr"]
     data = payload["data"]
+    print(payload)
+    print(data)
     with Session(engine) as db:
 
         exist = db.exec(select(Device.id).where(Device.mac_addr==mac_addr)).first()
@@ -44,10 +46,11 @@ def telemetry_handler(payload):
             data_log = DataLog(
                 device_id=exist,
                 data_log=data,
-                timestamp=datetime.now(tz=timezone.utc)
             )
             db.add(data_log)
             db.commit()
+            db.refresh(data_log)
+            print(data_log)
         else:
             print(f"Device: {mac_addr}, does not exits, please try to register your device first")
 

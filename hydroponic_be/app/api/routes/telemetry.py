@@ -30,6 +30,12 @@ def read_all_data_log(
 
 
 
+@router.get("/latest", response_model=List[DataLogBase])
+def read_latest_log_all_devices(db: Annotated[Session, Depends(get_session)]):
+    return crud_logs.read_latest_device_log_data(db=db)
+
+
+
 @router.get("/{device_id}", response_model=List[DataLogBase])
 def read_data_logs_by_device_id(
     device_id: Annotated[int, Path(title="ID's of the device", ge=1, le=5)],
@@ -39,12 +45,6 @@ def read_data_logs_by_device_id(
     end_date: Annotated[datetime | None, Query(title="End Date")] = None
 ):
     return crud_logs.read_log_by_device_id(db=db, device_id=device_id, limit=limit, start_date=start_date, end_date=end_date)
-
-
-
-@router.get("/latest", response_model=List[DataLogBase])
-def read_latest_log_all_devices(db: Annotated[Session, Depends(get_session)]):
-    return crud_logs.read_latest_device_log_data(db=db)
 
 
 

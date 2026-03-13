@@ -12,7 +12,7 @@ def read_all_log(db: Session, limit: int | None, start_date: datetime | None, en
             col(DataLog.device_id),
             col(DataLog.data_log),
             func.timezone('Asia/Jakarta', DataLog.timestamp).label("timestamp")
-        ).distinct(col(DataLog.device_id)).order_by(desc(DataLog.timestamp), col(DataLog.device_id))
+        ).order_by(desc(DataLog.timestamp), col(DataLog.device_id))
     )
 
     if limit:
@@ -53,6 +53,7 @@ def read_latest_device_log_data(db: Session):
         ) # type: ignore
     )
     res = db.exec(statement=statement).all()
+    print(res)
 
     if not res:
         raise HTTPException(
