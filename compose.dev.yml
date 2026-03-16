@@ -41,8 +41,8 @@ services:
       - mosquitto_data:/mosquitto/data
       - mosquitto_log:/mosquitto/log
     healthcheck:
-      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "health", "-m", "ok"]
-      interval: 10s
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "health", "-m", "ok", "-u", "admin_lab", "-P", "admin123"]
+      interval: 600s
       timeout: 5s
       retries: 5
 volumes:

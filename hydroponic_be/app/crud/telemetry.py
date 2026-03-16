@@ -4,17 +4,21 @@ from fastapi import HTTPException
 from datetime import datetime, timezone
 from typing import Sequence, Any
 
-from app.models.telemetry import DataLog
+from app.models.telemetry import DataLog, Device
 
-def read_all_log(db: Session, limit: int | None, start_date: datetime | None, end_date: datetime | None) -> Sequence[Any]:
+def read_all_log(db: Session, limit: int | None, start_date: datetime | None, end_date: datetime | None, device_type_id: int | None) -> Sequence[Any]:
     statement = (
         select(
             col(DataLog.device_id),
             col(DataLog.data_log),
             func.timezone('Asia/Jakarta', DataLog.timestamp).label("timestamp")
-        ).order_by(desc(DataLog.timestamp), col(DataLog.device_id))
+        )
+        .join(Device, Device.id == DataLog.device_id) # type: ignore
+        .order_by(desc(DataLog.timestamp), col(DataLog.device_id))
     )
 
+    if device_type_id:
+        statement = statement.where(Device.devicetype_id == device_type_id)
     if limit:
         statement = statement.limit(limit=limit)
     if start_date:

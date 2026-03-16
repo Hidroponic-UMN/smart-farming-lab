@@ -4,8 +4,8 @@ from pydantic import ValidationError
 
 from app.db.session import engine
 from app.models.telemetry import DataLog, Device, TelemetryMicroController, RegisterMicroController
-from app.models.command import CmdLog, CmdMicroController
-from app.utils.utils_seeding import get_var_cmd
+from app.models.command import CommandLog, CmdMicroController
+from app.utils.utils_seeding import get_global_var
 
 def registering_handler(payload):
     try:
@@ -14,14 +14,18 @@ def registering_handler(payload):
         print(e)
 
     mac_addr = payload["mac_addr"]
+    attr = payload["attr"]
+    devicetype_id = payload["type_id"]
     desc = payload["desc"]
     with Session(engine) as db:
         exist = db.exec(select(Device).where(Device.mac_addr==mac_addr)).first()
         
         if exist is None:
             device = Device(
+                attr=attr,
                 desc=desc,
-                mac_addr=mac_addr
+                mac_addr=mac_addr,
+                devicetype_id=devicetype_id
             )
             db.add(device)
             db.commit()
@@ -63,14 +67,14 @@ def ack_command_handler(payload):
     command = payload["command"]
     status = payload["status"]
     with Session(engine) as db:
-        cmd_status, cmd_type = get_var_cmd(db=db)
+        cmd_status, cmd_type, _ = get_global_var(db=db)
         device_id = db.exec(select(Device.id).where(Device.mac_addr == mac_addr)).first()
 
         if command in cmd_type and status in cmd_status and device_id:
             command_id = cmd_type[command]
             status_id = cmd_status[status]
 
-            cmd_log = CmdLog(
+            cmd_log = CommandLog(
                 command_id=command_id,
                 status_id=status_id,
                 device_id=device_id

@@ -24,9 +24,10 @@ def read_all_data_log(
     db: Annotated[Session, Depends(get_session)],
     limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
     start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
-    end_date: Annotated[datetime | None, Query(title="End Date")] = None
+    end_date: Annotated[datetime | None, Query(title="End Date")] = None,
+    device_type_id: Annotated[int, Query()] = 1
 ):
-    return crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date)
+    return crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date, device_type_id=device_type_id)
 
 
 
@@ -54,10 +55,11 @@ def download_all_log_data(
     db: Annotated[Session, Depends(get_session)],
     limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
     start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
-    end_date: Annotated[datetime | None, Query(title="End Date")] = None
+    end_date: Annotated[datetime | None, Query(title="End Date")] = None,
+    device_type_id: Annotated[int, Query()] = 1
 ):
     file_type = 'csv'
-    rows: Sequence[DataLogBase] = crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date)
+    rows: Sequence[DataLogBase] = crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date, device_type_id=device_type_id)
     output = io.StringIO()
     writer = csv.writer(output)
     

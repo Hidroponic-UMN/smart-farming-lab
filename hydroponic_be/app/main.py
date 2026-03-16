@@ -6,13 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.main import api_router
 from app.db.session import engine, Session, BaseModel
 from app.services.mqtt_worker import mqtt_worker
-from app.utils.utils_seeding import seeding_commands
+from app.utils.utils_seeding import seeding_to_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     BaseModel.metadata.create_all(bind=engine) #Comment this, Alembic will autogenerate it
     with Session(engine) as db:
-        seeding_commands(db)
+        seeding_to_db(db)
 
     mqtt_worker.connect()
     mqtt_worker.start()

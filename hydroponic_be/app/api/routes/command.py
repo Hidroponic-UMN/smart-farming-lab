@@ -8,7 +8,7 @@ import io
 
 from app.db.session import get_session
 from app.crud import command as crud_logs
-from app.models.command import CmdLogBase, CmdInput
+from app.models.command import CommandLogBase, CmdInput
 
 router = APIRouter(
     tags=["command logs"],
@@ -19,18 +19,19 @@ file_export_name: str = 'Command_Log'
 
 
 
-@router.get("/", response_model=List[CmdLogBase])
+@router.get("/", response_model=List[CommandLogBase])
 def read_all_command_log(
     db: Annotated[Session, Depends(get_session)],
     limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
     start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
-    end_date: Annotated[datetime | None, Query(title="End Date")] = None
+    end_date: Annotated[datetime | None, Query(title="End Date")] = None,
+    device_type_id: Annotated[int, Query()] = 1
 ):
-    return crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date)
+    return crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date, device_type_id=device_type_id)
 
 
 
-@router.get("/{device_id}", response_model=List[CmdLogBase])
+@router.get("/{device_id}", response_model=List[CommandLogBase])
 def read_command_logs_by_device_id(
     device_id: Annotated[int, Path(title="Device Id", ge=1, le=5)],
     db: Annotated[Session, Depends(get_session)],
@@ -48,10 +49,11 @@ def download_all_log_data(
     db: Annotated[Session, Depends(get_session)],
     limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
     start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
-    end_date: Annotated[datetime | None, Query(title="End Date")] = None
+    end_date: Annotated[datetime | None, Query(title="End Date")] = None,
+    device_type_id: Annotated[int, Query()] = 1
 ):
     file_type = 'csv'
-    rows: Sequence[CmdLogBase] = crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date)
+    rows: Sequence[CommandLogBase] = crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date, device_type_id=device_type_id)
     output = io.StringIO()
     writer = csv.writer(output)
 
@@ -81,7 +83,7 @@ def download_all_log_data_by_device_id(
     end_date: Annotated[datetime | None, Query(title="End Date")] = None
 ):
     file_type = 'csv'
-    rows: Sequence[CmdLogBase] = crud_logs.read_log_by_device_id(db=db, device_id=device_id, limit=limit, start_date=start_date, end_date=end_date)
+    rows: Sequence[CommandLogBase] = crud_logs.read_log_by_device_id(db=db, device_id=device_id, limit=limit, start_date=start_date, end_date=end_date)
     output = io.StringIO()
     writer = csv.writer(output)
 
@@ -101,7 +103,7 @@ def download_all_log_data_by_device_id(
 
 
 
-@router.post("/{device_id}", response_model=CmdLogBase)
+@router.post("/{device_id}", response_model=CommandLogBase)
 def send_command_by_device_id(
     device_id: Annotated[int, Path(title="Device Id", ge=1, le=5)],
     db: Annotated[Session, Depends(get_session)],
