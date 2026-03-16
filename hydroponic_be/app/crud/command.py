@@ -10,6 +10,10 @@ from app.services.mqtt_worker import mqtt_worker
 from app.utils.utils_seeding import get_global_var
 
 def read_all_log(db: Session, limit: int | None, start_date: datetime | None, end_date: datetime | None, device_type_id: int | None) -> Sequence[Any]:
+    if device_type_id is None:
+        _, _, var_device_type = get_global_var(db=db)
+        device_type_id = var_device_type["HYDROPONIC_RACKS"]
+
     statement = (
         select(
             CommandLog.command_id,
