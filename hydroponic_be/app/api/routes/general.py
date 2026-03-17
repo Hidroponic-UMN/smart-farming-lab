@@ -2,9 +2,6 @@ from typing import Annotated, List, Sequence
 from datetime import datetime
 from fastapi import APIRouter, Depends, Path, Query
 from sqlmodel import Session
-from fastapi.responses import StreamingResponse
-import csv
-import io
 
 from app.db.session import get_session
 from app.crud import general as crud_logs
@@ -19,4 +16,16 @@ router = APIRouter(
 def read_all_device(
     db: Annotated[Session, Depends(get_session)]
 ):
-    return 
+    return crud_logs.read_all_device(db=db)
+
+@router.get("/commandtypes")
+def read_all_command_type(
+    db: Annotated[Session, Depends(get_session)]
+):
+    return crud_logs.read_all_command_type(db=db)
+
+@router.get("/commandstatus")
+def read_all_command_status(
+    db: Annotated[Session, Depends(get_session)]
+):
+    return crud_logs.read_all_command_status(db=db)

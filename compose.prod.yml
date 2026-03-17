@@ -14,7 +14,7 @@ services:
       db:
         condition: service_healthy
       broker:
-        condition: service_started
+        condition: service_healthy
   frontend:
     image: ${DOCKER_IMAGE_FE}
     restart: unless-stopped
@@ -68,7 +68,7 @@ services:
       - mosquitto_log:/mosquitto/log
     healthcheck:
       test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "health", "-m", "ok", "-u", "admin_lab", "-P", "admin123"]
-      interval: 600s
+      interval: 10s
       timeout: 5s
       retries: 5
 volumes:

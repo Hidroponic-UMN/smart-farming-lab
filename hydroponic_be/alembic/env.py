@@ -5,9 +5,16 @@ from sqlalchemy import pool
 
 from alembic import context
 
+import sqlmodel
+import sqlmodel.sql.sqltypes
+from app.db.session import BaseModel
+import app.models
+from app.core.config import settings
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -18,16 +25,20 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from sqlmodel import SQLModel
-from app.models import *  # import all models
-
-target_metadata = SQLModel.metadata
+target_metadata = BaseModel.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+def render_item(type_, obj, autogen_context):
+    """Force sqlmodel imports in every generated migration file."""
+    if type_ == "type" and isinstance(obj, sqlmodel.sql.sqltypes.AutoString):
+        autogen_context.imports.add("import sqlmodel")
+        autogen_context.imports.add("import sqlmodel.sql.sqltypes")
+        return "sqlmodel.sql.sqltypes.AutoString()"
+    return False  # use default rendering for everything else
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -47,6 +58,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        render_item=render_item,
     )
 
     with context.begin_transaction():
@@ -68,7 +80,9 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, 
+            target_metadata=target_metadata,
+            render_item=render_item,
         )
 
         with context.begin_transaction():

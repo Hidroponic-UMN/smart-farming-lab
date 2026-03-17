@@ -8,14 +8,35 @@ var_cmd_type: dict[str, int] | None = None
 var_device_type: dict[str, int] | None = None
 
 def seeding_to_db(db: Session):
-    for cmd in EnumCommandType:
-        db.add(CommandType(desc=cmd.value))
+    statement = (
+        select(CommandType)
+    )
+    res = db.exec(statement=statement).all()
 
-    for stat in EnumCommandStatus:
-        db.add(CommandStatus(desc=stat.value))
+    if len(res) == 0:
+        print("Seeding CommandType...")
+        for cmd in EnumCommandType:
+            db.add(CommandType(desc=cmd.value))
 
-    for dev_type in EnumDeviceType:
-        db.add(DeviceType(desc=dev_type.value))
+    statement = (
+        select(CommandStatus)
+    )
+    res = db.exec(statement=statement).all()
+
+    if len(res) == 0:
+        print("Seeding CommandStatus...")
+        for stat in EnumCommandStatus:
+            db.add(CommandStatus(desc=stat.value))
+
+    statement = (
+        select(DeviceType)
+    )
+    res = db.exec(statement=statement).all()
+
+    if len(res) == 0:
+        print("Seeding DeviceType...")
+        for dev_type in EnumDeviceType:
+            db.add(DeviceType(desc=dev_type.value))
 
     db.commit()
 
