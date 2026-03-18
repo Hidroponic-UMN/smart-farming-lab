@@ -24,6 +24,12 @@ class TelemetryMicroController(SQLModel):
     mac_addr: str
     data: dict[str, Any]
 
+class DataLogWithRack(SQLModel):
+    device_id: int
+    data_log: Dict[str, Any]
+    timestamp: datetime
+    rack_id: int
+
 
 
 class DeviceType(SQLModel, table=True):
