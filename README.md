@@ -11,20 +11,36 @@ or
 ````
     docker compose -f compose.dev.yml up
 ````
+or running start.dev.sh for local dev
+````
+    sudo bash start.dev.sh
+````
 
-**2.** Run Local BackEnd
+**2.** Running Local BackEnd
 ````
     cd ./hydroponic_be/
-    uv run fastapi dev
+    uv run gunicorn app.main:app
 ````
 
-**3.** Run Local FrontEnd
+Migration using Alembic
+```
+    uv run alembic revision --autogenerate -m "[your message]"
+    uv run alembic upgrade head
+```
+
+**3.** Running Local FrontEnd
 ````
     cd ./hydroponic_fe/
     npm install
     npm run dev
 ````
-*note*: Please make sure you have downloaded uv, npm and docker
+
+*note*: Please make sure you already have uv, npm and docker
+
+**4.** Stop Docker Local Dev
+````
+    sudo bash stop.dev.sh
+````
 
 ---
 

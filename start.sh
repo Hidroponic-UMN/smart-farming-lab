@@ -1,4 +1,3 @@
 #!/bin/bash
-
-# docker-compose up --build 
-docker compose -f compose.dev.yml up --build
+git pull
+docker compose up -f compose.prod.yml up --build -d

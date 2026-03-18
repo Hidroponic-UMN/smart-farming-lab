@@ -1,31 +1,7 @@
 services:
-  # backend:
-  #   image: ${DOCKER_IMAGE_BE}
-  #   restart: always
-  #   ports:
-  #     - "8000:8000"
-  #   build:
-  #     context: .
-  #     dockerfile: hydroponic_be/Dockerfile
-  #   environment:
-  #     DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_SERVER}/${POSTGRES_DB}
-  #     MQTT_BROKER: broker
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #     broker:
-  #       condition: service_started
-  # frontend:
-  #   image: ${DOCKER_IMAGE_FE}
-  #   restart: always
-  #   ports:
-  #     - "3000:3000"
-  #   build:
-  #     context: .
-  #     dockerfile: hydroponic_fe/Dockerfile
   db:
-    image: "postgres:16-alpine"
-    restart: always
+    image: "postgres:18.3-alpine"
+    restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
@@ -33,26 +9,48 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - pgdata:/var/lib/postgresql
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/postgres.conf:/etc/postgresql/postgresql.conf:ro,Z
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
+  pgadmin:
+    image: "elestio/pgadmin:REL-9_13"
+    restart: unless-stopped
+    ports:
+      - "8888:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    depends_on:
+      - db
   broker:
-    image: "eclipse-mosquitto:2"
-    restart: always
+    image: ${DOCKER_IMAGE_BROKER}
+    restart: unless-stopped
+    build: 
+      context: .
+      dockerfile: mosquitto/Dockerfile
     ports:
       - "1883:1883"
     volumes:
-      - ./mosquitto/config/mosquitto-docker.conf:/mosquitto/config/mosquitto-docker.conf
-      - ./mosquitto/config/passwd:/mosquitto/config/passwd
       - mosquitto_data:/mosquitto/data
       - mosquitto_log:/mosquitto/log
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "health", "-m", "ok", "-u", "admin_lab", "-P", "admin123"]
+      interval: 600s
+      timeout: 5s
+      retries: 5
 volumes:
   mosquitto_data:
     driver: local
   mosquitto_log:
     driver: local
   pgdata:
+    driver: local
+  pgadmin-data:
     driver: local
