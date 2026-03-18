@@ -16,7 +16,8 @@ def read_all_log(db: Session, limit: int | None, start_date: datetime | None, en
         select(
             col(DataLog.device_id),
             col(DataLog.data_log),
-            func.timezone('Asia/Jakarta', DataLog.timestamp).label("timestamp")
+            func.timezone('Asia/Jakarta', DataLog.timestamp).label("timestamp"),
+            cast(Device.attr["rack_id"].astext, Integer).label("rack_id")
         )
         .join(Device, Device.id == DataLog.device_id) # type: ignore
         .order_by(desc(DataLog.timestamp), col(DataLog.device_id))

@@ -73,7 +73,7 @@ def download_all_log_data(
 
 
 
-@router.get("/export/{device_id}/{file_type}")
+@router.get("/export/{file_type}/{device_id}")
 def download_all_log_data_by_device_id(
     file_type: Annotated[str, Path(title="Export File type")],
     device_id: Annotated[int, Path(title="Device Id", ge=1, le=5)],

@@ -8,7 +8,7 @@ import io
 
 from app.db.session import get_session
 from app.crud import telemetry as crud_logs
-from app.models.telemetry import DataLogBase
+from app.models.telemetry import DataLogBase, DataLogWithRack
 
 router = APIRouter(
     tags=["data logs"],
@@ -19,7 +19,7 @@ file_export_name: str = 'Telemetry_Log'
 
 
 
-@router.get("/", response_model=List[DataLogBase])
+@router.get("/", response_model=List[DataLogWithRack])
 def read_all_data_log(
     db: Annotated[Session, Depends(get_session)],
     limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
@@ -31,7 +31,7 @@ def read_all_data_log(
 
 
 
-@router.get("/latest", response_model=List[DataLogBase])
+@router.get("/latest", response_model=List[DataLogWithRack])
 def read_latest_log_all_devices(db: Annotated[Session, Depends(get_session)]):
     return crud_logs.read_latest_device_log_data(db=db)
 
@@ -79,7 +79,7 @@ def download_all_log_data(
 
 
 
-@router.get("/export/{device_id}/{file_type}")
+@router.get("/export/{file_type}/{device_id}")
 def download_all_log_data_by_device_id(
     file_type: Annotated[str, Path(title="Export File type")],
     device_id: Annotated[int, Path(title="Device Id", ge=1, le=5)],
