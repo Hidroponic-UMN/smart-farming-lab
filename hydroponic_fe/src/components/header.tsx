@@ -19,7 +19,7 @@ import {
     TrendingDown,
     Minus,
 } from "lucide-react";
-import type { SystemStatus, SimulationMode } from "@/lib/simulation";
+import type { SystemStatus } from "@/lib/simulation";
 import {
     Tooltip,
     TooltipContent,
@@ -30,10 +30,6 @@ import type { Notification } from "@/lib/notifications";
 
 interface HeaderProps {
     system: SystemStatus;
-    simulationActive: boolean;
-    onToggleSimulation: () => void;
-    simulationMode: SimulationMode;
-    onSetSimulationMode: (mode: SimulationMode) => void;
     warningCount: number;
     criticalCount: number;
     notifications: Notification[];
@@ -44,10 +40,6 @@ interface HeaderProps {
 
 export function Header({
     system,
-    simulationActive,
-    onToggleSimulation,
-    simulationMode,
-    onSetSimulationMode,
     warningCount,
     criticalCount,
     notifications,
@@ -58,11 +50,7 @@ export function Header({
     const { theme, setTheme } = useTheme();
     const [collapsed, setCollapsed] = useState(false);
 
-    const modeButtons: { mode: SimulationMode; label: string; icon: React.ComponentType<{ className?: string }>; color: string; activeColor: string }[] = [
-        { mode: "trending_down", label: "Down", icon: TrendingDown, color: "text-muted-foreground", activeColor: "bg-rose-500/20 text-rose-500 border-rose-500/40" },
-        { mode: "stable", label: "Stable", icon: Minus, color: "text-muted-foreground", activeColor: "bg-emerald-500/20 text-emerald-500 border-emerald-500/40" },
-        { mode: "trending_up", label: "Up", icon: TrendingUp, color: "text-muted-foreground", activeColor: "bg-amber-500/20 text-amber-500 border-amber-500/40" },
-    ];
+
 
     return (
         <header className="mx-4 mb-3 rounded-2xl border border-gray-700 dark:border-border bg-gray-900 text-gray-100 dark:bg-card/80 dark:text-foreground backdrop-blur-sm shadow-lg transition-all duration-300 ease-in-out z-10">
@@ -155,54 +143,7 @@ export function Header({
                         </div>
                     )}
 
-                    {!collapsed && (
-                        <div className="flex items-center gap-2">
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-gray-800 dark:bg-muted/50">
-                                        <Activity
-                                            className={`w-3.5 h-3.5 ${simulationActive ? "text-emerald-500" : "text-muted-foreground"
-                                                }`}
-                                        />
-                                        <span className="text-[11px] font-medium">Sim</span>
-                                        <Switch
-                                            checked={simulationActive}
-                                            onCheckedChange={onToggleSimulation}
-                                            className="scale-75"
-                                        />
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>Toggle data simulation</TooltipContent>
-                            </Tooltip>
 
-                            {/* Simulation Mode Buttons */}
-                            {simulationActive && (
-                                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-gray-800/50 dark:bg-muted/30 border border-gray-700 dark:border-border/50">
-                                    {modeButtons.map(({ mode, label, icon: ModeIcon, activeColor }) => (
-                                        <Tooltip key={mode}>
-                                            <TooltipTrigger asChild>
-                                                <button
-                                                    onClick={() => onSetSimulationMode(mode)}
-                                                    className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all duration-200 border ${simulationMode === mode
-                                                        ? activeColor
-                                                        : "border-transparent text-gray-400 dark:text-muted-foreground hover:bg-gray-700 dark:hover:bg-muted/60 hover:text-gray-100 dark:hover:text-foreground"
-                                                        }`}
-                                                >
-                                                    <ModeIcon className="w-3 h-3" />
-                                                    {label}
-                                                </button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                {mode === "stable" ? "Values drift around normal range" :
-                                                    mode === "trending_up" ? "Values gradually increase toward warning/critical" :
-                                                        "Values gradually decrease toward low warning/critical"}
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
 
                     <NotificationCenter
                         notifications={notifications}
