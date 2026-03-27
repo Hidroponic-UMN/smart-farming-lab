@@ -17,7 +17,7 @@ def read_all_log(db: Session, limit: int | None, start_date: datetime | None, en
             col(DataLog.device_id),
             col(DataLog.data_log),
             func.timezone('Asia/Jakarta', DataLog.timestamp).label("timestamp"),
-            cast(Device.attr["rack_id"].astext, Integer).label("rack_id")
+            cast(Device.attr["rack_id"].as_string(), Integer).label("rack_id")
         )
         .join(Device, Device.id == DataLog.device_id) # type: ignore
         .order_by(desc(DataLog.timestamp), col(DataLog.device_id))
@@ -45,13 +45,13 @@ def read_all_log(db: Session, limit: int | None, start_date: datetime | None, en
 def read_latest_device_log_data(db: Session):
     _, _, var_device_type = get_global_var(db=db)
     device_type_id = var_device_type["HYDROPONIC_RACKS"]
-    
+
     statement = (
         select(
             DataLog.device_id,
             DataLog.data_log,
             func.timezone('Asia/Jakarta', DataLog.timestamp).label("timestamp"),
-            cast(Device.attr["rack_id"].astext, Integer).label("rack_id")
+            cast(Device.attr["rack_id"].as_string(), Integer).label("rack_id")
         )
         .distinct(DataLog.device_id) # type: ignore
         .join(Device, Device.id == DataLog.device_id) # type: ignore
@@ -59,7 +59,7 @@ def read_latest_device_log_data(db: Session):
         .where(Device.devicetype_id == device_type_id) # type: ignore
         .order_by(DataLog.device_id, desc(DataLog.timestamp)) # type: ignore
     )
-    
+
     res = db.exec(statement=statement).all()
 
     if not res:
