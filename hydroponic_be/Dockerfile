@@ -6,8 +6,8 @@ WORKDIR /app/
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-COPY ./hydroponic_be ./
+COPY ./hydroponic_be/ .
 RUN uv sync --no-install-project --no-dev
 RUN chmod +x entrypoint.sh
 
-CMD ["./entrypoint.sh"]
+CMD ["sh", "./entrypoint.sh"]

@@ -1,3 +1,3 @@
 #!/bin/bash
-git pull
+# git pull
 docker compose up -f compose.prod.yml up --build -d
