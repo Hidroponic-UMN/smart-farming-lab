@@ -15,11 +15,13 @@ def registering_handler(payload):
 
     mac_addr = payload["mac_addr"]
     attr = payload["attr"]
-    devicetype_id = payload["type_id"]
     desc = payload["desc"]
     with Session(engine) as db:
         exist = db.exec(select(Device).where(Device.mac_addr==mac_addr)).first()
-        
+        _, _, var_device_type = get_global_var(db=db)
+
+        tmp = payload["type_id"]
+        devicetype_id = var_device_type[tmp]
         if exist is None:
             device = Device(
                 attr=attr,
@@ -62,7 +64,7 @@ def ack_command_handler(payload):
         CmdMicroController.model_validate(payload)
     except ValidationError as e:
         print(e)
-    
+
     mac_addr = payload["mac_addr"]
     command = payload["command"]
     status = payload["status"]
