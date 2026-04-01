@@ -25,15 +25,18 @@ def read_all_data_log(
     limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
     start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
     end_date: Annotated[datetime | None, Query(title="End Date")] = None,
-    device_type_id: Annotated[int | None, Query()] = None
+    device_type: Annotated[str | None, Query()] = None
 ):
-    return crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date, device_type_id=device_type_id)
+    return crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date, device_type=device_type)
 
 
-
+# device_type has two possible values: 1. HYDROPONIC_RACKS ; 2. ROOM_MONITORING
 @router.get("/latest", response_model=List[DataLogWithRack])
-def read_latest_log_all_devices(db: Annotated[Session, Depends(get_session)]):
-    return crud_logs.read_latest_device_log_data(db=db)
+def read_latest_log_all_devices(
+    db: Annotated[Session, Depends(get_session)],
+    device_type: Annotated[str | None, Query()] = None
+):
+    return crud_logs.read_latest_device_log_data(db=db, device_type=device_type)
 
 
 
@@ -56,18 +59,18 @@ def download_all_log_data(
     limit: Annotated[int | None, Query(title="Limit to retrieve the data", ge=1)] = None,
     start_date: Annotated[datetime | None, Query(title="Start Date")] = None,
     end_date: Annotated[datetime | None, Query(title="End Date")] = None,
-    device_type_id: Annotated[int | None, Query()] = None
+    device_type: Annotated[str | None, Query()] = None
 ):
     file_type = 'csv'
-    rows: Sequence[DataLogBase] = crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date, device_type_id=device_type_id)
+    rows: Sequence[DataLogBase] = crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date, device_type=device_type)
     output = io.StringIO()
     writer = csv.writer(output)
-    
+
     writer.writerow(["device_id", "data_log", "timestamp"])
 
     for r in rows:
         writer.writerow([r.device_id, r.data_log, r.timestamp])
-    
+
     output.seek(0)
     return StreamingResponse(
         output,
@@ -97,7 +100,7 @@ def download_all_log_data_by_device_id(
 
     for r in rows:
         writer.writerow([r.device_id, r.data_log, r.timestamp])
-    
+
     output.seek(0)
     return StreamingResponse(
         output,
