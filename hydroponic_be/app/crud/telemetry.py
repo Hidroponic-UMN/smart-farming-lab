@@ -4,13 +4,19 @@ from fastapi import HTTPException
 from datetime import datetime, timezone
 from typing import Sequence, Any
 
-from app.models.telemetry import DataLog, Device, DeviceType
+from app.models.telemetry import DataLog, Device, DeviceType, EnumDeviceType
 from app.utils.utils_seeding import get_global_var
 
-def read_all_log(db: Session, limit: int | None, start_date: datetime | None, end_date: datetime | None, device_type_id: int | None) -> Sequence[Any]:
-    if device_type_id is None:
+def read_all_log(db: Session, limit: int | None, start_date: datetime | None, end_date: datetime | None, device_type: str | None) -> Sequence[Any]:
+    device_type_id: int | None
+    if device_type is None:
+        device_type = "HYDROPONIC_RACKS"
         _, _, var_device_type = get_global_var(db=db)
-        device_type_id = var_device_type["HYDROPONIC_RACKS"]
+        device_type_id = var_device_type[device_type]
+    else:
+        device_type = device_type if device_type in (m.value for m in EnumDeviceType) else "HYDROPONIC_RACKS"
+        _, _, var_device_type = get_global_var(db=db)
+        device_type_id = var_device_type[device_type]
 
     statement = (
         select(
@@ -42,9 +48,16 @@ def read_all_log(db: Session, limit: int | None, start_date: datetime | None, en
         )
     return res
 
-def read_latest_device_log_data(db: Session):
-    _, _, var_device_type = get_global_var(db=db)
-    device_type_id = var_device_type["HYDROPONIC_RACKS"]
+def read_latest_device_log_data(db: Session, device_type: str | None):
+    device_type_id: int | None
+    if device_type is None:
+        device_type = "HYDROPONIC_RACKS"
+        _, _, var_device_type = get_global_var(db=db)
+        device_type_id = var_device_type[device_type]
+    else:
+        device_type = device_type if device_type in (m.value for m in EnumDeviceType) else "HYDROPONIC_RACKS"
+        _, _, var_device_type = get_global_var(db=db)
+        device_type_id = var_device_type[device_type]
 
     statement = (
         select(
