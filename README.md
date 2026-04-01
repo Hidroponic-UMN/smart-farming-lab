@@ -5,41 +5,22 @@
 ## Local Development
 **1.** Run Docker First
 ````
-    docker compose -f compose.dev.yml up --build
+    docker compose -f compose.prod.yml up --build
 ````
 or
 ````
-    docker compose -f compose.dev.yml up
+    docker compose -f compose.prod.yml up
 ````
-or running start.dev.sh for local dev
+or running start.prod.sh for local dev
 ````
-    sudo bash start.dev.sh
-````
-
-**2.** Running Local BackEnd
-````
-    cd ./hydroponic_be/
-    uv run gunicorn app.main:app
-````
-
-Migration using Alembic
-```
-    uv run alembic revision --autogenerate -m "[your message]"
-    uv run alembic upgrade head
-```
-
-**3.** Running Local FrontEnd
-````
-    cd ./hydroponic_fe/
-    npm install
-    npm run dev
+    sudo bash start.prod.sh
 ````
 
 *note*: Please make sure you already have uv, npm and docker
 
 **4.** Stop Docker Local Dev
 ````
-    sudo bash stop.dev.sh
+    sudo bash stop.prod.sh
 ````
 
 ---

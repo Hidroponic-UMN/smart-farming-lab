@@ -31,6 +31,25 @@ def read_all_data_log(
 
 
 # device_type has two possible values: 1. HYDROPONIC_RACKS ; 2. ROOM_MONITORING
+# Structure JSON data for ROOM_MONITORING:
+# {
+#   "mac_addr": "f4c1e01b-46e7-42c5-9f69-05d67a5a6a5b",
+#   "data": {
+#     "temperature": "ini esp32 untuk rack 1",
+#     "humidity": "1"
+#   }
+# }
+
+# Sturcture JSON data for HYDROPONIC_RACKS:
+# {
+#   "mac_addr": "f4c1e01b-46e7-42c5-9f69-05d67a5a6a5b",
+#   "data": {
+#     "ph": 25,
+#     "ec": 40.5,
+#     "light_intensity": 100.2,
+#     "water_temp": 20.9
+#   }
+# }
 @router.get("/latest", response_model=List[DataLogWithRack])
 def read_latest_log_all_devices(
     db: Annotated[Session, Depends(get_session)],
