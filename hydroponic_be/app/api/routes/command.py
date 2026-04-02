@@ -102,7 +102,7 @@ def download_all_log_data_by_device_id(
     )
 
 
-
+#post untuk kalibrasi sensor
 @router.post("/{device_id}", response_model=CommandLogBase)
 def send_command_by_device_id(
     device_id: Annotated[int, Path(title="Device Id", ge=1, le=5)],

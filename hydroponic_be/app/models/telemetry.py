@@ -38,7 +38,8 @@ class DeviceType(SQLModel, table=True):
     attr: Dict[str, Any] = Field(default_factory=dict, sa_type=JSONB)
 
     devices: List["Device"] = Relationship(back_populates="device_type")
-
+ 
+# "attr" : {"rack_id": 1}
 class Device(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     desc: Optional[str]
