@@ -2,16 +2,16 @@ import { NextResponse } from "next/server";
 import { getStatus } from "@/lib/thresholds";
 
 const HISTORY_LENGTH = 25;
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000";
 const OFFLINE_TIMEOUT_MS = 15_000; // 15 seconds
 
 // --- Key mapping: ESP32 snake_case → frontend camelCase ---
 const SENSOR_MAP: Record<string, { feKey: string; thresholdType: string }> = {
-    ph:              { feKey: "ph",             thresholdType: "ph" },
-    ec:              { feKey: "ec",             thresholdType: "ec" },
-    water_temp:      { feKey: "waterTemp",      thresholdType: "waterTemp" },
-    water_level:     { feKey: "waterLevel",     thresholdType: "waterLevel" },
-    water_flow:      { feKey: "waterFlow",      thresholdType: "waterFlow" },
+    ph: { feKey: "ph", thresholdType: "ph" },
+    ec: { feKey: "ec", thresholdType: "ec" },
+    water_temp: { feKey: "waterTemp", thresholdType: "waterTemp" },
+    water_level: { feKey: "waterLevel", thresholdType: "waterLevel" },
+    water_flow: { feKey: "waterFlow", thresholdType: "waterFlow" },
     light_intensity: { feKey: "lightIntensity", thresholdType: "lightIntensity" },
 };
 
@@ -100,27 +100,35 @@ function buildRackResponse(deviceId: number, rack: RackStore) {
  */
 export async function GET() {
     try {
-        const res = await fetch(`${BACKEND_URL}/api/v1/datalogs/latest`, {
+        const res = await fetch(`${BACKEND_URL}/api/v1/datalogs/latest?device_type=HYDROPONIC_RACKS`, {
             cache: "no-store",
         });
 
         if (res.ok) {
             const rows: Array<{
                 device_id: number;
-                data_log: Record<string, number>;
+                data_log: string;
                 timestamp: string;
-                rack_id: number;
             }> = await res.json();
 
             // Update in-memory store with fresh data
             for (const row of rows) {
-                const rack = getOrCreateRack(row.device_id, row.rack_id);
+                // The frontend expects rackId 1-5, which maps nicely to device_id 1-5 
+                // However, since Room is often 1, maybe racks are 2-6? 
+                // Note: using device_id directly as rackId for now.
+                const rack = getOrCreateRack(row.device_id, row.device_id);
                 rack.lastUpdated = new Date();
 
-                for (const [espKey, { feKey }] of Object.entries(SENSOR_MAP)) {
-                    if (row.data_log[espKey] !== undefined) {
-                        updateSensor(rack, feKey, row.data_log[espKey]);
+                try {
+                    const parsed = JSON.parse(row.data_log);
+                    const sensorData = parsed.data || {};
+                    for (const [espKey, { feKey }] of Object.entries(SENSOR_MAP)) {
+                        if (sensorData[espKey] !== undefined) {
+                            updateSensor(rack, feKey, Number(sensorData[espKey]));
+                        }
                     }
+                } catch (e) {
+                    // Ignore JSON parsing errors
                 }
             }
         }

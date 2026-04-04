@@ -2,6 +2,8 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import {
     Tooltip,
@@ -136,13 +138,13 @@ function SensorCard({
 }
 
 export function RackCard({ rack }: RackCardProps) {
-    const borderColors = {
+    const borderColors: Record<string, string> = {
         Critical: "border-rose-200 dark:border-rose-950",
         Warning: "border-amber-200 dark:border-amber-950",
         Normal: "border-gray-200 dark:border-gray-800",
     };
 
-    const statusBadgeColors = {
+    const statusBadgeColors: Record<string, string> = {
         Critical: "bg-rose-950/30 text-rose-400 border-rose-800",
         Warning: "bg-amber-950/30 text-amber-400 border-amber-800",
         Normal: "bg-emerald-950/30 text-emerald-400 border-emerald-800",
@@ -164,12 +166,19 @@ export function RackCard({ rack }: RackCardProps) {
                             <h3 className="text-lg font-bold text-gray-100 dark:text-gray-100">{rack.label}</h3>
                         </div>
                     </div>
-                    <Badge
-                        variant="outline"
-                        className={`px-2 py-0.5 text-xs font-semibold border-2 ${statusBadgeColors[rack.overallStatus]}`}
-                    >
-                        {rack.overallStatus}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                        <Link href={`/rack/${rack.id}`}>
+                            <Button variant="secondary" className="h-6 px-3 text-[10px] font-bold tracking-wider uppercase bg-gray-800 hover:bg-emerald-600 text-gray-300 hover:text-white border border-gray-700 transition-colors">
+                                History
+                            </Button>
+                        </Link>
+                        <Badge
+                            variant="outline"
+                            className={`px-2 py-0.5 text-xs font-semibold border-2 ${statusBadgeColors[rack.overallStatus]}`}
+                        >
+                            {rack.overallStatus}
+                        </Badge>
+                    </div>
                 </div>
 
                 {/* Tank Section - Bento Grid */}
