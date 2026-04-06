@@ -18,7 +18,7 @@ class RegisterMicroController(SQLModel):
     attr: Dict[str, Any] = Field(default_factory=dict, sa_type=JSONB)
     mac_addr: str
     desc: str
-    type_id: int
+    type_id: str
 
 class TelemetryMicroController(SQLModel):
     mac_addr: str
@@ -38,7 +38,7 @@ class DeviceType(SQLModel, table=True):
     attr: Dict[str, Any] = Field(default_factory=dict, sa_type=JSONB)
 
     devices: List["Device"] = Relationship(back_populates="device_type")
- 
+
 # "attr" : {"rack_id": 1}
 class Device(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
