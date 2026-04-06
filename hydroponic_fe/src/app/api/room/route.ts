@@ -10,6 +10,11 @@ interface SensorStore {
     history: number[];
 }
 
+interface DataLog {
+    temperature: number;
+    humidity: number;
+}
+
 // In-memory store (resets on server restart)
 let store: {
     temperature: SensorStore;
@@ -76,16 +81,16 @@ export async function GET() {
         if (res.ok) {
             const rows: Array<{
                 device_id: number;
-                data_log: string;
+                data_log: DataLog;
                 timestamp: string;
             }> = await res.json();
 
-            // Typically there is only one room monitoring device. 
+            // Typically there is only one room monitoring device.
             // We'll take the first one found.
             for (const row of rows) {
                 try {
-                    const parsed = JSON.parse(row.data_log);
-                    const sensorData = parsed.data || {};
+                    const parsed = row.data_log;
+                    const sensorData = parsed;
 
                     if (sensorData.temperature !== undefined) {
                         const tempValue = Number(sensorData.temperature);

@@ -9,18 +9,19 @@ from app.utils.utils_seeding import get_global_var
 
 def registering_handler(payload):
     try:
-        RegisterMicroController.model_validate(payload)
+        validated_data = RegisterMicroController.model_validate(payload)
     except ValidationError as e:
         print(e)
+        return
 
-    mac_addr = payload["mac_addr"]
-    attr = payload["attr"]
-    desc = payload["desc"]
+    mac_addr = validated_data.mac_addr
+    attr = validated_data.attr
+    desc = validated_data.desc
     with Session(engine) as db:
         exist = db.exec(select(Device).where(Device.mac_addr==mac_addr)).first()
         _, _, var_device_type = get_global_var(db=db)
 
-        tmp = payload["type_id"]
+        tmp = validated_data.type_id
         devicetype_id = var_device_type[tmp]
         if exist is None:
             device = Device(
