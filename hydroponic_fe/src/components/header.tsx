@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,6 +19,7 @@ import {
     TrendingUp,
     TrendingDown,
     Minus,
+    Wrench,
 } from "lucide-react";
 import type { SystemStatus } from "@/lib/simulation";
 import {
@@ -152,6 +154,19 @@ export function Header({
                         onClearAll={onClearAll}
                         collapsed={collapsed}
                     />
+
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Link href="/calibration">
+                                <button
+                                    className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-800 dark:bg-muted/50 hover:bg-emerald-600 dark:hover:bg-emerald-600 transition-colors"
+                                >
+                                    <Wrench className="w-4 h-4" />
+                                </button>
+                            </Link>
+                        </TooltipTrigger>
+                        <TooltipContent>Sensor Calibration</TooltipContent>
+                    </Tooltip>
 
                     <Tooltip>
                         <TooltipTrigger asChild>

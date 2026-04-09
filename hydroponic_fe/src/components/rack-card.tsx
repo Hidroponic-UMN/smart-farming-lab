@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,6 +34,7 @@ import {
 } from "@/lib/thresholds";
 import type { Status } from "@/lib/thresholds";
 import { MiniChart } from "./mini-chart";
+import { loadCalibration } from "@/lib/calibration";
 
 /** Calculate real trend % from sensor history (recent avg vs older avg) */
 function calcTrend(sensor: SensorData): number {
@@ -138,6 +141,15 @@ function SensorCard({
 }
 
 export function RackCard({ rack }: RackCardProps) {
+    const [isCalibrated, setIsCalibrated] = useState(true);
+
+    useEffect(() => {
+        const cal = loadCalibration(rack.id);
+        const phOk = cal?.ph_slope != null;
+        const tdsOk = cal?.tds_k_factor != null;
+        setIsCalibrated(phOk && tdsOk);
+    }, [rack.id]);
+
     const borderColors: Record<string, string> = {
         Critical: "border-rose-200 dark:border-rose-950",
         Warning: "border-amber-200 dark:border-amber-950",
@@ -164,9 +176,21 @@ export function RackCard({ rack }: RackCardProps) {
                     <div className="flex items-center gap-3">
                         <div>
                             <h3 className="text-lg font-bold text-gray-100 dark:text-gray-100">{rack.label}</h3>
+                            {!isCalibrated && (
+                                <Link href={`/calibration/${rack.id}`}>
+                                    <span className="text-[10px] font-medium text-amber-400 hover:text-amber-300 transition-colors cursor-pointer">
+                                        ⚠ Uncalibrated
+                                    </span>
+                                </Link>
+                            )}
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
+                        <Link href={`/calibration/${rack.id}`}>
+                            <Button variant="secondary" className="h-6 px-2 text-[10px] font-bold tracking-wider uppercase bg-gray-800 hover:bg-blue-600 text-gray-300 hover:text-white border border-gray-700 transition-colors">
+                                Calibrate
+                            </Button>
+                        </Link>
                         <Link href={`/rack/${rack.id}`}>
                             <Button variant="secondary" className="h-6 px-3 text-[10px] font-bold tracking-wider uppercase bg-gray-800 hover:bg-emerald-600 text-gray-300 hover:text-white border border-gray-700 transition-colors">
                                 History
