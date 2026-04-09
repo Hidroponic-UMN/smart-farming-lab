@@ -52,6 +52,7 @@ class CommandLogBase(SQLModel):
     status_id: int = Field(foreign_key="commandstatus.id", index=True, primary_key=True)
     device_id: int = Field(foreign_key="device.id", index=True, primary_key=True)
     created_by: str = Field(default="system")
+    cmd_log: Dict[str, Any] = Field(default_factory=dict, sa_type=JSONB)
     timestamp: datetime = Field(sa_column=Column(DateTime(timezone=True), index=True, primary_key=True), default_factory=get_utc_now)
 
 class CommandLog(CommandLogBase, table=True):
