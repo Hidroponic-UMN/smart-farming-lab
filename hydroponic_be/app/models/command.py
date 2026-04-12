@@ -23,13 +23,21 @@ class EnumCommandStatus(str, Enum):
     BROKER_DOWN = "BROKER_DOWN"
 
 class CmdMicroController(SQLModel):
-    mac_addr: str 
+    mac_addr: str
     command: str
     status: str
 
 class CmdInput(SQLModel):
-    created_by: str 
+    created_by: str
     command_type: EnumCommandType
+
+class CommandLogWithRack(SQLModel):
+    command_id: int
+    status_id: int
+    device_id: int
+    cmd_log: Dict[str, Any]
+    timestamp: datetime
+    rack_id: int
 
 
 

@@ -8,7 +8,7 @@ import io
 
 from app.db.session import get_session
 from app.crud import command as crud_logs
-from app.models.command import CommandLogBase, CmdInput
+from app.models.command import CommandLogBase, CmdInput, CommandLogWithRack
 
 router = APIRouter(
     tags=["command logs"],
@@ -29,6 +29,15 @@ def read_all_command_log(
 ):
     return crud_logs.read_all_log(db=db, limit=limit, start_date=start_date, end_date=end_date, device_type=device_type)
 
+
+
+@router.get("/latest", response_model=List[CommandLogWithRack])
+def read_latest_log_all_devices(
+    db: Annotated[Session, Depends(get_session)],
+    device_type: Annotated[str | None, Query()] = None,
+    device_id: Annotated[int | None, Query(ge=1,le=5)] = None
+):
+    return crud_logs.read_latest_cmd_log_data(db=db, device_type=device_type, device_id=device_id)
 
 
 @router.get("/{device_id}", response_model=List[CommandLogBase])
