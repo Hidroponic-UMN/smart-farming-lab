@@ -14,8 +14,11 @@ if TYPE_CHECKING:
 class EnumCommandType(str, Enum):
     PUMP_ON = "PUMP_ON"
     PUMP_OFF = "PUMP_OFF"
+    KALIBRASI_TDS = "KALIBRASI_TDS"
+    KALIBRASI_PH = "KALIBRASI_PH"
 
 class EnumCommandStatus(str, Enum):
+    START = "START"
     PENDING = "PENDING"
     SUCCESS = "SUCCESS"
     FAILED = "FAILED"
@@ -26,6 +29,7 @@ class CmdMicroController(SQLModel):
     mac_addr: str
     command: str
     status: str
+    cmd_log: Dict[str, Any]
 
 class CmdInput(SQLModel):
     created_by: str
@@ -38,6 +42,9 @@ class CommandLogWithRack(SQLModel):
     cmd_log: Dict[str, Any]
     timestamp: datetime
     rack_id: int
+
+class JSONInput(SQLModel):
+    known_value: int | float = Field(default=0.0)
 
 
 

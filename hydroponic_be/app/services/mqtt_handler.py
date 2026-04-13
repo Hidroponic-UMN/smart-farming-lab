@@ -31,10 +31,13 @@ def registering_handler(self, payload, topic: str):
             )
             db.add(device)
             db.commit()
+
+            response_topic = f"{topic}/ack"
+            self.publish(response_topic, {"status": 1})
         else:
             print("Your Device had been registered")
-
-        self.publish(topic, {"status": 1})
+            response_topic = f"{topic}/ack"
+            self.publish(response_topic, {"status": 1})
 
 def telemetry_handler(self, payload, topic):
     try:

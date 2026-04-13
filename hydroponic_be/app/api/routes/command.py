@@ -1,4 +1,4 @@
-from typing import Annotated, List, Sequence
+from typing import Annotated, List, Sequence, Dict, Any
 from datetime import datetime
 from fastapi import APIRouter, Depends, Path, Body, Query
 from sqlmodel import Session
@@ -8,7 +8,7 @@ import io
 
 from app.db.session import get_session
 from app.crud import command as crud_logs
-from app.models.command import CommandLogBase, CmdInput, CommandLogWithRack
+from app.models.command import CommandLogBase, CmdInput, CommandLogWithRack, JSONInput
 
 router = APIRouter(
     tags=["command logs"],
@@ -38,6 +38,7 @@ def read_latest_log_all_devices(
     device_id: Annotated[int | None, Query(ge=1,le=5)] = None
 ):
     return crud_logs.read_latest_cmd_log_data(db=db, device_type=device_type, device_id=device_id)
+
 
 
 @router.get("/{device_id}", response_model=List[CommandLogBase])
@@ -111,11 +112,13 @@ def download_all_log_data_by_device_id(
     )
 
 
+
 #post untuk kalibrasi sensor
-@router.post("/{device_id}", response_model=CommandLogBase)
-def send_command_by_device_id(
-    device_id: Annotated[int, Path(title="Device Id", ge=1, le=5)],
+@router.post("/{rack_id}", response_model=CommandLogBase)
+def send_command_by_rack_id(
+    rack_id: Annotated[int, Path(title="Device Id", ge=1, le=5)],
     db: Annotated[Session, Depends(get_session)],
-    command: Annotated[CmdInput, Body(title="Type of Command for Device")]
+    command: Annotated[CmdInput, Body(title="Type of Command for Device")],
+    input_json: Annotated[JSONInput, Body(title="input json from frontend")]
 ):
-    return crud_logs.send_cmd_to_rack_id(db=db, device_id=device_id, command=command)
+    return crud_logs.send_cmd_to_rack_id(db=db, rack_id=rack_id, command=command, input_json=input_json)

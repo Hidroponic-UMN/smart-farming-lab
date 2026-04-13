@@ -1,11 +1,11 @@
 from sqlmodel import Session, select, desc, col
 from sqlalchemy import func, cast, Integer
 from fastapi import HTTPException
-from typing import Any, Sequence
+from typing import Any, Sequence, Dict
 from datetime import datetime, timezone
 
 from app.models.telemetry import Device, EnumDeviceType, DeviceType
-from app.models.command import CommandLog, CmdInput, EnumCommandStatus, CmdMicroController
+from app.models.command import CommandLog, CmdInput, EnumCommandStatus, CmdMicroController, JSONInput
 from app.services.mqtt_worker import mqtt_worker
 from app.utils.utils_seeding import get_global_var
 
@@ -47,7 +47,7 @@ def read_all_log(db: Session, limit: int | None, start_date: datetime | None, en
     res = db.exec(statement=statement).all()
     if len(res) == 0:
         raise HTTPException(
-            status_code=504,
+            status_code=404,
             detail="Empty"
         )
     return res
@@ -86,12 +86,12 @@ def read_latest_cmd_log_data(db: Session, device_type: str | None, device_id: in
 
     if not res:
         raise HTTPException(
-            status_code=504,
+            status_code=404,
             detail="No data"
         )
     return res
 
-def send_cmd_to_rack_id(db: Session, device_id: int, command: CmdInput):
+def send_cmd_to_rack_id(db: Session, rack_id: int, command: CmdInput, input_json: JSONInput):
     if mqtt_worker.is_connected():
         cmd_status, cmd_type, _ = get_global_var(db=db)
 
@@ -103,37 +103,38 @@ def send_cmd_to_rack_id(db: Session, device_id: int, command: CmdInput):
 
         command_id = cmd_type[command.command_type.value]
         status_id = cmd_status[EnumCommandStatus.PENDING.value]
-        data = db.exec(select(Device.mac_addr, Device.attr).where(Device.id == device_id)).first()
+        data = db.exec(select(Device).where(cast(Device.attr["rack_id"].as_string(), Integer) == rack_id)).first()
 
         if data:
-            mac_addr = data[0]
-            attr = data[1]
-
             payload: dict[str, Any] = vars(
-                CmdMicroController(mac_addr=mac_addr, command=command.command_type.value, status=EnumCommandStatus.PENDING.value)
+                CmdMicroController(
+                    mac_addr=data.mac_addr,
+                    command=command.command_type.value,
+                    status=EnumCommandStatus.START.value,
+                    cmd_log=input_json.model_dump()
+                )
             )
 
             cmd_log = CommandLog(
-                device_id=device_id,
+                device_id=data.id, # type: ignore
                 command_id=command_id,
                 status_id=status_id,
-                created_by=command.created_by
+                cmd_log=input_json.model_dump()
             )
 
             db.add(cmd_log)
             db.commit()
             db.refresh(cmd_log)
 
-            rack_id = attr["rack_id"]
             mqtt_worker.publish(f"rack/{rack_id}/cmd", payload=payload)
             return cmd_log
         else:
             raise HTTPException(
-                status_code=504,
-                detail=f"Device id {device_id} has not exist yet in your Database"
+                status_code=404,
+                detail=f"Device id {rack_id} has not exist yet in your Database"
             )
     raise HTTPException(
-        status_code=504,
+        status_code=501,
         detail="MQTT broker not connected"
     )
 
@@ -161,7 +162,7 @@ def read_log_by_device_id(db: Session, device_id: int, limit: int | None, start_
     res = db.exec(statement=statement).all()
     if len(res) == 0:
         raise HTTPException(
-            status_code=504,
+            status_code=404,
             detail="Empty"
         )
     return res
