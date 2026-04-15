@@ -4,7 +4,7 @@ import paho.mqtt.client as mqtt
 from typing import Callable, Dict
 
 from app.core.config import settings
-from app.services.mqtt_handler import registering_handler, telemetry_handler, command_handler, ack_command_handler
+from app.services.mqtt_handler import registering_handler, telemetry_handler, ack_command_handler
 
 class MQTTWorker:
 
@@ -58,16 +58,15 @@ class MQTTWorker:
     def on_connect(self, client, userdata, flags, rc, properties=None):
         if rc == 0:
             self._connected = True
-            self.subscribe("device/register", registering_handler)
+            self.subscribe("device/+/register", registering_handler)
             self.subscribe("rack/+/data", telemetry_handler)
-            self.subscribe("rack/+/cmd", command_handler)
             self.subscribe("rack/+/cmd/ack", ack_command_handler)
             print(f"Connected to MQTT Broker: {settings.MQTT_BROKER}")
         else:
             print(f"MQTT connection failed: {rc}")
 
     def on_message(self, client, userdata, msg):
-        topic = msg.topic
+        topic: str = msg.topic
 
         try:
             payload = json.loads(msg.payload.decode())
@@ -78,10 +77,10 @@ class MQTTWorker:
         for sub, handler in self.handlers.items():
             if mqtt.topic_matches_sub(sub, topic):
                 try:
-                    handler(payload)
+                    handler(self, payload, topic)
                 except Exception as e:
                     print(f"MQTT handler error ({topic}): {e}")
-    
+
     def is_connected(self) -> bool:
         return self._connected
 

@@ -1,5 +1,4 @@
 from sqlmodel import Session, select
-from datetime import datetime, timezone
 from pydantic import ValidationError
 
 from app.db.session import engine
@@ -7,7 +6,7 @@ from app.models.telemetry import DataLog, Device, TelemetryMicroController, Regi
 from app.models.command import CommandLog, CmdMicroController
 from app.utils.utils_seeding import get_global_var
 
-def registering_handler(payload):
+def registering_handler(self, payload, topic: str):
     try:
         validated_data = RegisterMicroController.model_validate(payload)
     except ValidationError as e:
@@ -32,10 +31,15 @@ def registering_handler(payload):
             )
             db.add(device)
             db.commit()
+
+            response_topic = f"{topic}/ack"
+            self.publish(response_topic, {"status": 1})
         else:
             print("Your Device had been registered")
+            response_topic = f"{topic}/ack"
+            self.publish(response_topic, {"status": 1})
 
-def telemetry_handler(payload):
+def telemetry_handler(self, payload, topic):
     try:
         TelemetryMicroController.model_validate(payload)
     except ValidationError as e:
@@ -57,10 +61,7 @@ def telemetry_handler(payload):
         else:
             print(f"Device: {mac_addr}, does not exits, please try to register your device first")
 
-def command_handler(payload):
-    pass
-
-def ack_command_handler(payload):
+def ack_command_handler(self, payload, topic):
     try:
         CmdMicroController.model_validate(payload)
     except ValidationError as e:
@@ -69,6 +70,7 @@ def ack_command_handler(payload):
     mac_addr = payload["mac_addr"]
     command = payload["command"]
     status = payload["status"]
+    cmd_log = payload["cmd_log"]
     with Session(engine) as db:
         cmd_status, cmd_type, _ = get_global_var(db=db)
         device_id = db.exec(select(Device.id).where(Device.mac_addr == mac_addr)).first()
@@ -80,7 +82,8 @@ def ack_command_handler(payload):
             cmd_log = CommandLog(
                 command_id=command_id,
                 status_id=status_id,
-                device_id=device_id
+                device_id=device_id,
+                cmd_log=cmd_log
             )
             db.add(cmd_log)
             db.commit()

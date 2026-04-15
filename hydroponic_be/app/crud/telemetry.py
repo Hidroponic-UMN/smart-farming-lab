@@ -43,7 +43,7 @@ def read_all_log(db: Session, limit: int | None, start_date: datetime | None, en
     res = db.exec(statement=statement).all()
     if len(res) == 0:
         raise HTTPException(
-            status_code=504,
+            status_code=404,
             detail="No data"
         )
     return res
@@ -77,7 +77,7 @@ def read_latest_device_log_data(db: Session, device_type: str | None):
 
     if not res:
         raise HTTPException(
-            status_code=504,
+            status_code=404,
             detail="No data"
         )
     return res
@@ -103,7 +103,7 @@ def read_log_by_device_id(db: Session, device_id: int, limit: int | None, start_
     res = db.exec(statement=statement).all()
     if not res:
         raise HTTPException(
-            status_code=504,
+            status_code=404,
             detail="No data"
         )
     return res
