@@ -34,10 +34,9 @@ def read_all_command_log(
 @router.get("/latest", response_model=List[CommandLogWithRack])
 def read_latest_log_all_devices(
     db: Annotated[Session, Depends(get_session)],
-    device_type: Annotated[str | None, Query()] = None,
-    device_id: Annotated[int | None, Query(ge=1,le=5)] = None
+    device_type: Annotated[str | None, Query()] = None
 ):
-    return crud_logs.read_latest_cmd_log_data(db=db, device_type=device_type, device_id=device_id)
+    return crud_logs.read_latest_cmd_log_data(db=db, device_type=device_type)
 
 
 

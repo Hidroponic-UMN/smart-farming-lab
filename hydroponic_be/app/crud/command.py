@@ -52,7 +52,7 @@ def read_all_log(db: Session, limit: int | None, start_date: datetime | None, en
         )
     return res
 
-def read_latest_cmd_log_data(db: Session, device_type: str | None, device_id: int | None):
+def read_latest_cmd_log_data(db: Session, device_type: str | None):
     device_type_id: int | None
     if device_type is None:
         device_type = "HYDROPONIC_RACKS"
@@ -78,9 +78,6 @@ def read_latest_cmd_log_data(db: Session, device_type: str | None, device_id: in
         .where(Device.devicetype_id == device_type_id) # type: ignore
         .order_by(CommandLog.device_id, desc(CommandLog.timestamp)) # type: ignore
     )
-
-    if device_id:
-        statement = statement.where(CommandLog.device_id == device_id)
 
     res = db.exec(statement=statement).all()
 
