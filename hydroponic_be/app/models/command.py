@@ -14,8 +14,11 @@ if TYPE_CHECKING:
 class EnumCommandType(str, Enum):
     PUMP_ON = "PUMP_ON"
     PUMP_OFF = "PUMP_OFF"
+    KALIBRASI_TDS = "KALIBRASI_TDS"
+    KALIBRASI_PH = "KALIBRASI_PH"
 
 class EnumCommandStatus(str, Enum):
+    START = "START"
     PENDING = "PENDING"
     SUCCESS = "SUCCESS"
     FAILED = "FAILED"
@@ -23,13 +26,25 @@ class EnumCommandStatus(str, Enum):
     BROKER_DOWN = "BROKER_DOWN"
 
 class CmdMicroController(SQLModel):
-    mac_addr: str 
+    mac_addr: str
     command: str
     status: str
+    cmd_log: Dict[str, Any]
 
 class CmdInput(SQLModel):
-    created_by: str 
+    created_by: str
     command_type: EnumCommandType
+
+class CommandLogWithRack(SQLModel):
+    command_id: int
+    status_id: int
+    device_id: int
+    cmd_log: Dict[str, Any]
+    timestamp: datetime
+    rack_id: int
+
+class JSONInput(SQLModel):
+    known_value: int | float = Field(default=0.0)
 
 
 
@@ -52,6 +67,7 @@ class CommandLogBase(SQLModel):
     status_id: int = Field(foreign_key="commandstatus.id", index=True, primary_key=True)
     device_id: int = Field(foreign_key="device.id", index=True, primary_key=True)
     created_by: str = Field(default="system")
+    cmd_log: Dict[str, Any] = Field(default_factory=dict, sa_type=JSONB)
     timestamp: datetime = Field(sa_column=Column(DateTime(timezone=True), index=True, primary_key=True), default_factory=get_utc_now)
 
 class CommandLog(CommandLogBase, table=True):

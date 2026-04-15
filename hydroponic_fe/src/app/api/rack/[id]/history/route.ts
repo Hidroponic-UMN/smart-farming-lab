@@ -13,6 +13,13 @@ const SENSOR_META: Record<string, { label: string; unit: string; sensor_type: st
     humidity: { label: "Kelembaban", unit: "%", sensor_type: "humidity" },
 };
 
+interface DataLog {
+    ec: number;
+    ph: number;
+    water_temp: number;
+    light_intensity: number;
+}
+
 function getStartDateForRange(range: string): string {
     const d = new Date();
     switch (range) {
@@ -33,32 +40,32 @@ export async function GET(
     const { id } = params;
     const { searchParams } = new URL(request.url);
     const range = searchParams.get("range") || "1h";
-    
+
     // Construct start_date iso string
     const startDate = getStartDateForRange(range);
 
     try {
         const fetchUrl = `${BACKEND_URL}/api/v1/datalogs/${id}?start_date=${encodeURIComponent(startDate)}&limit=1000`;
         const res = await fetch(fetchUrl, { cache: "no-store" });
-        
+
         if (!res.ok) {
             return NextResponse.json({ error: "Failed to fetch backend data" }, { status: res.status });
         }
 
         const rows: Array<{
             device_id: number;
-            data_log: string;
+            data_log: DataLog;
             timestamp: string;
         }> = await res.json();
 
         // Target shape: { rack_id, rack_label, sensors: [ {sensor_type, label, unit, data: [{timestamp, value}]} ] }
         const sensorDataMap: Record<string, Array<{timestamp: string, value: number}>> = {};
-        
+
         for (const row of rows) {
             try {
-                const parsed = JSON.parse(row.data_log);
-                const data = parsed.data || {};
-                
+                const parsed = row.data_log;
+                const data = parsed;
+
                 for (const [key, val] of Object.entries(data)) {
                     const numVal = Number(val);
                     if (!isNaN(numVal) && SENSOR_META[key]) {
