@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,6 +9,9 @@ import {
   Target,
   CheckCircle2,
   AlertCircle,
+  Thermometer,
+  Loader2,
+  XCircle,
 } from "lucide-react";
 import { LiveSensorDisplay } from "./live-sensor-display";
 import {
@@ -16,11 +19,12 @@ import {
   type WizardStep,
 } from "./calibration-wizard";
 import {
-  computePhCalibration,
-  applyPhCalibration,
-  saveCalibration,
   PH_BUFFERS,
-  type PhCalibrationPoint,
+  PH_TEMP_TABLE,
+  lookupTempCompensated,
+  sendCalibrationCommand,
+  saveCalibration,
+  type CommandResult,
 } from "@/lib/calibration";
 import { useLiveSensor } from "@/lib/use-live-sensor";
 
@@ -30,6 +34,15 @@ interface PhCalibrationStepsProps {
   onCancel: () => void;
 }
 
+type CommandStatus = "idle" | "sending" | "success" | "failed" | "timeout";
+
+interface BufferResult {
+  waterTemp: number;
+  compensatedPh: number;
+  commandStatus: CommandStatus;
+  commandResult?: CommandResult;
+}
+
 export function PhCalibrationSteps({
   rackId,
   onComplete,
@@ -37,123 +50,182 @@ export function PhCalibrationSteps({
 }: PhCalibrationStepsProps) {
   const sensor = useLiveSensor(rackId);
 
-  // Captured calibration points (3-point)
-  const [lowPoint, setLowPoint] = useState<PhCalibrationPoint | null>(null);
-  const [midPoint, setMidPoint] = useState<PhCalibrationPoint | null>(null);
-  const [highPoint, setHighPoint] = useState<PhCalibrationPoint | null>(null);
+  // Step 2: Water temperature
+  const [waterTemp, setWaterTemp] = useState<number | null>(null);
 
-  // Computed coefficients
-  const [coefficients, setCoefficients] = useState<{
-    slope: number;
-    offset: number;
-  } | null>(null);
+  // Buffer results (3-point)
+  const [midResult, setMidResult] = useState<BufferResult | null>(null);
+  const [lowResult, setLowResult] = useState<BufferResult | null>(null);
+  const [highResult, setHighResult] = useState<BufferResult | null>(null);
 
-  function handleCaptureMid() {
-    const point: PhCalibrationPoint = {
-      rawValue: sensor.rawPh,
-      phValue: PH_BUFFERS.mid.value,
-    };
-    setMidPoint(point);
+  // Current sending state
+  const [isSending, setIsSending] = useState(false);
+
+  function handleCaptureTemp() {
+    setWaterTemp(sensor.waterTemp);
   }
 
-  function handleCaptureLow() {
-    const point: PhCalibrationPoint = {
-      rawValue: sensor.rawPh,
-      phValue: PH_BUFFERS.low.value,
-    };
-    setLowPoint(point);
+  // Get compensated pH value for a buffer at the measured water temp
+  function getCompensatedPh(bufferKey: "low" | "mid" | "high"): number {
+    if (waterTemp === null) return PH_BUFFERS[bufferKey].value;
+    const nominalKey =
+      bufferKey === "low" ? "4.01" : bufferKey === "mid" ? "6.86" : "9.18";
+    return lookupTempCompensated(PH_TEMP_TABLE[nominalKey], waterTemp);
   }
 
-  function handleCaptureHigh() {
-    const point: PhCalibrationPoint = {
-      rawValue: sensor.rawPh,
-      phValue: PH_BUFFERS.high.value,
-    };
-    setHighPoint(point);
+  // Send calibration command for a specific buffer
+  const handleCaptureBuffer = useCallback(
+    async (bufferKey: "low" | "mid" | "high") => {
+      if (waterTemp === null) return;
+      setIsSending(true);
 
-    // Compute coefficients when all 3 points are captured
-    if (midPoint && lowPoint) {
-      const result = computePhCalibration(
-        { rawValue: lowPoint.rawValue, phValue: PH_BUFFERS.low.value },
-        { rawValue: midPoint.rawValue, phValue: PH_BUFFERS.mid.value },
-        { rawValue: sensor.rawPh, phValue: PH_BUFFERS.high.value }
-      );
-      setCoefficients(result);
-    }
-  }
+      const compensatedPh = getCompensatedPh(bufferKey);
+      const setter =
+        bufferKey === "low"
+          ? setLowResult
+          : bufferKey === "mid"
+          ? setMidResult
+          : setHighResult;
 
-  // Recompute when going back and recapturing earlier points
-  function recompute() {
-    const points: PhCalibrationPoint[] = [];
-    if (lowPoint) points.push(lowPoint);
-    if (midPoint) points.push(midPoint);
-    if (highPoint) points.push(highPoint);
-    if (points.length >= 2) {
-      setCoefficients(computePhCalibration(...points));
-    }
-  }
-
-  function handleSave() {
-    if (coefficients) {
-      saveCalibration(rackId, {
-        ph_slope: coefficients.slope,
-        ph_offset: coefficients.offset,
-        ph_calibrated_at: new Date().toISOString(),
-        calibrated_by: "Lab Admin",
+      setter({
+        waterTemp,
+        compensatedPh,
+        commandStatus: "sending",
       });
-    }
-    onComplete();
-  }
 
-  // Test conversion preview
-  function getPreviewValues() {
-    if (!coefficients) return [];
-    const testRaws = [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4095];
-    return testRaws.map((raw) => ({
-      raw,
-      calibrated: applyPhCalibration(raw, coefficients.slope, coefficients.offset),
-    }));
+      const result = await sendCalibrationCommand(
+        rackId,
+        "KALIBRASI_PH",
+        compensatedPh,
+        waterTemp
+      );
+
+      const status: CommandStatus = result.success ? "success" : "failed";
+
+      setter({
+        waterTemp,
+        compensatedPh,
+        commandStatus: status,
+        commandResult: result,
+      });
+
+      // Save to localStorage as backup
+      if (result.success) {
+        saveCalibration(rackId, {
+          ph_calibrated_at: new Date().toISOString(),
+          calibrated_by: "Lab Admin",
+        });
+      }
+
+      setIsSending(false);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rackId, waterTemp]
+  );
+
+  // Build status badge
+  function StatusBadge({ status }: { status: CommandStatus }) {
+    switch (status) {
+      case "sending":
+        return (
+          <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/30 gap-1">
+            <Loader2 className="w-3 h-3 animate-spin" />
+            Mengirim ke ESP32...
+          </Badge>
+        );
+      case "success":
+        return (
+          <Badge className="bg-emerald-500/20 text-emerald-500 border-emerald-500/30 gap-1">
+            <CheckCircle2 className="w-3 h-3" />
+            ESP32 ACK: Berhasil!
+          </Badge>
+        );
+      case "failed":
+        return (
+          <Badge className="bg-red-500/20 text-red-500 border-red-500/30 gap-1">
+            <XCircle className="w-3 h-3" />
+            Gagal
+          </Badge>
+        );
+      case "timeout":
+        return (
+          <Badge className="bg-amber-500/20 text-amber-500 border-amber-500/30 gap-1">
+            <AlertCircle className="w-3 h-3" />
+            Timeout (mungkin berhasil)
+          </Badge>
+        );
+      default:
+        return null;
+    }
   }
 
   // Build a capture step for a given buffer
   function buildCaptureStep(
     bufferKey: "low" | "mid" | "high",
-    captured: PhCalibrationPoint | null,
-    onCapture: () => void
+    result: BufferResult | null,
+    stepNum: number
   ): WizardStep {
     const buf = PH_BUFFERS[bufferKey];
     const stepLabel =
       bufferKey === "low"
-        ? "Asam (pH 4.00)"
+        ? "Asam"
         : bufferKey === "mid"
-        ? "Netral (pH 6.86)"
-        : "Basa (pH 9.18)";
+        ? "Netral"
+        : "Basa";
+    const compensatedPh = getCompensatedPh(bufferKey);
 
     return {
       id: `capture-${bufferKey}`,
-      title: buf.label,
-      description: `Celupkan sensor ke larutan buffer ${buf.label} dan capture reading`,
+      title: `${buf.label} (${stepLabel})`,
+      description: `Celupkan sensor ke larutan buffer ${buf.label}`,
       icon: <Target className="w-5 h-5" />,
       requiresAction: true,
-      actionCompleted: captured !== null,
+      actionCompleted: result?.commandStatus === "success",
       content: (
-        <div className="space-y-6">
-          <div
-            className="rounded-xl border-2 p-4"
-            style={{
-              borderColor: buf.color + "33",
-              backgroundColor: buf.color + "08",
-            }}
-          >
+        <div className="space-y-5">
+          {/* Temperature compensation info */}
+          {waterTemp !== null && (
+            <div
+              className="rounded-xl border-2 p-4"
+              style={{
+                borderColor: buf.color + "33",
+                backgroundColor: buf.color + "08",
+              }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-foreground">
+                  Kompensasi Suhu
+                </span>
+                <Badge variant="outline" className="font-mono">
+                  {waterTemp.toFixed(1)}°C
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  Nominal: {buf.value}
+                </span>
+                <span className="text-xs text-muted-foreground">→</span>
+                <span
+                  className="text-sm font-bold font-mono"
+                  style={{ color: buf.color }}
+                >
+                  Actual: {compensatedPh.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Instructions */}
+          <div className="rounded-xl border border-border bg-muted/30 p-4">
             <p className="text-sm text-foreground">
-              <strong>Langkah:</strong>{" "}
-              {bufferKey !== "low"
+              <strong>Langkah {stepNum}:</strong>{" "}
+              {stepNum > 1
                 ? "Bilas sensor dengan aquadest dan keringkan dengan tisu. "
                 : ""}
-              Larutkan serbuk kalibrasi <strong>{buf.label}</strong> ({stepLabel})
+              Larutkan serbuk kalibrasi{" "}
+              <strong style={{ color: buf.color }}>{buf.label}</strong> ({stepLabel})
               dengan 250ml aquadest. Celupkan sensor pH Rack {rackId} ke dalam
-              larutan. Tunggu pembacaan stabil, lalu tekan{" "}
-              <strong>&quot;Capture {buf.label}&quot;</strong>.
+              larutan. Tunggu pembacaan stabil, lalu tekan tombol di bawah.
             </p>
           </div>
 
@@ -168,34 +240,55 @@ export function PhCalibrationSteps({
             color={buf.color}
           />
 
-          {/* Capture Button */}
-          <div className="flex items-center gap-4">
-            <Button
-              size="lg"
-              onClick={onCapture}
-              disabled={!sensor.isOnline}
-              className="flex-1 h-14 text-base font-bold text-white shadow-lg transition-all"
-              style={{
-                backgroundColor: buf.color,
-              }}
-            >
-              <Target className="w-5 h-5 mr-2" />
-              {captured
-                ? `Recapture ${buf.label} (Raw: ${captured.rawValue})`
-                : `Capture ${buf.label}`}
-            </Button>
-          </div>
+          {/* Capture + Send Button */}
+          <Button
+            size="lg"
+            onClick={() => handleCaptureBuffer(bufferKey)}
+            disabled={!sensor.isOnline || isSending || waterTemp === null}
+            className="w-full h-14 text-base font-bold text-white shadow-lg transition-all"
+            style={{ backgroundColor: buf.color }}
+          >
+            {isSending ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Mengirim ke ESP32...
+              </>
+            ) : result?.commandStatus === "success" ? (
+              <>
+                <CheckCircle2 className="w-5 h-5 mr-2" />
+                Recalibrate {buf.label}
+              </>
+            ) : (
+              <>
+                <Target className="w-5 h-5 mr-2" />
+                Calibrate {buf.label} ({compensatedPh.toFixed(2)})
+              </>
+            )}
+          </Button>
 
-          {captured && (
-            <div className="rounded-xl border-2 border-emerald-500/20 bg-emerald-500/5 p-4 flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-emerald-500">
-                  Point captured!
+          {/* Result */}
+          {result && (
+            <div
+              className={`rounded-xl border-2 p-4 flex items-start gap-3 ${
+                result.commandStatus === "success"
+                  ? "border-emerald-500/20 bg-emerald-500/5"
+                  : result.commandStatus === "failed"
+                  ? "border-red-500/20 bg-red-500/5"
+                  : result.commandStatus === "sending"
+                  ? "border-blue-500/20 bg-blue-500/5"
+                  : "border-amber-500/20 bg-amber-500/5"
+              }`}
+            >
+              <div className="flex-1">
+                <StatusBadge status={result.commandStatus} />
+                <p className="text-xs text-muted-foreground mt-2">
+                  Dikirim: pH {result.compensatedPh.toFixed(2)} @ {result.waterTemp.toFixed(1)}°C
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Raw ADC = {captured.rawValue} → {buf.label}
-                </p>
+                {result.commandResult?.error && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {result.commandResult.error}
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -204,7 +297,10 @@ export function PhCalibrationSteps({
     };
   }
 
-  const allCaptured = lowPoint && midPoint && highPoint;
+  const allDone =
+    midResult?.commandStatus === "success" &&
+    lowResult?.commandStatus === "success" &&
+    highResult?.commandStatus === "success";
 
   const steps: WizardStep[] = [
     // Step 1: Preparation
@@ -258,7 +354,7 @@ export function PhCalibrationSteps({
                     className="text-lg font-bold font-mono"
                     style={{ color: buf.color }}
                   >
-                    {buf.value.toFixed(2)}
+                    {buf.value}
                   </p>
                   <p className="text-xs text-muted-foreground">{buf.label}</p>
                 </div>
@@ -274,10 +370,8 @@ export function PhCalibrationSteps({
                   Penting!
                 </h4>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Pastikan sensor pH pada <strong>Rack {rackId}</strong> dalam
-                  keadaan bersih. Larutkan serbuk kalibrasi di wadah terpisah
-                  sebelum memulai. Bilas sensor dengan aquadest di antara setiap
-                  langkah.
+                  Suhu air sangat mempengaruhi nilai pH buffer. Langkah pertama
+                  adalah mengukur suhu air untuk kompensasi otomatis.
                 </p>
               </div>
             </div>
@@ -305,142 +399,180 @@ export function PhCalibrationSteps({
       ),
     },
 
-    // Step 2: Mid-point (pH 6.86) — most important, do first
-    buildCaptureStep("mid", midPoint, handleCaptureMid),
-
-    // Step 3: Low-point (pH 4.00)
-    buildCaptureStep("low", lowPoint, handleCaptureLow),
-
-    // Step 4: High-point (pH 9.18)
-    buildCaptureStep("high", highPoint, handleCaptureHigh),
-
-    // Step 5: Review & Save
+    // Step 2: Measure Water Temperature
     {
-      id: "review",
-      title: "Review & Save",
-      description: "Review koefisien kalibrasi dan simpan",
-      icon: <CheckCircle2 className="w-5 h-5" />,
+      id: "temperature",
+      title: "Ukur Suhu Air",
+      description: "Celupkan sensor suhu untuk kompensasi pH buffer",
+      icon: <Thermometer className="w-5 h-5" />,
       requiresAction: true,
-      actionCompleted: coefficients !== null,
+      actionCompleted: waterTemp !== null,
       content: (
-        <div className="space-y-6">
-          {coefficients && allCaptured ? (
-            <>
-              {/* Calibration Points */}
-              <div className="rounded-xl border-2 border-border bg-card p-5 space-y-4">
-                <h4 className="font-semibold text-foreground">
-                  Calibration Points (3-point)
-                </h4>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    {
-                      point: midPoint,
-                      buf: PH_BUFFERS.mid,
-                      label: "Netral",
-                    },
-                    {
-                      point: lowPoint,
-                      buf: PH_BUFFERS.low,
-                      label: "Asam",
-                    },
-                    {
-                      point: highPoint,
-                      buf: PH_BUFFERS.high,
-                      label: "Basa",
-                    },
-                  ].map(({ point, buf, label }) => (
+        <div className="space-y-5">
+          <div className="rounded-xl border-2 border-amber-500/20 bg-amber-500/5 p-4">
+            <p className="text-sm text-foreground">
+              <strong>Langkah:</strong> Celupkan sensor suhu (DS18B20) Rack{" "}
+              {rackId} ke dalam larutan buffer pertama (pH 6.86). Tunggu
+              pembacaan stabil, lalu tekan &quot;Capture Suhu&quot;.
+            </p>
+          </div>
+
+          {/* Live Water Temp */}
+          <LiveSensorDisplay
+            value={sensor.waterTemp}
+            label="Water Temperature"
+            unit="°C"
+            history={sensor.phHistory.map(() => sensor.waterTemp)}
+            isStable={true}
+            isOnline={sensor.isOnline}
+            color="#f59e0b"
+          />
+
+          <Button
+            size="lg"
+            onClick={handleCaptureTemp}
+            disabled={!sensor.isOnline}
+            className="w-full h-14 text-base font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg transition-all"
+          >
+            <Thermometer className="w-5 h-5 mr-2" />
+            {waterTemp !== null
+              ? `Recapture Suhu (${waterTemp.toFixed(1)}°C)`
+              : "Capture Suhu"}
+          </Button>
+
+          {waterTemp !== null && (
+            <div className="rounded-xl border-2 border-emerald-500/20 bg-emerald-500/5 p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                <p className="text-sm font-medium text-emerald-500">
+                  Suhu tercapture: {waterTemp.toFixed(1)}°C
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Nilai pH buffer yang akan digunakan:
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {(["low", "mid", "high"] as const).map((key) => {
+                  const buf = PH_BUFFERS[key];
+                  const actual = getCompensatedPh(key);
+                  return (
                     <div
-                      key={buf.label}
-                      className="rounded-lg p-3 border"
+                      key={key}
+                      className="rounded-lg p-2 border text-center"
                       style={{
                         borderColor: buf.color + "33",
                         backgroundColor: buf.color + "08",
                       }}
                     >
-                      <p className="text-[10px] text-muted-foreground mb-1">
-                        {label} ({buf.label})
+                      <p className="text-[10px] text-muted-foreground">
+                        {buf.label}
                       </p>
                       <p
-                        className="text-xl font-bold font-mono"
+                        className="text-sm font-bold font-mono"
                         style={{ color: buf.color }}
                       >
-                        {point!.rawValue}
+                        {actual.toFixed(2)}
                       </p>
-                      <p className="text-xs text-muted-foreground">Raw ADC</p>
+                      {actual !== buf.value && (
+                        <p className="text-[10px] text-muted-foreground line-through">
+                          {buf.value}
+                        </p>
+                      )}
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
+            </div>
+          )}
+        </div>
+      ),
+    },
 
-              {/* Computed Coefficients */}
-              <div className="rounded-xl border-2 border-emerald-500/20 bg-emerald-500/5 p-5 space-y-3">
-                <h4 className="font-semibold text-emerald-500 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Koefisien Kalibrasi (Linear Regression)
-                </h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Slope</p>
-                    <p className="text-lg font-bold font-mono text-foreground">
-                      {coefficients.slope}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Offset</p>
-                    <p className="text-lg font-bold font-mono text-foreground">
-                      {coefficients.offset}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Formula: pH = {coefficients.slope} × rawADC +{" "}
-                  {coefficients.offset}
-                </p>
-              </div>
+    // Step 3: Mid-point (pH 6.86) — most important, do first
+    buildCaptureStep("mid", midResult, 1),
 
-              {/* Preview Table */}
-              <div className="rounded-xl border-2 border-border bg-card p-5">
-                <h4 className="font-semibold text-foreground mb-3">
-                  Preview Konversi
-                </h4>
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="font-semibold text-muted-foreground py-1 border-b border-border">
-                    Raw ADC
-                  </div>
-                  <div className="font-semibold text-muted-foreground py-1 border-b border-border">
-                    →
-                  </div>
-                  <div className="font-semibold text-muted-foreground py-1 border-b border-border">
-                    pH
-                  </div>
-                  {getPreviewValues().map(({ raw, calibrated }) => (
-                    <div key={`row-${raw}`} className="contents">
-                      <div className="font-mono py-1 text-foreground">
-                        {raw}
-                      </div>
-                      <div className="text-muted-foreground py-1">→</div>
-                      <div
-                        className={`font-mono font-medium py-1 ${
-                          calibrated >= 5.5 && calibrated <= 7.5
-                            ? "text-emerald-500"
-                            : calibrated < 4 || calibrated > 10
-                            ? "text-red-500"
-                            : "text-amber-500"
-                        }`}
-                      >
-                        {calibrated.toFixed(2)}
-                      </div>
-                    </div>
-                  ))}
+    // Step 4: Low-point (pH 4.00)
+    buildCaptureStep("low", lowResult, 2),
+
+    // Step 5: High-point (pH 9.18)
+    buildCaptureStep("high", highResult, 3),
+
+    // Step 6: Review
+    {
+      id: "review",
+      title: "Review",
+      description: "Review hasil kalibrasi",
+      icon: <CheckCircle2 className="w-5 h-5" />,
+      content: (
+        <div className="space-y-6">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { key: "mid" as const, result: midResult },
+              { key: "low" as const, result: lowResult },
+              { key: "high" as const, result: highResult },
+            ].map(({ key, result }) => {
+              const buf = PH_BUFFERS[key];
+              const ok = result?.commandStatus === "success";
+              return (
+                <div
+                  key={key}
+                  className={`rounded-xl p-4 border-2 text-center ${
+                    ok
+                      ? "border-emerald-500/30 bg-emerald-500/5"
+                      : "border-red-500/30 bg-red-500/5"
+                  }`}
+                >
+                  {ok ? (
+                    <CheckCircle2 className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
+                  ) : (
+                    <XCircle className="w-6 h-6 text-red-500 mx-auto mb-2" />
+                  )}
+                  <p
+                    className="text-lg font-bold font-mono"
+                    style={{ color: buf.color }}
+                  >
+                    {result?.compensatedPh.toFixed(2) || "—"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{buf.label}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {ok ? "✓ Berhasil" : "✗ Belum/Gagal"}
+                  </p>
                 </div>
-              </div>
-            </>
+              );
+            })}
+          </div>
+
+          {/* Temperature Used */}
+          <div className="rounded-xl border border-border bg-muted/30 p-4 flex items-center justify-between">
+            <span className="text-sm text-muted-foreground flex items-center gap-2">
+              <Thermometer className="w-4 h-4" />
+              Suhu air saat kalibrasi:
+            </span>
+            <span className="font-bold font-mono text-foreground">
+              {waterTemp?.toFixed(1) || "—"}°C
+            </span>
+          </div>
+
+          {/* Status */}
+          {allDone ? (
+            <div className="rounded-xl border-2 border-emerald-500/20 bg-emerald-500/5 p-5 text-center">
+              <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
+              <h4 className="font-semibold text-emerald-500 text-lg">
+                Kalibrasi pH Berhasil!
+              </h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Semua 3 titik sudah dikalibrasi pada ESP32 Rack {rackId}.
+                <br />
+                Sensor sekarang mengirim nilai pH yang sudah dikalibrasi.
+              </p>
+            </div>
           ) : (
             <div className="rounded-xl border-2 border-amber-500/20 bg-amber-500/5 p-5 text-center">
               <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
-                Anda harus capture ketiga titik kalibrasi (pH 4.00, pH 6.86,
-                dan pH 9.18) sebelum bisa menyimpan.
+                Beberapa titik belum dikalibrasi. Kembali ke langkah sebelumnya
+                untuk menyelesaikan.
               </p>
             </div>
           )}
@@ -452,9 +584,9 @@ export function PhCalibrationSteps({
   return (
     <CalibrationWizard
       title={`pH Calibration — Rack ${rackId}`}
-      subtitle="Kalibrasi 3 titik: pH 4.00, pH 6.86, pH 9.18"
+      subtitle="Kalibrasi 3 titik: pH 4.00, pH 6.86, pH 9.18 (temperature-compensated)"
       steps={steps}
-      onComplete={handleSave}
+      onComplete={onComplete}
       onCancel={onCancel}
       accentColor="#10b981"
     />
