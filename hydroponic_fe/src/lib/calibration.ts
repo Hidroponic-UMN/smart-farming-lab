@@ -1,14 +1,13 @@
 /**
  * Calibration utilities for pH and TDS sensors.
  *
- * pH calibration uses 3-point (pH 4.00, 6.86, 9.18) with temperature compensation.
- * TDS calibration uses 1-point (1382 ppm @ 25°C) with temperature compensation.
+ * pH calibration uses 3-point least squares linear regression:
+ *   Buffer powders: pH 4.00, pH 6.86, pH 9.18
+ *   calibrated_pH = slope * rawADC + offset
  *
- * Calibration is performed by:
- * 1. Frontend sends command to backend API
- * 2. Backend publishes to MQTT → ESP32
- * 3. ESP32 reads sensor, calculates coefficients, saves to flash
- * 4. ESP32 sends ACK back via MQTT
+ * TDS calibration uses a K-factor approach:
+ *   Reference solution: 1382 ppm (mg/L)
+ *   calibrated_TDS = k_factor * rawADC + offset
  */
 
 // ============================================================
@@ -46,13 +45,9 @@ export const EMPTY_CALIBRATION: CalibrationCoefficients = {
   calibrated_by: "",
 };
 
-// ============================================================
-//  pH Buffer Constants & Temperature Compensation
-// ============================================================
-
 /** Standard pH buffer values available in the lab */
 export const PH_BUFFERS = {
-  low: { value: 4.01, label: "pH 4.01", color: "#ef4444" },
+  low: { value: 4.0, label: "pH 4.00", color: "#ef4444" },
   mid: { value: 6.86, label: "pH 6.86", color: "#3b82f6" },
   high: { value: 9.18, label: "pH 9.18", color: "#8b5cf6" },
 } as const;
@@ -298,10 +293,10 @@ export function isStable(
 ): boolean {
   if (readings.length < windowSize) return false;
 
-  const win = readings.slice(-windowSize);
-  const mean = win.reduce((a, b) => a + b, 0) / win.length;
+  const window = readings.slice(-windowSize);
+  const mean = window.reduce((a, b) => a + b, 0) / window.length;
   const variance =
-    win.reduce((sum, v) => sum + (v - mean) ** 2, 0) / win.length;
+    window.reduce((sum, v) => sum + (v - mean) ** 2, 0) / window.length;
   const stdDev = Math.sqrt(variance);
 
   return stdDev < threshold;
