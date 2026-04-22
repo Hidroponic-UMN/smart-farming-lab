@@ -16,6 +16,7 @@ class EnumCommandType(str, Enum):
     PUMP_OFF = "PUMP_OFF"
     KALIBRASI_TDS = "KALIBRASI_TDS"
     KALIBRASI_PH = "KALIBRASI_PH"
+    RESET_CALIBRATION = "RESET_CALIBRATION"
 
 class EnumCommandStatus(str, Enum):
     START = "START"

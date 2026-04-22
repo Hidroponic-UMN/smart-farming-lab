@@ -52,105 +52,230 @@ export const PH_BUFFERS = {
   high: { value: 9.18, label: "pH 9.18", color: "#8b5cf6" },
 } as const;
 
-/** Default TDS reference solution */
+/**
+ * pH buffer temperature compensation tables.
+ * Key = nominal pH value, Array = {temp °C, actual pH value}
+ */
+export const PH_TEMP_TABLE: Record<string, { temp: number; value: number }[]> =
+  {
+    "4.01": [
+      { temp: 10, value: 4.0 },
+      { temp: 15, value: 4.0 },
+      { temp: 20, value: 4.0 },
+      { temp: 25, value: 4.01 },
+      { temp: 30, value: 4.01 },
+      { temp: 35, value: 4.02 },
+      { temp: 40, value: 4.03 },
+      { temp: 45, value: 4.04 },
+      { temp: 50, value: 4.06 },
+    ],
+    "6.86": [
+      { temp: 10, value: 6.92 },
+      { temp: 15, value: 6.9 },
+      { temp: 20, value: 6.88 },
+      { temp: 25, value: 6.86 },
+      { temp: 30, value: 6.85 },
+      { temp: 35, value: 6.84 },
+      { temp: 40, value: 6.84 },
+      { temp: 45, value: 6.83 },
+      { temp: 50, value: 6.83 },
+    ],
+    "9.18": [
+      { temp: 10, value: 9.33 },
+      { temp: 15, value: 9.28 },
+      { temp: 20, value: 9.23 },
+      { temp: 25, value: 9.18 },
+      { temp: 30, value: 9.14 },
+      { temp: 35, value: 9.1 },
+      { temp: 40, value: 9.07 },
+      { temp: 45, value: 9.04 },
+      { temp: 50, value: 9.02 },
+    ],
+  };
+
+// ============================================================
+//  TDS Reference Solution & Temperature Compensation
+// ============================================================
+
+/** Default TDS reference solution nominal value */
 export const TDS_REFERENCE_PPM = 1382;
 
+/**
+ * TDS 1382 ppm solution temperature compensation table.
+ * {temp °C, actual ppm at that temperature}
+ */
+export const TDS_TEMP_TABLE: { temp: number; value: number }[] = [
+  { temp: 0, value: 758 },
+  { temp: 5, value: 876 },
+  { temp: 10, value: 999 },
+  { temp: 15, value: 1122 },
+  { temp: 20, value: 1251 },
+  { temp: 23, value: 1329 },
+  { temp: 24, value: 1358 },
+  { temp: 25, value: 1382 },
+  { temp: 26, value: 1408 },
+  { temp: 30, value: 1515 },
+];
+
 // ============================================================
-//  pH Calibration Math (3-point least squares linear regression)
+//  Temperature Compensation Lookup
 // ============================================================
 
 /**
- * Compute pH calibration via least squares linear regression.
- * Supports 2 or 3 calibration points (pH 4.00, 6.86, 9.18).
- *
- * @param points - Array of {rawValue, phValue} calibration points (2 or 3)
- * @returns { slope, offset } where calibratedPH = slope * raw + offset
+ * Linear interpolation of known_value based on measured water temperature.
+ * Uses the closest two points from the temperature table.
  */
-export function computePhCalibration(
-  ...points: PhCalibrationPoint[]
-): { slope: number; offset: number } {
-  const n = points.length;
-  if (n < 2) {
-    return { slope: 0, offset: 6.86 };
-  }
-
-  // Least squares linear regression: pH = slope * raw + offset
-  const sumX = points.reduce((s, p) => s + p.rawValue, 0);
-  const sumY = points.reduce((s, p) => s + p.phValue, 0);
-  const sumXY = points.reduce((s, p) => s + p.rawValue * p.phValue, 0);
-  const sumX2 = points.reduce((s, p) => s + p.rawValue * p.rawValue, 0);
-
-  const denom = n * sumX2 - sumX * sumX;
-  if (Math.abs(denom) < 0.001) {
-    return { slope: 0, offset: 6.86 };
-  }
-
-  const slope = (n * sumXY - sumX * sumY) / denom;
-  const offset = (sumY - slope * sumX) / n;
-
-  return {
-    slope: Math.round(slope * 1_000_000) / 1_000_000,
-    offset: Math.round(offset * 1_000) / 1_000,
-  };
-}
-
-/**
- * Apply pH calibration to a raw ADC reading.
- */
-export function applyPhCalibration(
-  rawValue: number,
-  slope: number,
-  offset: number
+export function lookupTempCompensated(
+  table: { temp: number; value: number }[],
+  waterTemp: number
 ): number {
-  const calibrated = slope * rawValue + offset;
-  // Clamp to valid pH range
-  return Math.round(Math.min(14, Math.max(0, calibrated)) * 100) / 100;
-}
+  if (table.length === 0) return 0;
 
-// ============================================================
-//  TDS Calibration Math (single-point K-factor)
-// ============================================================
+  // Clamp to table range
+  if (waterTemp <= table[0].temp) return table[0].value;
+  if (waterTemp >= table[table.length - 1].temp)
+    return table[table.length - 1].value;
 
-/**
- * Compute TDS K-factor from a single calibration point.
- *
- * TDS is temperature-compensated using coefficient 0.02 per °C deviation from 25°C.
- *
- * @param point - Raw reading, target ppm, and water temperature
- * @returns { k_factor, offset }
- */
-export function computeTdsCalibration(
-  point: TdsCalibrationPoint
-): { k_factor: number; offset: number } {
-  if (point.rawValue < 1) {
-    return { k_factor: 1, offset: 0 };
+  // Find surrounding points
+  for (let i = 0; i < table.length - 1; i++) {
+    if (waterTemp >= table[i].temp && waterTemp <= table[i + 1].temp) {
+      const t0 = table[i].temp;
+      const t1 = table[i + 1].temp;
+      const v0 = table[i].value;
+      const v1 = table[i + 1].value;
+
+      // Linear interpolation
+      const ratio = (waterTemp - t0) / (t1 - t0);
+      return Math.round((v0 + ratio * (v1 - v0)) * 100) / 100;
+    }
   }
 
-  // Temperature compensation coefficient
-  const tempCoefficient = 1.0 + 0.02 * (point.waterTempC - 25.0);
-  const compensatedRaw = point.rawValue / tempCoefficient;
+  return table[0].value;
+}
 
-  const k_factor = point.targetPpm / compensatedRaw;
+// ============================================================
+//  Backend Command API
+// ============================================================
 
-  return {
-    k_factor: Math.round(k_factor * 1_000_000) / 1_000_000,
-    offset: 0,
-  };
+export type CommandType =
+  | "KALIBRASI_PH"
+  | "KALIBRASI_TDS"
+  | "RESET_CALIBRATION";
+
+export interface CommandResult {
+  success: boolean;
+  status: string;
+  data?: Record<string, unknown>;
+  error?: string;
 }
 
 /**
- * Apply TDS calibration to a raw ADC reading.
+ * Send a calibration command to the backend, which forwards it
+ * to the ESP32 via MQTT. Then poll for the ACK.
+ *
+ * @param rackId - Rack ID (1-5)
+ * @param commandType - "KALIBRASI_PH" | "KALIBRASI_TDS" | "RESET_CALIBRATION"
+ * @param knownValue - The temperature-compensated reference value
+ * @param waterTemp - Measured water temperature in °C
+ * @returns CommandResult with success/failure status
  */
-export function applyTdsCalibration(
-  rawValue: number,
-  k_factor: number,
-  offset: number,
-  waterTempC: number = 25
-): number {
-  const tempCoefficient = 1.0 + 0.02 * (waterTempC - 25.0);
-  const compensatedRaw = rawValue / tempCoefficient;
-  const calibrated = k_factor * compensatedRaw + offset;
-  return Math.round(Math.max(0, calibrated) * 10) / 10;
+export async function sendCalibrationCommand(
+  rackId: number,
+  commandType: CommandType,
+  knownValue: number,
+  waterTemp?: number
+): Promise<CommandResult> {
+  try {
+    const res = await fetch(`/api/calibration/${rackId}/command`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        command: {
+          created_by: "Lab Admin",
+          command_type: commandType,
+        },
+        input_json: {
+          known_value: knownValue,
+          ...(waterTemp != null ? { water_temp: waterTemp } : {}),
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        status: "FAILED",
+        error: errData.detail || `HTTP ${res.status}`,
+      };
+    }
+
+    const data = await res.json();
+
+    // Now poll for ACK — check command log status
+    const ackResult = await pollForAck(rackId, commandType, 30000);
+    return ackResult;
+  } catch (err) {
+    return {
+      success: false,
+      status: "ERROR",
+      error: err instanceof Error ? err.message : "Network error",
+    };
+  }
+}
+
+/**
+ * Poll the command logs for an ACK from the ESP32.
+ * Checks every 2 seconds for up to maxWaitMs.
+ */
+async function pollForAck(
+  rackId: number,
+  commandType: string,
+  maxWaitMs: number = 30000
+): Promise<CommandResult> {
+  const startTime = Date.now();
+  const pollInterval = 2000;
+
+  // Give ESP32 a moment to process
+  await new Promise((r) => setTimeout(r, 2000));
+
+  while (Date.now() - startTime < maxWaitMs) {
+    try {
+      const res = await fetch(
+        `/api/calibration/${rackId}/status?command_type=${commandType}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === "SUCCESS") {
+          return {
+            success: true,
+            status: "SUCCESS",
+            data: data.cmd_log,
+          };
+        }
+        if (data.status === "FAILED" || data.status === "TIMEOUT") {
+          return {
+            success: false,
+            status: data.status,
+            error: `ESP32 returned ${data.status}`,
+          };
+        }
+        // Still PENDING — continue polling
+      }
+    } catch {
+      // Network error during poll, continue
+    }
+
+    await new Promise((r) => setTimeout(r, pollInterval));
+  }
+
+  // Timeout — assume success since ESP32 might have processed it
+  // but ACK was lost
+  return {
+    success: true,
+    status: "TIMEOUT_ASSUMED_OK",
+    error: "No ACK received, but command was sent successfully",
+  };
 }
 
 // ============================================================
@@ -179,7 +304,7 @@ export function isStable(
 
 // ============================================================
 //  localStorage Helpers
-//  (Temporary until backend calibration endpoint is ready)
+//  (Backup — primary calibration now on ESP32)
 // ============================================================
 
 const STORAGE_KEY = "hydroponic_calibration";

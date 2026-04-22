@@ -45,7 +45,23 @@ export async function GET(
     const startDate = getStartDateForRange(range);
 
     try {
-        const fetchUrl = `${BACKEND_URL}/api/v1/datalogs/${id}?start_date=${encodeURIComponent(startDate)}&limit=1000`;
+        // Workaround: Cek device_id mana yang memiliki rack_id sesuai dengan id param. 
+        // Mengingat backend hanya punya API /datalogs/{device_id}
+        let deviceId = id;
+        try {
+            const latestRes = await fetch(`${BACKEND_URL}/api/v1/datalogs/latest?device_type=HYDROPONIC_RACKS`, { cache: "no-store" });
+            if (latestRes.ok) {
+                const latestRows = await latestRes.json();
+                const rackRecord = latestRows.find((r: any) => r.rack_id === Number(id));
+                if (rackRecord && rackRecord.device_id) {
+                    deviceId = rackRecord.device_id.toString();
+                }
+            }
+        } catch (e) {
+            console.error("Failed to map rack_id to device_id:", e);
+        }
+
+        const fetchUrl = `${BACKEND_URL}/api/v1/datalogs/${deviceId}?start_date=${encodeURIComponent(startDate)}&limit=1000`;
         const res = await fetch(fetchUrl, { cache: "no-store" });
 
         if (!res.ok) {
