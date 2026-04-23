@@ -42,8 +42,8 @@ function getStatusIcon(status: string) {
 
 function getStatusBadgeClass(status: string) {
     if (status === "Critical")
-        return "bg-red-500/15 text-red-500 border-red-500/30";
-    return "bg-amber-500/15 text-amber-500 border-amber-500/30";
+        return "text-red-500";
+    return "text-amber-500";
 }
 
 function formatTime(date: Date) {
@@ -69,11 +69,11 @@ export function NotificationCenter({
                 <TooltipTrigger asChild>
                     <DrawerTrigger asChild>
                         <button
-                            className="relative flex items-center justify-center w-8 h-8 rounded-md bg-gray-800 dark:bg-muted/50 hover:bg-gray-700 dark:hover:bg-muted transition-colors"
+                            className="relative flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 group"
                         >
-                            <Bell className="w-4 h-4" />
+                            <Bell className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                             {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold leading-none animate-pulse">
+                                <span className="absolute top-1 right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold leading-none animate-pulse border-2 border-background">
                                     {unreadCount > 99 ? "99+" : unreadCount}
                                 </span>
                             )}
@@ -144,7 +144,7 @@ export function NotificationCenter({
                                 {notifications.map((notif, index) => (
                                     <div
                                         key={notif.id}
-                                        className={`group relative rounded-xl border p-3.5 transition-all duration-200 hover:shadow-md ${index < unreadCount
+                                        className={`group relative rounded-xl border p-3.5 transition-all duration-200 ${index < unreadCount
                                             ? "bg-muted/30 border-border/80"
                                             : "bg-background border-border/40 opacity-70"
                                             }`}
@@ -174,7 +174,7 @@ export function NotificationCenter({
                                                     </span>
                                                     <Badge
                                                         variant="outline"
-                                                        className={`text-[10px] px-1.5 py-0 font-medium ${getStatusBadgeClass(
+                                                        className={`text-[10px] px-0 py-0 font-bold border-none ${getStatusBadgeClass(
                                                             notif.status
                                                         )}`}
                                                     >

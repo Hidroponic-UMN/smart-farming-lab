@@ -55,20 +55,20 @@ export function SummaryPanel({ racks }: SummaryPanelProps) {
             <div className="flex items-center justify-between gap-4 mb-2">
                 {racks.map((rack, index) => (
                     <div
-                        className="flex items-center gap-5 px-3 py-2.5 rounded-lg bg-gray-900 dark:bg-muted/40 border border-gray-700 dark:border-border/30"
+                        className="flex items-center gap-5 px-3 py-2.5 rounded-lg bg-gradient-to-br from-[#50705f] to-[#86a293] text-white" // adjust disini (gradient warna)
                         key={`rack-${rack.id ?? index}`}
                     >
                         <span
-                            className={`w-2.5 h-2.5 rounded-full ${getStatusDotClass(rack.overallStatus)}`}
+                            className={`w-2.5 h-2.5 rounded-full border border-white/20 ${getStatusDotClass(rack.overallStatus)}`}
                         />
-                        <span className="text-sm text-gray-100 dark:text-foreground font-medium">
+                        <span className="text-sm font-medium">
                             {rack.label}
                         </span>
-                        <span className={`text-xs ${rack.overallStatus === "Critical"
-                            ? "text-red-500"
+                        <span className={`text-xs font-bold ${rack.overallStatus === "Critical"
+                            ? "text-red-200"
                             : rack.overallStatus === "Warning"
-                                ? "text-amber-500"
-                                : "text-emerald-500"
+                                ? "text-amber-200"
+                                : "text-emerald-200"
                             }`}>
                             {rack.overallStatus}
                         </span>
@@ -157,7 +157,7 @@ export function SummaryPanel({ racks }: SummaryPanelProps) {
                                     <span className="text-foreground">{alert.sensor}</span>
                                     <Badge
                                         variant="outline"
-                                        className="text-[9px] px-1.5 py-0 h-4 bg-red-500/15 text-red-500 border-red-500/30 ml-auto"
+                                        className="text-[10px] px-0 py-0 font-bold border-none text-red-500 ml-auto"
                                     >
                                         {alert.status}
                                     </Badge>

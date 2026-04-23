@@ -32,28 +32,35 @@ function RoomSensor({
     const isInverted = variant === "inverted";
 
     return (
-        <Card className={`py-3.5 gap-0 h-full ${isInverted ? "bg-gray-900 border-gray-700 dark:bg-card/60 dark:border-border/50" : "bg-card/60 border-border/50"}`}>
+        <Card className={`py-3.5 gap-0 h-full transition-all duration-300 ${type === "roomTemp"
+            ? "bg-gradient-to-br from-[#34473d] to-[#86a293] border-none text-white" // adjust disini (gradient warna)
+            : isInverted
+                ? "bg-gray-900 border-gray-700 dark:bg-card/60 dark:border-border/50"
+                : "bg-card/60 border-border/50"
+            }`}>
             <CardContent className="px-4 py-0">
                 <div className="flex items-start justify-between mb-1.5">
                     <div className="flex items-center gap-2.5">
-                        <div className={`flex items-center justify-center w-8 h-8 rounded-md ${isInverted ? "bg-gray-800 dark:bg-muted/60" : "bg-muted/60"}`}>
-                            <Icon className={`w-5 h-5 ${getStatusColor(sensor.status)}`} />
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-md ${type === "roomTemp" ? "bg-white/20" : isInverted ? "bg-gray-800 dark:bg-muted/60" : "bg-muted/60"
+                            }`}>
+                            <Icon className={`w-5 h-5 ${type === "roomTemp" ? "text-white" : getStatusColor(sensor.status)}`} />
                         </div>
                         <div>
-                            <p className={`text-xs leading-tight ${isInverted ? "text-gray-400 dark:text-muted-foreground" : "text-muted-foreground"}`}>
+                            <p className={`text-xs leading-tight ${type === "roomTemp" ? "text-white/70" : isInverted ? "text-gray-400 dark:text-muted-foreground" : "text-muted-foreground"
+                                }`}>
                                 Room {config.label}
                             </p>
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <div className="flex items-baseline gap-1.5">
                                         <span
-                                            className={`text-3xl font-bold tabular-nums leading-none transition-all duration-500 ${getStatusColor(
-                                                sensor.status
-                                            )}`}
+                                            className={`text-3xl font-bold tabular-nums leading-none transition-all duration-500 ${type === "roomTemp" ? "text-white" : getStatusColor(sensor.status)
+                                                }`}
                                         >
                                             {sensor.value.toFixed(config.decimals ?? 1)}
                                         </span>
-                                        <span className={`text-sm ${isInverted ? "text-gray-400 dark:text-muted-foreground" : "text-muted-foreground"}`}>
+                                        <span className={`text-sm ${type === "roomTemp" ? "text-white/80" : isInverted ? "text-gray-400 dark:text-muted-foreground" : "text-muted-foreground"
+                                            }`}>
                                             {config.unit}
                                         </span>
                                     </div>
@@ -68,7 +75,9 @@ function RoomSensor({
                     </div>
                     <Badge
                         variant="outline"
-                        className={`text-xs px-2 py-0 h-5 ${getStatusBg(sensor.status)}`}
+                        className={`text-[10px] font-bold uppercase tracking-wider px-0 py-0 border-none ${
+                            type === "roomTemp" ? "text-white" : getStatusColor(sensor.status)
+                        }`}
                     >
                         {sensor.status}
                     </Badge>

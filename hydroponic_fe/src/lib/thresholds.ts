@@ -126,13 +126,13 @@ export function getStatusColor(status: Status): string {
 export function getStatusBg(status: Status): string {
   switch (status) {
     case "Normal":
-      return "bg-emerald-500/15 text-emerald-500 border-emerald-500/30";
+      return "text-emerald-500";
     case "Low":
     case "High":
     case "Warning":
-      return "bg-amber-500/15 text-amber-500 border-amber-500/30";
+      return "text-amber-500";
     case "Critical":
-      return "bg-red-500/15 text-red-500 border-red-500/30";
+      return "text-red-500";
   }
 }
 

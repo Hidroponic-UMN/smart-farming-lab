@@ -61,6 +61,7 @@ interface SensorCardProps {
     tooltip: string;
     trend?: number;
     variant?: "default" | "inverted";
+    badgePosition?: "side" | "bottom";
 }
 
 function SensorCard({
@@ -74,6 +75,7 @@ function SensorCard({
     tooltip,
     trend,
     variant = "default",
+    badgePosition = "side",
 }: SensorCardProps) {
     const config = THRESHOLDS[type];
     const progressPercent = config
@@ -85,12 +87,12 @@ function SensorCard({
         <Tooltip>
             <TooltipTrigger asChild>
                 <div className="group cursor-pointer">
-                    <div className={`relative rounded-xl p-3 border-2 transition-all duration-200 hover:shadow-lg ${isInverted
+                    <div className={`relative rounded-xl p-3 border-2 transition-all duration-200 ${isInverted
                         ? "bg-gray-900 dark:bg-gray-950 border-gray-700 hover:border-gray-600 dark:hover:border-gray-700"
                         : "bg-white dark:bg-gray-950 hover:border-gray-300 dark:hover:border-gray-700"
                         }`}>
                         {/* Header */}
-                        <div className="flex items-start justify-between mb-2">
+                        <div className={`flex ${badgePosition === "bottom" ? "flex-col items-start gap-0.5" : "items-start justify-between"} mb-2`}>
                             <div className="flex items-center gap-1.5">
                                 <div className={`p-1.5 rounded-lg ${getStatusBg(status)}/10`}>
                                     <Icon className={`w-3.5 h-3.5 ${getStatusColor(status)}`} />
@@ -99,7 +101,7 @@ function SensorCard({
                                     {label}
                                 </span>
                             </div>
-                            <div className={`px-1.5 py-0.5 rounded-full text-[9px] font-medium border ${getStatusBg(status)}/20 ${getStatusColor(status)} border-current/20`}>
+                            <div className={`${badgePosition === "bottom" ? "text-[10px] pl-8" : "text-[10px] px-1.5 py-0.5"} font-bold uppercase tracking-wider ${getStatusColor(status)}`}>
                                 {status}
                             </div>
                         </div>
@@ -147,35 +149,18 @@ export function RackCard({ rack }: RackCardProps) {
     };
 
     const statusBadgeColors: Record<string, string> = {
-        Critical: "bg-rose-950/30 text-rose-400 border-rose-800",
-        Warning: "bg-amber-950/30 text-amber-400 border-amber-800",
-        Normal: "bg-emerald-950/30 text-emerald-400 border-emerald-800",
+        Critical: "text-rose-500",
+        Warning: "text-amber-500",
+        Normal: "text-emerald-500",
     };
 
     return (
-        <Card className={`relative overflow-hidden bg-white dark:bg-gray-950 border-2 ${borderColors[rack.overallStatus]} transition-all duration-200 hover:shadow-xl pt-1`}>
-            {/* Simple decorative line based on status */}
-            <div className={`absolute top-0 left-0 right-0 h-1 ${rack.overallStatus === 'Critical' ? 'bg-rose-500' :
-                rack.overallStatus === 'Warning' ? 'bg-amber-500' :
-                    'bg-black'
-                }`} />
+        <Card className={`relative overflow-hidden bg-white dark:bg-gray-950 border-2 ${borderColors[rack.overallStatus]} transition-all duration-200`}>
 
             <CardContent className="relative p-4 space-y-4">
                 {/* Header */}
-                <div className="flex items-start justify-between p-3 mb-3 rounded-lg border-2 border-gray-700 dark:border-gray-700 bg-gray-900 dark:bg-gray-900/50">
-                    <div className="flex items-center gap-3">
-                        <div>
-                            <h3 className="text-lg font-bold text-gray-100 dark:text-gray-100">{rack.label}</h3>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Badge
-                            variant="outline"
-                            className={`px-2 py-0.5 text-xs font-semibold border-2 ${statusBadgeColors[rack.overallStatus]}`}
-                        >
-                            {rack.overallStatus}
-                        </Badge>
-                    </div>
+                <div className="flex items-center justify-center p-3 mb-6 rounded-lg bg-gradient-to-br from-[#50705f] to-[#86a293] border-none text-white"> {/* adjust disini (gradient warna) */}
+                    <h3 className="text-lg font-bold">{rack.label}</h3>
                 </div>
 
                 {/* Tank Section - Bento Grid */}
@@ -184,7 +169,7 @@ export function RackCard({ rack }: RackCardProps) {
                         <Circle className="w-1.5 h-1.5 fill-current" />
                         Tank Sensors
                     </h4>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3 mt-3">
                         <SensorCard
                             icon={Droplets}
                             label="Water Level"
@@ -195,6 +180,7 @@ export function RackCard({ rack }: RackCardProps) {
                             type="waterLevel"
                             tooltip="Tank water level — Warning: <30%, Critical: <15%"
                             trend={calcTrend(rack.waterLevel)}
+                            badgePosition="bottom"
                         />
                         <SensorCard
                             icon={Gauge}
@@ -206,10 +192,11 @@ export function RackCard({ rack }: RackCardProps) {
                             type="ph"
                             tooltip="Water pH level — optimal for hydroponics: 5.5–6.5"
                             trend={calcTrend(rack.ph)}
+                            badgePosition="bottom"
                         />
                         <SensorCard
                             icon={Zap}
-                            label="Nutrition in Water"
+                            label="Nutrition"
                             value={rack.ec.value}
                             unit="mS/cm"
                             status={rack.ec.status}
@@ -217,6 +204,7 @@ export function RackCard({ rack }: RackCardProps) {
                             type="ec"
                             tooltip="nutrient concentration"
                             trend={calcTrend(rack.ec)}
+                            badgePosition="bottom"
                         />
                         <SensorCard
                             icon={Thermometer}
@@ -228,6 +216,7 @@ export function RackCard({ rack }: RackCardProps) {
                             type="waterTemp"
                             tooltip="Water temperature — optimal: 18–28°C"
                             trend={calcTrend(rack.waterTemp)}
+                            badgePosition="bottom"
                         />
                     </div>
                 </div>
@@ -238,7 +227,7 @@ export function RackCard({ rack }: RackCardProps) {
                         <Circle className="w-1.5 h-1.5 fill-current" />
                         On Rack Sensors
                     </h4>
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 gap-3 mt-3">
                         <SensorCard
                             icon={Sun}
                             label="Light"
@@ -267,7 +256,7 @@ export function RackCard({ rack }: RackCardProps) {
                                 <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Water Flow</span>
                                 <Badge
                                     variant="outline"
-                                    className={`px-1.5 py-0 text-[10px] font-medium ${getStatusBg(rack.waterFlow.status)}/10 ${getStatusColor(rack.waterFlow.status)} border-current/20`}
+                                    className={`px-0 py-0 text-[10px] font-bold border-none ${getStatusColor(rack.waterFlow.status)}`}
                                 >
                                     {rack.waterFlow.status}
                                 </Badge>
