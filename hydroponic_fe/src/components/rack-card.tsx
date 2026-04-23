@@ -17,7 +17,6 @@ import {
     Zap,
     Waves,
     Sun,
-    AlertTriangle,
     Droplets,
     Thermometer,
     Activity,
@@ -34,7 +33,6 @@ import {
 } from "@/lib/thresholds";
 import type { Status } from "@/lib/thresholds";
 import { MiniChart } from "./mini-chart";
-import { loadCalibration } from "@/lib/calibration";
 
 /** Calculate real trend % from sensor history (recent avg vs older avg) */
 function calcTrend(sensor: SensorData): number {
@@ -141,14 +139,6 @@ function SensorCard({
 }
 
 export function RackCard({ rack }: RackCardProps) {
-    const [isCalibrated, setIsCalibrated] = useState(true);
-
-    useEffect(() => {
-        const cal = loadCalibration(rack.id);
-        const phOk = cal?.ph_slope != null;
-        const tdsOk = cal?.tds_k_factor != null;
-        setIsCalibrated(phOk && tdsOk);
-    }, [rack.id]);
 
     const borderColors: Record<string, string> = {
         Critical: "border-rose-200 dark:border-rose-950",
@@ -176,26 +166,9 @@ export function RackCard({ rack }: RackCardProps) {
                     <div className="flex items-center gap-3">
                         <div>
                             <h3 className="text-lg font-bold text-gray-100 dark:text-gray-100">{rack.label}</h3>
-                            {!isCalibrated && (
-                                <Link href={`/calibration/${rack.id}`}>
-                                    <span className="text-[10px] font-medium text-amber-400 hover:text-amber-300 transition-colors cursor-pointer">
-                                        ⚠ Uncalibrated
-                                    </span>
-                                </Link>
-                            )}
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Link href={`/calibration/${rack.id}`}>
-                            <Button variant="secondary" className="h-6 px-2 text-[10px] font-bold tracking-wider uppercase bg-gray-800 hover:bg-blue-600 text-gray-300 hover:text-white border border-gray-700 transition-colors">
-                                Calibrate
-                            </Button>
-                        </Link>
-                        <Link href={`/rack/${rack.id}`}>
-                            <Button variant="secondary" className="h-6 px-3 text-[10px] font-bold tracking-wider uppercase bg-gray-800 hover:bg-emerald-600 text-gray-300 hover:text-white border border-gray-700 transition-colors">
-                                History
-                            </Button>
-                        </Link>
                         <Badge
                             variant="outline"
                             className={`px-2 py-0.5 text-xs font-semibold border-2 ${statusBadgeColors[rack.overallStatus]}`}
@@ -283,15 +256,6 @@ export function RackCard({ rack }: RackCardProps) {
 
                 {/* Flow Chart & Alerts */}
                 <div className="space-y-3">
-                    {/* Pump failure warning */}
-                    {rack.waterFlow.value < 0.2 && (
-                        <div className="flex items-center gap-2 p-3 rounded-lg bg-rose-50 dark:bg-rose-950/30 border-2 border-rose-200 dark:border-rose-800">
-                            <AlertTriangle className="w-4 h-4 text-rose-500" />
-                            <span className="text-xs font-medium text-rose-600 dark:text-rose-400">
-                                Pump Failure Detected — Immediate action required!
-                            </span>
-                        </div>
-                    )}
 
                     {/* Water Flow Chart */}
                     <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 border-2 border-gray-200 dark:border-gray-800">

@@ -182,8 +182,8 @@ export default function RackCalibrationPage() {
                 TDS Sensor
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                Kalibrasi 1 titik dengan larutan referensi TDS (ppm). Termasuk
-                kompensasi suhu otomatis menggunakan sensor water temp.
+                Kalibrasi 1 titik dengan larutan referensi 1382 ppm. Celupkan
+                sensor TDS dan suhu bersamaan — ESP32 auto-kompensasi suhu.
               </p>
 
               {/* Details */}
@@ -195,7 +195,7 @@ export default function RackCalibrationPage() {
                   ~3 menit
                 </Badge>
                 <Badge variant="outline" className="text-[10px]">
-                  Larutan referensi ppm
+                  1382 ppm + auto suhu
                 </Badge>
               </div>
             </div>

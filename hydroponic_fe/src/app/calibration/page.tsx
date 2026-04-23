@@ -113,17 +113,15 @@ export default function CalibrationHubPage() {
             return (
               <Card
                 key={rackId}
-                className={`relative overflow-hidden transition-all duration-200 hover:shadow-xl hover:-translate-y-1 border-2 pt-1 ${
-                  allCalibrated
+                className={`relative overflow-hidden transition-all duration-200 hover:shadow-xl hover:-translate-y-1 border-2 pt-1 ${allCalibrated
                     ? "border-emerald-500/20 hover:border-emerald-500/40"
                     : "border-amber-500/20 hover:border-amber-500/40"
-                }`}
+                  }`}
               >
                 {/* Top accent bar */}
                 <div
-                  className={`absolute top-0 left-0 right-0 h-1 ${
-                    allCalibrated ? "bg-emerald-500" : "bg-amber-500"
-                  }`}
+                  className={`absolute top-0 left-0 right-0 h-1 ${allCalibrated ? "bg-emerald-500" : "bg-amber-500"
+                    }`}
                 />
 
                 <CardContent className="p-5">
@@ -131,11 +129,10 @@ export default function CalibrationHubPage() {
                   <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${
-                          allCalibrated
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${allCalibrated
                             ? "bg-emerald-500/10 text-emerald-500"
                             : "bg-amber-500/10 text-amber-500"
-                        }`}
+                          }`}
                       >
                         {rackId}
                       </div>
@@ -162,11 +159,10 @@ export default function CalibrationHubPage() {
                     <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30 border border-border">
                       <div className="flex items-center gap-2">
                         <FlaskConical
-                          className={`w-4 h-4 ${
-                            phCalibrated
+                          className={`w-4 h-4 ${phCalibrated
                               ? "text-emerald-500"
                               : "text-amber-500"
-                          }`}
+                            }`}
                         />
                         <span className="text-sm font-medium text-foreground">
                           pH Sensor
@@ -195,11 +191,10 @@ export default function CalibrationHubPage() {
                     <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30 border border-border">
                       <div className="flex items-center gap-2">
                         <Zap
-                          className={`w-4 h-4 ${
-                            tdsCalibrated
+                          className={`w-4 h-4 ${tdsCalibrated
                               ? "text-emerald-500"
                               : "text-amber-500"
-                          }`}
+                            }`}
                         />
                         <span className="text-sm font-medium text-foreground">
                           TDS Sensor
@@ -242,11 +237,10 @@ export default function CalibrationHubPage() {
                   <Link href={`/calibration/${rackId}`} className="block">
                     <Button
                       variant="outline"
-                      className={`w-full group transition-all ${
-                        allCalibrated
+                      className={`w-full group transition-all ${allCalibrated
                           ? "hover:bg-emerald-500/10 hover:border-emerald-500/40 hover:text-emerald-500"
                           : "hover:bg-amber-500/10 hover:border-amber-500/40 hover:text-amber-500"
-                      }`}
+                        }`}
                     >
                       <Wrench className="w-4 h-4 mr-2" />
                       {allCalibrated ? "Kalibrasi Ulang" : "Mulai Kalibrasi"}

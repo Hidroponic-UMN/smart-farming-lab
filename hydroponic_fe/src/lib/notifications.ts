@@ -37,7 +37,7 @@ const REMEDIATION: Record<string, { low: string; high: string }> = {
         high: "Tambahkan es batu ke tangki atau gunakan water chiller.",
     },
     waterFlow: {
-        low: "Periksa pompa air — kemungkinan tersumbat, rusak, atau mati. Bersihkan filter.",
+        low: "Pump Failure Detected — Immediate action required! Periksa pompa air, kemungkinan tersumbat, rusak, atau mati.",
         high: "Kurangi kecepatan pompa atau periksa apakah ada kebocoran pada pipa.",
     },
     lightIntensity: {

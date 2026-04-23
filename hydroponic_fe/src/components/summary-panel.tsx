@@ -53,10 +53,10 @@ export function SummaryPanel({ racks }: SummaryPanelProps) {
 
             {/* Rack Indicators */}
             <div className="flex items-center justify-between gap-4 mb-2">
-                {racks.map((rack) => (
+                {racks.map((rack, index) => (
                     <div
-                        key={rack.id}
                         className="flex items-center gap-5 px-3 py-2.5 rounded-lg bg-gray-900 dark:bg-muted/40 border border-gray-700 dark:border-border/30"
+                        key={`rack-${rack.id ?? index}`}
                     >
                         <span
                             className={`w-2.5 h-2.5 rounded-full ${getStatusDotClass(rack.overallStatus)}`}

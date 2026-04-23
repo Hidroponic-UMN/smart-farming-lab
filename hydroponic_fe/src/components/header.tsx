@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { Switch } from "@/components/ui/switch";
@@ -20,6 +20,7 @@ import {
     TrendingDown,
     Minus,
     Wrench,
+    History,
 } from "lucide-react";
 import type { SystemStatus } from "@/lib/simulation";
 import {
@@ -29,6 +30,15 @@ import {
 } from "@/components/ui/tooltip";
 import { NotificationCenter } from "@/components/notification-center";
 import type { Notification } from "@/lib/notifications";
+
+/** Renders time only on client to avoid SSR hydration mismatch */
+function ClientTime({ date }: { date: Date }) {
+    const [timeStr, setTimeStr] = useState("—");
+    useEffect(() => {
+        setTimeStr(date.toLocaleTimeString());
+    }, [date]);
+    return <>{timeStr}</>;
+}
 
 interface HeaderProps {
     system: SystemStatus;
@@ -140,7 +150,7 @@ export function Header({
                                 Last Updated
                             </span>
                             <span className="text-[11px] font-mono font-medium leading-tight">
-                                {system.lastUpdated.toLocaleTimeString()}
+                                <ClientTime date={system.lastUpdated} />
                             </span>
                         </div>
                     )}
@@ -154,6 +164,19 @@ export function Header({
                         onClearAll={onClearAll}
                         collapsed={collapsed}
                     />
+
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Link href="/history">
+                                <button
+                                    className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-800 dark:bg-muted/50 hover:bg-blue-600 dark:hover:bg-blue-600 transition-colors"
+                                >
+                                    <History className="w-4 h-4" />
+                                </button>
+                            </Link>
+                        </TooltipTrigger>
+                        <TooltipContent>Sensor History</TooltipContent>
+                    </Tooltip>
 
                     <Tooltip>
                         <TooltipTrigger asChild>
