@@ -11,9 +11,14 @@ import {
   Zap,
   CheckCircle2,
   Wrench,
+  ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { PhCalibrationSteps } from "@/components/calibration/ph-calibration-steps";
 import { TdsCalibrationSteps } from "@/components/calibration/tds-calibration-steps";
+
+// Background Image
+import bgTop from "@/assets/images/bgsmartfarmingtop.avif";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +35,7 @@ export default function RackCalibrationPage() {
 
   if (mode === "ph") {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="min-h-screen bg-[#f5f4f0] text-foreground flex flex-col">
         <PhCalibrationSteps
           rackId={rackId}
           onComplete={() => {
@@ -45,7 +50,7 @@ export default function RackCalibrationPage() {
 
   if (mode === "tds") {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="min-h-screen bg-[#f5f4f0] text-foreground flex flex-col">
         <TdsCalibrationSteps
           rackId={rackId}
           onComplete={() => {
@@ -60,166 +65,138 @@ export default function RackCalibrationPage() {
 
   // Mode === "select"
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+    <div className="min-h-screen w-screen relative overflow-x-hidden flex flex-col font-sans bg-[#f5f4f0]">
+      {/* Background Section Top */}
+      <div 
+        className="absolute top-0 left-0 w-full h-[400px] bg-cover bg-center z-0 rounded-b-[30px] overflow-hidden"
+        style={{ backgroundImage: `url(${bgTop.src})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/5" />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 flex-1 flex flex-col p-6 md:p-10">
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-12">
+          <div className="space-y-4">
             <Link href="/calibration">
-              <Button variant="ghost" size="sm" className="gap-1">
+              <Button variant="ghost" size="sm" className="gap-2 text-[#34473d] hover:bg-white/20 backdrop-blur-md border border-white/20 px-4 rounded-xl">
                 <ArrowLeft className="size-4" />
                 All Racks
               </Button>
             </Link>
-            <div className="h-6 w-px bg-border" />
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-emerald-500/10">
-                <Wrench className="w-5 h-5 text-emerald-500" />
-              </div>
-              <h1 className="text-lg font-bold">Rack {rackId} — Kalibrasi</h1>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="max-w-3xl mx-auto px-6 py-8">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 mb-4">
-            <Wrench className="w-8 h-8 text-emerald-500" />
-          </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">
-            Pilih Sensor untuk Dikalibrasi
-          </h2>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Kalibrasi sensor pH dan TDS pada Rack {rackId}. Anda bisa
-            mengkalibrasi masing-masing sensor secara terpisah.
-          </p>
-        </div>
-
-        {/* Sensor Selection Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* pH Card */}
-          <button
-            onClick={() => setMode("ph")}
-            className="group relative overflow-hidden rounded-2xl border-2 border-border bg-card p-6 text-left
-                       hover:border-emerald-500/40 hover:shadow-xl hover:-translate-y-1
-                       transition-all duration-300"
-          >
-            {/* Background glow */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-emerald-500/5 blur-3xl group-hover:bg-emerald-500/10 transition-colors" />
-
-            <div className="relative">
-              {/* Icon */}
-              <div className="flex items-center justify-between mb-5">
-                <div className="p-3 rounded-xl bg-emerald-500/10">
-                  <FlaskConical className="w-7 h-7 text-emerald-500" />
-                </div>
-                {phDone && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                  >
-                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                    Done!
-                  </Badge>
-                )}
-              </div>
-
-              {/* Content */}
-              <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-emerald-500 transition-colors">
-                pH Sensor
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                Kalibrasi 2 titik menggunakan larutan buffer pH 7.0 dan pH 4.0.
-                Menghasilkan koefisien slope dan offset untuk konversi linear.
+            
+            <div className="pt-2">
+              <h1 className="text-4xl md:text-5xl font-bold text-[#34473d] tracking-tight">Rack {rackId} Calibration</h1>
+              <p className="text-lg text-[#34473d]/70 font-medium mt-2">
+                Pilih sensor yang ingin Anda kalibrasi pada rak ini
               </p>
-
-              {/* Details */}
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="text-[10px]">
-                  2-point calibration
-                </Badge>
-                <Badge variant="outline" className="text-[10px]">
-                  ~5 menit
-                </Badge>
-                <Badge variant="outline" className="text-[10px]">
-                  Buffer pH 7.0 & 4.0
-                </Badge>
-              </div>
             </div>
-          </button>
+          </div>
 
-          {/* TDS Card */}
-          <button
-            onClick={() => setMode("tds")}
-            className="group relative overflow-hidden rounded-2xl border-2 border-border bg-card p-6 text-left
-                       hover:border-blue-500/40 hover:shadow-xl hover:-translate-y-1
-                       transition-all duration-300"
+          <Badge
+            variant="outline"
+            className="bg-white/40 backdrop-blur-md text-[#34473d] border-white/40 px-6 py-2 rounded-2xl text-sm font-bold shadow-lg"
           >
-            {/* Background glow */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-blue-500/5 blur-3xl group-hover:bg-blue-500/10 transition-colors" />
-
-            <div className="relative">
-              {/* Icon */}
-              <div className="flex items-center justify-between mb-5">
-                <div className="p-3 rounded-xl bg-blue-500/10">
-                  <Zap className="w-7 h-7 text-blue-500" />
-                </div>
-                {tdsDone && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                  >
-                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                    Done!
-                  </Badge>
-                )}
-              </div>
-
-              {/* Content */}
-              <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-blue-500 transition-colors">
-                TDS Sensor
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                Kalibrasi 1 titik dengan larutan referensi 1382 ppm. Celupkan
-                sensor TDS dan suhu bersamaan — ESP32 auto-kompensasi suhu.
-              </p>
-
-              {/* Details */}
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="text-[10px]">
-                  1-point calibration
-                </Badge>
-                <Badge variant="outline" className="text-[10px]">
-                  ~3 menit
-                </Badge>
-                <Badge variant="outline" className="text-[10px]">
-                  1382 ppm + auto suhu
-                </Badge>
-              </div>
-            </div>
-          </button>
+            <Sparkles className="w-4 h-4 mr-2" />
+            Active Calibration Mode
+          </Badge>
         </div>
 
-        {/* Success message if both done */}
-        {phDone && tdsDone && (
-          <div className="mt-8 rounded-2xl border-2 border-emerald-500/20 bg-emerald-500/5 p-6 text-center">
-            <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-emerald-500 mb-1">
-              Kalibrasi Selesai! 🎉
-            </h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Kedua sensor pada Rack {rackId} telah berhasil dikalibrasi.
-              Dashboard akan menampilkan nilai yang telah dikalibrasi.
-            </p>
-            <Link href="/">
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                Kembali ke Dashboard
-              </Button>
-            </Link>
+        <div className="max-w-5xl mx-auto w-full">
+          {/* Sensor Selection Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* pH Card */}
+            <button
+              onClick={() => setMode("ph")}
+              className="group relative overflow-hidden bg-white/40 backdrop-blur-md border border-white/20 rounded-[32px] p-8 text-left shadow-xl transition-all duration-300 hover:-translate-y-2 hover:bg-white/60"
+            >
+              <div className="flex-1">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-2xl font-bold text-[#34473d] group-hover:translate-x-1 transition-transform">
+                    pH Sensor
+                  </h3>
+                  {phDone && (
+                    <Badge className="bg-emerald-500 text-white border-none px-4 py-1 rounded-full shadow-lg text-[10px]">
+                      DONE
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-[#34473d]/70 font-medium mb-6 leading-relaxed">
+                  Kalibrasi 2 titik menggunakan larutan buffer pH 7.0 dan pH 4.0. 
+                  Penting untuk akurasi nutrisi tanaman.
+                </p>
+
+                <div className="flex flex-wrap gap-2 mb-6">
+                  <span className="px-3 py-1 rounded-lg bg-white/40 text-[10px] font-bold text-[#34473d] uppercase tracking-wider">2-Point Cal</span>
+                  <span className="px-3 py-1 rounded-lg bg-white/40 text-[10px] font-bold text-[#34473d] uppercase tracking-wider">~5 Mins</span>
+                </div>
+
+                <div className="flex items-center text-[#34473d] font-bold group-hover:gap-3 gap-2 transition-all">
+                  Select pH Calibration <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+            </button>
+
+            {/* TDS Card */}
+            <button
+              onClick={() => setMode("tds")}
+              className="group relative overflow-hidden bg-white/40 backdrop-blur-md border border-white/20 rounded-[32px] p-8 text-left shadow-xl transition-all duration-300 hover:-translate-y-2 hover:bg-white/60"
+            >
+              <div className="flex-1">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-2xl font-bold text-[#34473d] group-hover:translate-x-1 transition-transform">
+                    TDS Sensor
+                  </h3>
+                  {tdsDone && (
+                    <Badge className="bg-emerald-500 text-white border-none px-4 py-1 rounded-full shadow-lg text-[10px]">
+                      DONE
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-[#34473d]/70 font-medium mb-6 leading-relaxed">
+                  Kalibrasi 1 titik dengan larutan referensi 1382 ppm. 
+                  Memastikan konsentrasi mineral air terkontrol.
+                </p>
+
+                <div className="flex flex-wrap gap-2 mb-6">
+                  <span className="px-3 py-1 rounded-lg bg-white/40 text-[10px] font-bold text-[#34473d] uppercase tracking-wider">1-Point Cal</span>
+                  <span className="px-3 py-1 rounded-lg bg-white/40 text-[10px] font-bold text-[#34473d] uppercase tracking-wider">~3 Mins</span>
+                </div>
+
+                <div className="flex items-center text-[#34473d] font-bold group-hover:gap-3 gap-2 transition-all">
+                  Select TDS Calibration <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+            </button>
           </div>
-        )}
+
+          {/* Success message if both done */}
+          {phDone && tdsDone && (
+            <div className="mt-12 group relative overflow-hidden bg-gradient-to-br from-[#50705f] to-[#34473d] rounded-[40px] p-10 text-center shadow-2xl border border-white/10">
+              <div className="relative z-10">
+                <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border border-white/20">
+                  <CheckCircle2 className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-3xl font-bold text-white mb-3">
+                  Calibration Complete! 🎉
+                </h3>
+                <p className="text-white/80 font-medium mb-8 max-w-lg mx-auto leading-relaxed">
+                  Semua sensor pada Rack {rackId} telah berhasil dikalibrasi. 
+                  Dashboard akan menampilkan nilai yang telah dikalibrasi.
+                </p>
+                <Link href="/">
+                  <Button className="h-14 px-10 rounded-2xl bg-white text-[#34473d] hover:bg-white/90 font-bold text-lg shadow-xl hover:scale-105 active:scale-95 transition-all">
+                    Return to Dashboard
+                  </Button>
+                </Link>
+              </div>
+              {/* Decorative background circle */}
+              <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

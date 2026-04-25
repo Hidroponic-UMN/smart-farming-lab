@@ -17,6 +17,10 @@ import {
 } from "lucide-react";
 import { useRacks } from "@/lib/use-racks";
 
+// Background Images
+import bgTop from "@/assets/images/bgsmartfarmingtop.avif";
+import bgBot from "@/assets/images/bgsmartfarmingbot.avif";
+
 export default function HistoryHubPage() {
   const { racks, system } = useRacks();
   const displayRacks = racks || [];
@@ -31,94 +35,95 @@ export default function HistoryHubPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/">
-              <Button variant="ghost" size="sm" className="gap-1">
-                <ArrowLeft className="size-4" />
-                Dashboard
-              </Button>
-            </Link>
-            <div className="h-6 w-px bg-border" />
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-blue-500/10">
-                <Clock className="w-5 h-5 text-blue-500" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold">Sensor History</h1>
-                <p className="text-xs text-muted-foreground -mt-0.5">
-                  Arsip data dan grafik sensor setiap rack
-                </p>
-              </div>
-            </div>
-          </div>
-          <Badge
-            variant="outline"
-            className="text-xs bg-blue-500/10 text-blue-600 border-none px-3 py-1 rounded-full"
-          >
-            <Calendar className="w-3 h-3 mr-1" />
-            Data Log
-          </Badge>
-        </div>
+    <div className="min-h-screen w-screen relative overflow-x-hidden flex flex-col font-sans bg-[#f5f4f0]">
+      {/* Background Section Top */}
+      <div 
+        className="absolute top-0 left-0 w-full h-[400px] bg-cover bg-center z-0 rounded-b-[30px] overflow-hidden"
+        style={{ backgroundImage: `url(${bgTop.src})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/5" />
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      {/* Content */}
+      <div className="relative z-10 flex-1 flex flex-col p-6 md:p-10">
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-10">
+          <div className="space-y-4">
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="gap-2 text-[#34473d] hover:bg-white/20 backdrop-blur-md border border-white/20 px-4 rounded-xl">
+                <ArrowLeft className="size-4" />
+                Back to Dashboard
+              </Button>
+            </Link>
+            
+            <div className="pt-2">
+              <h1 className="text-4xl md:text-5xl font-bold text-[#34473d] tracking-tight">Sensor History</h1>
+              <p className="text-lg text-[#34473d]/70 font-medium mt-2">
+                Arsip data dan grafik log sensor setiap rak
+              </p>
+            </div>
+          </div>
 
-        {/* Rack Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <Badge
+            variant="outline"
+            className="bg-white/40 backdrop-blur-md text-[#34473d] border-white/40 px-6 py-2 rounded-2xl text-sm font-bold shadow-lg"
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            System Logging Active
+          </Badge>
+        </div>
+
+        {/* Rack Grid - Forced to 5 columns on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {[1, 2, 3, 4, 5].map((rackId) => {
             const rack = displayRacks.find(r => r.id === rackId);
 
             return (
               <Card
                 key={rackId}
-                className="relative overflow-hidden transition-all duration-200 hover:shadow-xl hover:-translate-y-1 border-2 border-border/50 hover:border-blue-500/40"
+                className="relative overflow-hidden bg-white/40 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 hover:-translate-y-2 group"
               >
-
-                <CardContent className="p-5">
+                <CardContent className="p-6">
                   {/* Card Header */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-lg">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#50705f] to-[#86a293] text-white flex items-center justify-center font-bold text-xl shadow-lg border border-white/20">
                         {rackId}
                       </div>
                       <div>
-                        <h3 className="font-bold text-foreground">
+                        <h3 className="text-xl font-bold text-[#34473d]">
                           Rack {rackId}
                         </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {rack ? "System Logging Active" : "Waiting for data..."}
+                        <p className="text-xs font-semibold text-[#34473d]/60 uppercase tracking-widest">
+                          {rack ? "Active Log" : "Inactive"}
                         </p>
                       </div>
                     </div>
                   </div>
 
                   {/* Info list */}
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30 border border-border">
-                      <div className="flex items-center gap-2">
-                        <BarChart3 className="w-4 h-4 text-blue-400" />
-                        <span className="text-sm font-medium text-foreground">
-                          Data Points
+                  <div className="space-y-3 mb-8">
+                    <div className="flex items-center justify-between py-3 px-4 rounded-2xl bg-white/30 border border-white/20 shadow-inner">
+                      <div className="flex items-center gap-3">
+                        <BarChart3 className="w-4 h-4 text-[#34473d]" />
+                        <span className="text-sm font-bold text-[#34473d]">
+                          Samples
                         </span>
                       </div>
-                      <span className="text-xs font-mono text-muted-foreground">
-                        {rack ? "25 samples" : "0 samples"}
+                      <span className="text-xs font-mono font-bold text-[#34473d]/70">
+                        {rack ? "2.4k pts" : "0"}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30 border border-border">
-                      <div className="flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-emerald-400" />
-                        <span className="text-sm font-medium text-foreground">
-                          Last Record
+                    <div className="flex items-center justify-between py-3 px-4 rounded-2xl bg-white/30 border border-white/20 shadow-inner">
+                      <div className="flex items-center gap-3">
+                        <Activity className="w-4 h-4 text-[#34473d]" />
+                        <span className="text-sm font-bold text-[#34473d]">
+                          Last Sync
                         </span>
                       </div>
-                      <span className="text-xs font-mono text-muted-foreground">
+                      <span className="text-xs font-mono font-bold text-[#34473d]/70">
                         {formatDate(system.lastUpdated)}
                       </span>
                     </div>
@@ -128,10 +133,9 @@ export default function HistoryHubPage() {
                   <Link href={`/rack/${rackId}`} className="block">
                     <Button
                       variant="outline"
-                      className="w-full group transition-all hover:bg-blue-500/10 hover:border-blue-500/40 hover:text-blue-500"
+                      className="w-full h-12 rounded-2xl bg-[#34473d] text-white border-none hover:bg-[#34473d]/90 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold"
                     >
-                      <Activity className="w-4 h-4 mr-2" />
-                      Lihat Grafik Detail
+                      View Detailed Charts
                       <ChevronRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </Link>

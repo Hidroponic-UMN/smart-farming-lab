@@ -15,11 +15,16 @@ import {
   Clock,
   ChevronRight,
   Sparkles,
+  Calendar,
 } from "lucide-react";
 import {
   loadCalibration,
   type CalibrationCoefficients,
 } from "@/lib/calibration";
+
+// Background Images
+import bgTop from "@/assets/images/bgsmartfarmingtop.avif";
+import bgBot from "@/assets/images/bgsmartfarmingbot.avif";
 
 export default function CalibrationHubPage() {
   const [calibrations, setCalibrations] = useState<
@@ -47,63 +52,70 @@ export default function CalibrationHubPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/">
-              <Button variant="ghost" size="sm" className="gap-1">
-                <ArrowLeft className="size-4" />
-                Dashboard
-              </Button>
-            </Link>
-            <div className="h-6 w-px bg-border" />
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-emerald-500/10">
-                <Wrench className="w-5 h-5 text-emerald-500" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold">Sensor Calibration</h1>
-                <p className="text-xs text-muted-foreground -mt-0.5">
-                  Kalibrasi sensor pH & TDS untuk setiap rack
-                </p>
-              </div>
-            </div>
-          </div>
-          <Badge
-            variant="outline"
-            className="text-xs bg-emerald-500/10 text-emerald-600 border-none px-3 py-1 rounded-full"
-          >
-            <Sparkles className="w-3 h-3 mr-1" />5 Racks
-          </Badge>
-        </div>
+    <div className="min-h-screen w-screen relative overflow-x-hidden flex flex-col font-sans bg-[#f5f4f0]">
+      {/* Background Section Bottom */}
+      <div 
+        className="absolute bottom-0 left-0 w-full h-[50vh] bg-cover bg-bottom z-0 opacity-80"
+        style={{ backgroundImage: `url(${bgBot.src})` }}
+      />
+      
+      {/* Background Section Top */}
+      <div 
+        className="absolute top-0 left-0 w-full h-[400px] bg-cover bg-center z-0 rounded-b-[30px] overflow-hidden"
+        style={{ backgroundImage: `url(${bgTop.src})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/5" />
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        {/* Info Banner */}
-        <div className="rounded-2xl border-2 border-emerald-500/20 bg-gradient-to-r from-emerald-500/5 to-blue-500/5 p-6 mb-8">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-emerald-500/10 flex-shrink-0">
-              <FlaskConical className="w-6 h-6 text-emerald-500" />
+      {/* Content */}
+      <div className="relative z-10 flex-1 flex flex-col p-6 md:p-10">
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-10">
+          <div className="space-y-4">
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="gap-2 text-[#34473d] hover:bg-white/20 backdrop-blur-md border border-white/20 px-4 rounded-xl">
+                <ArrowLeft className="size-4" />
+                Back to Dashboard
+              </Button>
+            </Link>
+            
+            <div className="pt-2">
+              <h1 className="text-4xl md:text-5xl font-bold text-[#34473d] tracking-tight">Sensor Calibration</h1>
+              <p className="text-lg text-[#34473d]/70 font-medium mt-2">
+                Manage and calibrate pH & TDS sensors for all racks
+              </p>
             </div>
-            <div>
-              <h2 className="text-base font-semibold text-foreground mb-1">
-                Panduan Kalibrasi Sensor
-              </h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Kalibrasi sensor pH dan TDS penting untuk memastikan akurasi
-                pembacaan. Disarankan melakukan kalibrasi{" "}
-                <strong>setiap 2–4 minggu</strong> atau saat sensor baru
-                dipasang. Pilih rack di bawah untuk memulai proses kalibrasi.
+          </div>
+
+          <Badge
+            variant="outline"
+            className="bg-white/40 backdrop-blur-md text-[#34473d] border-white/40 px-6 py-2 rounded-2xl text-sm font-bold shadow-lg"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            5 Racks Monitoring
+          </Badge>
+        </div>
+
+        {/* Info Banner - Glass Style */}
+        <div className="relative overflow-hidden group bg-white/40 backdrop-blur-md border border-white/20 rounded-[30px] p-8 mb-10 shadow-xl">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#50705f] to-[#86a293] text-white shadow-lg">
+              <FlaskConical className="w-8 h-8" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-[#34473d] mb-2">Panduan Kalibrasi Sensor</h2>
+              <p className="text-[#34473d]/80 font-medium leading-relaxed max-w-3xl">
+                Kalibrasi sensor pH dan TDS sangat penting untuk memastikan akurasi pembacaan. 
+                Disarankan melakukan kalibrasi <span className="font-bold text-[#34473d]">setiap 2–4 minggu</span> atau saat sensor baru dipasang. 
+                Pilih rak di bawah ini untuk memulai proses kalibrasi mendetail.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Rack Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* Rack Grid - 5 columns on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {[1, 2, 3, 4, 5].map((rackId) => {
             const cal = calibrations[rackId];
             const phCalibrated = cal?.ph_slope != null;
@@ -113,140 +125,83 @@ export default function CalibrationHubPage() {
             return (
               <Card
                 key={rackId}
-                className={`relative overflow-hidden transition-all duration-200 hover:shadow-xl hover:-translate-y-1 border-2 pt-1 ${allCalibrated
-                    ? "border-emerald-500/20 hover:border-emerald-500/40"
-                    : "border-amber-500/20 hover:border-amber-500/40"
-                  }`}
+                className={`relative overflow-hidden bg-white/40 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 hover:-translate-y-2 group`}
               >
-                {/* Top accent bar */}
-                <div
-                  className={`absolute top-0 left-0 right-0 h-1 ${allCalibrated ? "bg-emerald-500" : "bg-amber-500"
-                    }`}
-                />
-
-                <CardContent className="p-5">
+                <CardContent className="p-6">
                   {/* Card Header */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${allCalibrated
-                            ? "bg-emerald-500/10 text-emerald-500"
-                            : "bg-amber-500/10 text-amber-500"
-                          }`}
-                      >
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg border border-white/20 ${
+                        allCalibrated 
+                        ? "bg-gradient-to-br from-[#50705f] to-[#86a293] text-white" 
+                        : "bg-white/50 text-[#34473d]"
+                      }`}>
                         {rackId}
                       </div>
                       <div>
-                        <h3 className="font-bold text-foreground">
+                        <h3 className="text-xl font-bold text-[#34473d]">
                           Rack {rackId}
                         </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {allCalibrated ? "Calibrated" : "Needs calibration"}
+                        <p className={`text-[10px] font-bold uppercase tracking-widest ${allCalibrated ? "text-emerald-600" : "text-orange-500"}`}>
+                          {allCalibrated ? "Fully Calibrated" : "Needs Attention"}
                         </p>
                       </div>
                     </div>
-
-                    {allCalibrated ? (
-                      <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                    ) : (
-                      <AlertTriangle className="w-5 h-5 text-amber-500" />
-                    )}
                   </div>
 
-                  {/* Sensor Status */}
-                  <div className="space-y-3 mb-5">
+                  {/* Sensor Status List */}
+                  <div className="space-y-3 mb-8">
                     {/* pH Sensor */}
-                    <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30 border border-border">
-                      <div className="flex items-center gap-2">
-                        <FlaskConical
-                          className={`w-4 h-4 ${phCalibrated
-                              ? "text-emerald-500"
-                              : "text-amber-500"
-                            }`}
-                        />
-                        <span className="text-sm font-medium text-foreground">
-                          pH Sensor
-                        </span>
+                    <div className="flex items-center justify-between py-3 px-4 rounded-2xl bg-white/30 border border-white/20 shadow-inner">
+                      <div className="flex items-center gap-3">
+                        <FlaskConical className={`w-4 h-4 ${phCalibrated ? "text-emerald-600" : "text-orange-500"}`} />
+                        <span className="text-sm font-bold text-[#34473d]">pH Sensor</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {phCalibrated ? (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                          >
-                            Calibrated ✓
-                          </Badge>
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] bg-amber-500/10 text-amber-500 border-amber-500/20"
-                          >
-                            Not Calibrated
-                          </Badge>
-                        )}
-                      </div>
+                      {phCalibrated ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-orange-500" />
+                      )}
                     </div>
 
                     {/* TDS Sensor */}
-                    <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30 border border-border">
-                      <div className="flex items-center gap-2">
-                        <Zap
-                          className={`w-4 h-4 ${tdsCalibrated
-                              ? "text-emerald-500"
-                              : "text-amber-500"
-                            }`}
-                        />
-                        <span className="text-sm font-medium text-foreground">
-                          TDS Sensor
-                        </span>
+                    <div className="flex items-center justify-between py-3 px-4 rounded-2xl bg-white/30 border border-white/20 shadow-inner">
+                      <div className="flex items-center gap-3">
+                        <Zap className={`w-4 h-4 ${tdsCalibrated ? "text-emerald-600" : "text-orange-500"}`} />
+                        <span className="text-sm font-bold text-[#34473d]">TDS Sensor</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {tdsCalibrated ? (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                          >
-                            Calibrated ✓
-                          </Badge>
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] bg-amber-500/10 text-amber-500 border-amber-500/20"
-                          >
-                            Not Calibrated
-                          </Badge>
-                        )}
-                      </div>
+                      {tdsCalibrated ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-orange-500" />
+                      )}
                     </div>
                   </div>
 
-                  {/* Last Calibrated */}
-                  {(cal?.ph_calibrated_at || cal?.tds_calibrated_at) && (
-                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-4">
-                      <Clock className="w-3 h-3" />
-                      <span>
-                        Last:{" "}
-                        {formatDate(
-                          cal?.ph_calibrated_at || cal?.tds_calibrated_at || null
-                        )}
-                      </span>
-                    </div>
-                  )}
-
                   {/* Action Button */}
-                  <Link href={`/calibration/${rackId}`} className="block">
+                  <Link href={`/calibration/${rackId}`} className="block mb-4">
                     <Button
                       variant="outline"
-                      className={`w-full group transition-all ${allCalibrated
-                          ? "hover:bg-emerald-500/10 hover:border-emerald-500/40 hover:text-emerald-500"
-                          : "hover:bg-amber-500/10 hover:border-amber-500/40 hover:text-amber-500"
-                        }`}
+                      className={`w-full h-12 rounded-2xl border-none text-white transition-all font-bold group shadow-lg ${
+                        allCalibrated 
+                        ? "bg-[#34473d] hover:bg-[#34473d]/90" 
+                        : "bg-orange-500 hover:bg-orange-600"
+                      }`}
                     >
-                      <Wrench className="w-4 h-4 mr-2" />
-                      {allCalibrated ? "Kalibrasi Ulang" : "Mulai Kalibrasi"}
+                      {allCalibrated ? "Recalibrate" : "Start Calibration"}
                       <ChevronRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </Link>
+
+                  {/* Last Calibrated - Now below the button */}
+                  {(cal?.ph_calibrated_at || cal?.tds_calibrated_at) && (
+                    <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-[#34473d]/50 px-1 uppercase tracking-wider">
+                      <Clock className="w-3 h-3" />
+                      <span>
+                        Last: {formatDate(cal?.ph_calibrated_at || cal?.tds_calibrated_at || null)}
+                      </span>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );

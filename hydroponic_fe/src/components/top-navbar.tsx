@@ -73,7 +73,6 @@ export function TopNavbar({
                                     <WifiOff className="w-4 h-4 text-red-500" />
                                 )}
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#34473d]/70">ESP32</span>
-                                <span className={`w-2 h-2 rounded-full ${system.esp32Online ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`} />
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>ESP32 Controller: {system.esp32Online ? "Connected" : "Disconnected"}</TooltipContent>
@@ -88,7 +87,6 @@ export function TopNavbar({
                                     <ServerOff className="w-4 h-4 text-red-500" />
                                 )}
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#34473d]/70">Server</span>
-                                <span className={`w-2 h-2 rounded-full ${system.serverOnline ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`} />
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>Server: {system.serverOnline ? "Online" : "Offline"}</TooltipContent>
@@ -154,14 +152,12 @@ export function TopNavbar({
                                             {system.esp32Online ? <Wifi className="w-4 h-4 text-emerald-600" /> : <WifiOff className="w-4 h-4 text-red-500" />}
                                             <span className="text-sm font-medium text-[#34473d]">ESP32 Controller</span>
                                         </div>
-                                        <span className={`w-2 h-2 rounded-full ${system.esp32Online ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`} />
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             {system.serverOnline ? <Server className="w-4 h-4 text-emerald-600" /> : <ServerOff className="w-4 h-4 text-red-500" />}
                                             <span className="text-sm font-medium text-[#34473d]">Backend Server</span>
                                         </div>
-                                        <span className={`w-2 h-2 rounded-full ${system.serverOnline ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`} />
                                     </div>
                                     <div className="pt-2 border-t border-gray-200 flex justify-between items-center text-xs">
                                         <span className="text-gray-400 font-bold uppercase">Last Sync</span>
