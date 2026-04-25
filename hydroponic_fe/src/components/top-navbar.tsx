@@ -53,26 +53,8 @@ export function TopNavbar({
     const { theme, setTheme } = useTheme();
 
     return (
-        <div className="flex items-center justify-between w-full mb-10">
-            {/* Left: Welcome & Status */}
-            <div className="flex flex-col items-start text-left">
-                <h2 className="text-3xl font-bold tracking-tight text-foreground">
-                    Welcome to Lab Smart Farming
-                </h2>
-                {criticalCount > 0 ? (
-                    <span className="text-lg font-medium text-red-500 mt-1">
-                        {criticalCount} rack{criticalCount > 1 ? "s" : ""} need{criticalCount === 1 ? "s" : ""} attention!
-                    </span>
-                ) : warningCount > 0 ? (
-                    <span className="text-lg font-medium text-amber-500 mt-1">
-                        {warningCount} rack{warningCount > 1 ? "s" : ""} in warning state
-                    </span>
-                ) : (
-                    <span className="text-lg font-medium text-emerald-500 mt-1">
-                        All Systems Operating Normally
-                    </span>
-                )}
-            </div>
+        <div className="flex items-center justify-end w-full">
+            {/* Left side is now empty in TopNavbar, moved to page.tsx */}
 
             {/* Right: Status & Action Icons */}
             <div className="flex items-center gap-8">

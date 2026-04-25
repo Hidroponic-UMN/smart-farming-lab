@@ -32,58 +32,38 @@ function RoomSensor({
     const isInverted = variant === "inverted";
 
     return (
-        <Card className={`py-3.5 gap-0 h-full transition-all duration-300 ${type === "roomTemp"
-            ? "bg-gradient-to-br from-[#34473d] to-[#86a293] border-none text-white" // adjust disini (gradient warna)
-            : isInverted
-                ? "bg-gray-900 border-gray-700 dark:bg-card/60 dark:border-border/50"
-                : "bg-card/60 border-border/50"
+        <Card className={`py-4 px-5 h-full transition-all duration-300 border border-white/20 backdrop-blur-md shadow-lg ${type === "roomTemp"
+            ? "bg-gradient-to-br from-[#50705f] to-[#86a293] text-white" 
+            : "bg-white/30 text-[#34473d]"
             }`}>
-            <CardContent className="px-4 py-0">
-                <div className="flex items-start justify-between mb-1.5">
-                    <div className="flex items-center gap-2.5">
-                        <div className={`flex items-center justify-center w-8 h-8 rounded-md ${type === "roomTemp" ? "bg-white/20" : isInverted ? "bg-gray-800 dark:bg-muted/60" : "bg-muted/60"
-                            }`}>
-                            <Icon className={`w-5 h-5 ${type === "roomTemp" ? "text-white" : getStatusColor(sensor.status)}`} />
+            <CardContent className="p-0">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className={`flex items-center justify-center w-10 h-10 rounded-xl ${type === "roomTemp" ? "bg-white/20" : "bg-[#34473d]/10"}`}>
+                            <Icon className="w-6 h-6" />
                         </div>
                         <div>
-                            <p className={`text-xs leading-tight ${type === "roomTemp" ? "text-white/70" : isInverted ? "text-gray-400 dark:text-muted-foreground" : "text-muted-foreground"
-                                }`}>
-                                Room {config.label}
+                            <p className="text-sm font-medium opacity-80 leading-none mb-1.5">
+                                {config.label}
                             </p>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="flex items-baseline gap-1.5">
-                                        <span
-                                            className={`text-3xl font-bold tabular-nums leading-none transition-all duration-500 ${type === "roomTemp" ? "text-white" : getStatusColor(sensor.status)
-                                                }`}
-                                        >
-                                            {sensor.value.toFixed(config.decimals ?? 1)}
-                                        </span>
-                                        <span className={`text-sm ${type === "roomTemp" ? "text-white/80" : isInverted ? "text-gray-400 dark:text-muted-foreground" : "text-muted-foreground"
-                                            }`}>
-                                            {config.unit}
-                                        </span>
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {config.label}: {sensor.value.toFixed(config.decimals ?? 1)}
-                                    {config.unit} — Range: {config.warningLow}–{config.warningHigh}
+                            <div className="flex items-baseline gap-1.5">
+                                <span className="text-3xl font-bold leading-none tracking-tight">
+                                    {sensor.value.toFixed(1)}
+                                </span>
+                                <span className="text-sm font-medium opacity-70">
                                     {config.unit}
-                                </TooltipContent>
-                            </Tooltip>
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <Badge
                         variant="outline"
-                        className={`text-[10px] font-bold uppercase tracking-wider px-0 py-0 border-none ${
-                            type === "roomTemp" ? "text-white" : getStatusColor(sensor.status)
+                        className={`text-[11px] font-bold uppercase tracking-widest border-none p-0 px-2 py-0.5 rounded-full ${
+                            type === "roomTemp" ? "bg-white/10 text-white" : "bg-[#34473d]/10 text-[#34473d]"
                         }`}
                     >
                         {sensor.status}
                     </Badge>
-                </div>
-                <div className="h-12 mt-1">
-                    <MiniChart data={sensor.history} status={sensor.status} />
                 </div>
             </CardContent>
         </Card>

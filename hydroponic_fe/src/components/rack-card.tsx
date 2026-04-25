@@ -87,9 +87,11 @@ function SensorCard({
         <Tooltip>
             <TooltipTrigger asChild>
                 <div className="group cursor-pointer">
-                    <div className={`relative rounded-xl p-3 border-2 transition-all duration-200 ${isInverted
-                        ? "bg-gray-900 dark:bg-gray-950 border-gray-700 hover:border-gray-600 dark:hover:border-gray-700"
-                        : "bg-white dark:bg-gray-950 hover:border-gray-300 dark:hover:border-gray-700"
+                    <div className={`relative rounded-xl p-3 backdrop-blur-sm shadow-md transition-all duration-300 ${type === "lightIntensity"
+                        ? "bg-gradient-to-tl from-[#e9e6de] to-white"
+                        : isInverted
+                            ? "bg-gray-900/40 dark:bg-gray-950/40"
+                            : "bg-white/50 dark:bg-gray-900/40"
                         }`}>
                         {/* Header */}
                         <div className={`flex ${badgePosition === "bottom" ? "flex-col items-start gap-0.5" : "items-start justify-between"} mb-2`}>
@@ -115,7 +117,7 @@ function SensorCard({
                                 {unit}
                             </span>
                             {trend !== undefined && trend !== 0 && (
-                                <div className={`ml-auto flex items-center gap-0.5 text-[10px] font-medium ${trend > 0 ? 'text-emerald-600' : 'text-rose-600'
+                                <div className={`ml-auto flex items-center gap-0.5 text-[10px] font-medium ${trend > 0 ? 'text-[#34473d]' : 'text-rose-600'
                                     }`}>
                                     <TrendingUp className={`w-3 h-3 ${trend < 0 ? 'rotate-180' : ''}`} />
                                     <span>{Math.abs(trend)}%</span>
@@ -151,11 +153,11 @@ export function RackCard({ rack }: RackCardProps) {
     const statusBadgeColors: Record<string, string> = {
         Critical: "text-rose-500",
         Warning: "text-amber-500",
-        Normal: "text-emerald-500",
+        Normal: "text-[#34473d]",
     };
 
     return (
-        <Card className={`relative overflow-hidden bg-white dark:bg-gray-950 border-2 ${borderColors[rack.overallStatus]} transition-all duration-200`}>
+        <Card className={`relative overflow-hidden bg-white/40 dark:bg-gray-950/40 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300`}>
 
             <CardContent className="relative p-4 space-y-4">
                 {/* Header */}
@@ -163,9 +165,64 @@ export function RackCard({ rack }: RackCardProps) {
                     <h3 className="text-lg font-bold">{rack.label}</h3>
                 </div>
 
+                {/* On Rack Section */}
+                <div>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-black mb-2 flex items-center gap-2">
+                        <Circle className="w-1.5 h-1.5 fill-current" />
+                        On Rack Sensors
+                    </h4>
+                    <div className="grid grid-cols-1 gap-3 mt-3">
+                        <SensorCard
+                            icon={Sun}
+                            label="Light"
+                            value={rack.lightIntensity.value}
+                            unit="lux"
+                            status={rack.lightIntensity.status}
+                            decimals={0}
+                            type="lightIntensity"
+                            tooltip="LED grow light intensity"
+                            trend={calcTrend(rack.lightIntensity)}
+                        />
+                    </div>
+                </div>
+
+                {/* Flow Chart & Alerts */}
+                <div className="space-y-3">
+
+                    {/* Water Flow Chart */}
+                    <div className="bg-gradient-to-tl from-[#7f9c8c]/40 to-white backdrop-blur-sm rounded-xl p-3 shadow-md">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1 rounded-lg bg-gray-100 dark:bg-gray-800">
+                                    <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                                </div>
+                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Water Flow</span>
+                                <Badge
+                                    variant="outline"
+                                    className={`px-0 py-0 text-[10px] font-bold border-none ${getStatusColor(rack.waterFlow.status)}`}
+                                >
+                                    {rack.waterFlow.status}
+                                </Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-400 dark:bg-gray-500">Current:</span>
+                                <span className={`text-sm font-bold tabular-nums ${getStatusColor(rack.waterFlow.status)}`}>
+                                    {rack.waterFlow.value.toFixed(1)} L/min
+                                </span>
+                            </div>
+                        </div>
+                        <div className="h-12">
+                            <MiniChart
+                                data={rack.waterFlow.history}
+                                status={rack.waterFlow.status}
+                            />
+                        </div>
+                    </div>
+                </div>
+
                 {/* Tank Section - Bento Grid */}
                 <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2 flex items-center gap-2">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-black mb-2 flex items-center gap-2">
                         <Circle className="w-1.5 h-1.5 fill-current" />
                         Tank Sensors
                     </h4>
@@ -218,62 +275,6 @@ export function RackCard({ rack }: RackCardProps) {
                             trend={calcTrend(rack.waterTemp)}
                             badgePosition="bottom"
                         />
-                    </div>
-                </div>
-
-                {/* On Rack Section */}
-                <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2 flex items-center gap-2">
-                        <Circle className="w-1.5 h-1.5 fill-current" />
-                        On Rack Sensors
-                    </h4>
-                    <div className="grid grid-cols-1 gap-3 mt-3">
-                        <SensorCard
-                            icon={Sun}
-                            label="Light"
-                            value={rack.lightIntensity.value}
-                            unit="lux"
-                            status={rack.lightIntensity.status}
-                            decimals={0}
-                            type="lightIntensity"
-                            tooltip="LED grow light intensity"
-                            trend={calcTrend(rack.lightIntensity)}
-                            variant="inverted"
-                        />
-                    </div>
-                </div>
-
-                {/* Flow Chart & Alerts */}
-                <div className="space-y-3">
-
-                    {/* Water Flow Chart */}
-                    <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 border-2 border-gray-200 dark:border-gray-800">
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1 rounded-lg bg-gray-100 dark:bg-gray-800">
-                                    <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                                </div>
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Water Flow</span>
-                                <Badge
-                                    variant="outline"
-                                    className={`px-0 py-0 text-[10px] font-bold border-none ${getStatusColor(rack.waterFlow.status)}`}
-                                >
-                                    {rack.waterFlow.status}
-                                </Badge>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-400 dark:text-gray-500">Current:</span>
-                                <span className={`text-sm font-bold tabular-nums ${getStatusColor(rack.waterFlow.status)}`}>
-                                    {rack.waterFlow.value.toFixed(1)} L/min
-                                </span>
-                            </div>
-                        </div>
-                        <div className="h-12">
-                            <MiniChart
-                                data={rack.waterFlow.history}
-                                status={rack.waterFlow.status}
-                            />
-                        </div>
                     </div>
                 </div>
             </CardContent>

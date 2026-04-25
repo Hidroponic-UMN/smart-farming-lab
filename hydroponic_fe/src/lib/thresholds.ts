@@ -113,7 +113,7 @@ export function getStatus(value: number, type: string): Status {
 export function getStatusColor(status: Status): string {
   switch (status) {
     case "Normal":
-      return "text-emerald-500";
+      return "text-[#34473d]";
     case "Low":
     case "High":
     case "Warning":
@@ -126,7 +126,7 @@ export function getStatusColor(status: Status): string {
 export function getStatusBg(status: Status): string {
   switch (status) {
     case "Normal":
-      return "text-emerald-500";
+      return "text-[#34473d]";
     case "Low":
     case "High":
     case "Warning":
@@ -139,7 +139,7 @@ export function getStatusBg(status: Status): string {
 export function getStatusDot(status: Status): string {
   switch (status) {
     case "Normal":
-      return "bg-emerald-500";
+      return "bg-[#34473d]";
     case "Low":
     case "High":
     case "Warning":
@@ -159,7 +159,7 @@ export function getWorstStatus(statuses: Status[]): Status {
 export function getProgressColor(status: Status): string {
   switch (status) {
     case "Normal":
-      return "[&>div]:bg-emerald-500";
+      return "[&>div]:bg-[#34473d]";
     case "Low":
     case "High":
     case "Warning":
