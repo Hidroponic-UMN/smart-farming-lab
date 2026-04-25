@@ -58,7 +58,7 @@ function RoomSensor({
                     </div>
                     <Badge
                         variant="outline"
-                        className={`text-[11px] font-bold uppercase tracking-widest border-none p-0 px-2 py-0.5 rounded-full ${
+                        className={`hidden md:inline-flex text-[11px] font-bold uppercase tracking-widest border-none p-0 px-2 py-0.5 rounded-full ${
                             type === "roomTemp" ? "bg-white/10 text-white" : "bg-[#34473d]/10 text-[#34473d]"
                         }`}
                     >

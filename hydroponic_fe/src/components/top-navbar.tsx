@@ -1,18 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
 import Link from "next/link";
 import {
-    Sun,
-    Moon,
     Wrench,
     History,
     Wifi,
     WifiOff,
     Server,
     ServerOff,
+    Menu,
+    Activity,
 } from "lucide-react";
+import {
+    Drawer,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from "@/components/ui/drawer";
 import {
     Tooltip,
     TooltipContent,
@@ -50,26 +56,23 @@ export function TopNavbar({
     onMarkAllRead,
     onClearAll,
 }: TopNavbarProps) {
-    const { theme, setTheme } = useTheme();
 
     return (
         <div className="flex items-center justify-end w-full">
-            {/* Left side is now empty in TopNavbar, moved to page.tsx */}
-
-            {/* Right: Status & Action Icons */}
-            <div className="flex items-center gap-8">
+            {/* Desktop & Tablet Menu */}
+            <div className="hidden md:flex flex-col lg:flex-row items-end lg:items-center gap-4 lg:gap-8">
                 
                 {/* Group 1: System Status (ESP32, Server, Last Sync) */}
-                <div className="flex items-center gap-6 pr-6">
+                <div className="flex items-center gap-6 lg:border-r lg:border-white/20 lg:pr-6">
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div className="flex items-center gap-2">
                                 {system.esp32Online ? (
-                                    <Wifi className="w-4 h-4 text-emerald-500" />
+                                    <Wifi className="w-4 h-4 text-emerald-600" />
                                 ) : (
                                     <WifiOff className="w-4 h-4 text-red-500" />
                                 )}
-                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">ESP32</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#34473d]/70">ESP32</span>
                                 <span className={`w-2 h-2 rounded-full ${system.esp32Online ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`} />
                             </div>
                         </TooltipTrigger>
@@ -80,27 +83,27 @@ export function TopNavbar({
                         <TooltipTrigger asChild>
                             <div className="flex items-center gap-2">
                                 {system.serverOnline ? (
-                                    <Server className="w-4 h-4 text-emerald-500" />
+                                    <Server className="w-4 h-4 text-emerald-600" />
                                 ) : (
                                     <ServerOff className="w-4 h-4 text-red-500" />
                                 )}
-                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Server</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#34473d]/70">Server</span>
                                 <span className={`w-2 h-2 rounded-full ${system.serverOnline ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`} />
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>Server: {system.serverOnline ? "Online" : "Offline"}</TooltipContent>
                     </Tooltip>
 
-                    <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">Last Sync</span>
-                        <span className="text-xs font-mono font-bold leading-none text-foreground">
+                    <div className="flex flex-col items-end min-w-[70px]">
+                        <span className="text-[9px] font-bold text-[#34473d]/50 uppercase tracking-widest leading-none mb-1">Last Sync</span>
+                        <span className="text-[11px] font-mono font-bold leading-none text-[#34473d]">
                             <ClientTime date={system.lastUpdated} />
                         </span>
                     </div>
                 </div>
 
                 {/* Group 2: Action Buttons */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     <NotificationCenter
                         notifications={notifications}
                         unreadCount={unreadCount}
@@ -111,8 +114,8 @@ export function TopNavbar({
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Link href="/history">
-                                <button className="flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 group">
-                                    <History className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                                <button className="flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 hover:bg-white/20 active:scale-95">
+                                    <History className="w-5 h-5 text-[#34473d]" />
                                 </button>
                             </Link>
                         </TooltipTrigger>
@@ -122,26 +125,81 @@ export function TopNavbar({
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Link href="/calibration">
-                                <button className="flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 group">
-                                    <Wrench className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                                <button className="flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 hover:bg-white/20 active:scale-95">
+                                    <Wrench className="w-5 h-5 text-[#34473d]" />
                                 </button>
                             </Link>
                         </TooltipTrigger>
                         <TooltipContent>Sensor Calibration</TooltipContent>
                     </Tooltip>
-
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <button
-                                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                                className="flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 group"
-                            >
-                                {theme === "dark" ? <Sun className="w-5 h-5 group-hover:rotate-90 transition-transform" /> : <Moon className="w-5 h-5 group-hover:-rotate-12 transition-transform" />}
-                            </button>
-                        </TooltipTrigger>
-                        <TooltipContent>Toggle Theme</TooltipContent>
-                    </Tooltip>
                 </div>
+            </div>
+
+            {/* Mobile Menu Trigger */}
+            <div className="md:hidden">
+                <Drawer direction="right">
+                    <DrawerTrigger asChild>
+                        <button className="p-3 bg-white/40 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg active:scale-95 transition-all">
+                            <Menu className="w-6 h-6 text-[#34473d]" />
+                        </button>
+                    </DrawerTrigger>
+                    <DrawerContent className="h-full mt-0 rounded-none border-l border-white/20 bg-white/90 backdrop-blur-xl">
+                        <div className="p-6 pt-12 space-y-8">
+                            {/* Mobile Status Group */}
+                            <div className="space-y-4">
+                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">System Status</h4>
+                                <div className="space-y-4 bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            {system.esp32Online ? <Wifi className="w-4 h-4 text-emerald-600" /> : <WifiOff className="w-4 h-4 text-red-500" />}
+                                            <span className="text-sm font-medium text-[#34473d]">ESP32 Controller</span>
+                                        </div>
+                                        <span className={`w-2 h-2 rounded-full ${system.esp32Online ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`} />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            {system.serverOnline ? <Server className="w-4 h-4 text-emerald-600" /> : <ServerOff className="w-4 h-4 text-red-500" />}
+                                            <span className="text-sm font-medium text-[#34473d]">Backend Server</span>
+                                        </div>
+                                        <span className={`w-2 h-2 rounded-full ${system.serverOnline ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`} />
+                                    </div>
+                                    <div className="pt-2 border-t border-gray-200 flex justify-between items-center text-xs">
+                                        <span className="text-gray-400 font-bold uppercase">Last Sync</span>
+                                        <span className="font-mono font-bold text-[#34473d]"><ClientTime date={system.lastUpdated} /></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Mobile Quick Actions */}
+                            <div className="space-y-4">
+                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Quick Actions</h4>
+                                <div className="grid grid-cols-1 gap-3">
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                                        <span className="font-semibold text-[#34473d]">Notifications</span>
+                                        <div className="flex items-center gap-3">
+                                            <NotificationCenter
+                                                notifications={notifications}
+                                                unreadCount={unreadCount}
+                                                onMarkAllRead={onMarkAllRead}
+                                                onClearAll={onClearAll}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <Link href="/history" className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors">
+                                        <span className="font-semibold text-[#34473d]">History Log</span>
+                                        <History className="w-5 h-5 text-black" />
+                                    </Link>
+
+                                    <Link href="/calibration" className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors">
+                                        <span className="font-semibold text-[#34473d]">Calibration</span>
+                                        <Wrench className="w-5 h-5 text-black" />
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </DrawerContent>
+                </Drawer>
             </div>
         </div>
     );
