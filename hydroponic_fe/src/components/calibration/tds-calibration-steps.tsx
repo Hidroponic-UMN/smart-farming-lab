@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,7 +9,8 @@ import {
   Target,
   CheckCircle2,
   AlertCircle,
-  Thermometer,
+  Loader2,
+  XCircle,
 } from "lucide-react";
 import { LiveSensorDisplay } from "./live-sensor-display";
 import {
@@ -17,11 +18,10 @@ import {
   type WizardStep,
 } from "./calibration-wizard";
 import {
-  computeTdsCalibration,
-  applyTdsCalibration,
-  saveCalibration,
   TDS_REFERENCE_PPM,
-  type TdsCalibrationPoint,
+  sendCalibrationCommand,
+  saveCalibration,
+  type CommandResult,
 } from "@/lib/calibration";
 import { useLiveSensor } from "@/lib/use-live-sensor";
 
@@ -31,6 +31,8 @@ interface TdsCalibrationStepsProps {
   onCancel: () => void;
 }
 
+type CommandStatus = "idle" | "sending" | "success" | "failed" | "timeout";
+
 export function TdsCalibrationSteps({
   rackId,
   onComplete,
@@ -38,56 +40,67 @@ export function TdsCalibrationSteps({
 }: TdsCalibrationStepsProps) {
   const sensor = useLiveSensor(rackId);
 
-  const [targetPpm, setTargetPpm] = useState<string>(String(TDS_REFERENCE_PPM));
-  const [capturedPoint, setCapturedPoint] =
-    useState<TdsCalibrationPoint | null>(null);
-  const [coefficients, setCoefficients] = useState<{
-    k_factor: number;
-    offset: number;
-  } | null>(null);
+  // Calibration result
+  const [commandStatus, setCommandStatus] = useState<CommandStatus>("idle");
+  const [commandResult, setCommandResult] = useState<CommandResult | null>(
+    null
+  );
+  const [isSending, setIsSending] = useState(false);
 
-  function handleCapture() {
-    const ppm = parseFloat(targetPpm);
-    if (isNaN(ppm) || ppm <= 0) return;
+  const handleCapture = useCallback(async () => {
+    setIsSending(true);
+    setCommandStatus("sending");
 
-    const point: TdsCalibrationPoint = {
-      rawValue: sensor.rawTds,
-      targetPpm: ppm,
-      waterTempC: sensor.waterTemp,
-    };
-    setCapturedPoint(point);
+    const result = await sendCalibrationCommand(
+      rackId,
+      "KALIBRASI_TDS",
+      TDS_REFERENCE_PPM
+    );
 
-    const result = computeTdsCalibration(point);
-    setCoefficients(result);
-  }
+    setCommandResult(result);
+    setCommandStatus(result.success ? "success" : "failed");
 
-  function handleSave() {
-    if (coefficients) {
+    if (result.success) {
       saveCalibration(rackId, {
-        tds_k_factor: coefficients.k_factor,
-        tds_offset: coefficients.offset,
         tds_calibrated_at: new Date().toISOString(),
         calibrated_by: "Lab Admin",
       });
     }
-    onComplete();
-  }
 
-  function getPreviewValues() {
-    if (!coefficients) return [];
-    const testRaws = [0, 200, 500, 800, 1000, 1500, 2000, 3000, 4095];
-    return testRaws.map((raw) => ({
-      raw,
-      calibrated: applyTdsCalibration(
-        raw,
-        coefficients.k_factor,
-        coefficients.offset,
-        25
-      ),
-    }));
+    setIsSending(false);
+  }, [rackId]);
+
+  // Status badge
+  function StatusBadge({ status }: { status: CommandStatus }) {
+    switch (status) {
+      case "sending":
+        return (
+          <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/30 gap-1">
+            <Loader2 className="w-3 h-3 animate-spin" />
+            Mengirim ke ESP32...
+          </Badge>
+        );
+      case "success":
+        return (
+          <Badge className="bg-emerald-500/20 text-emerald-500 border-emerald-500/30 gap-1">
+            <CheckCircle2 className="w-3 h-3" />
+            ESP32 ACK: Berhasil!
+          </Badge>
+        );
+      case "failed":
+        return (
+          <Badge className="bg-red-500/20 text-red-500 border-red-500/30 gap-1">
+            <XCircle className="w-3 h-3" />
+            Gagal
+          </Badge>
+        );
+      default:
+        return null;
+    }
   }
 
   const steps: WizardStep[] = [
+    // Step 1: Preparation
     {
       id: "prepare",
       title: "Persiapan",
@@ -119,23 +132,31 @@ export function TdsCalibrationSteps({
             </ul>
           </div>
 
+          {/* TDS value card */}
+          <div className="rounded-xl border-2 border-blue-500/30 bg-blue-500/5 p-5 text-center">
+            <p className="text-3xl font-bold font-mono text-blue-500">
+              {TDS_REFERENCE_PPM}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">ppm (mg/L)</p>
+          </div>
+
           <div className="rounded-xl border-2 border-amber-500/20 bg-amber-500/5 p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-sm font-semibold text-amber-500">
-                  Catatan Penting
+                  Tips
                 </h4>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Kalibrasi TDS dipengaruhi oleh suhu air. Sensor water temp
-                  pada Rack {rackId} akan digunakan untuk kompensasi suhu
-                  otomatis.
+                  Celupkan sensor suhu dan sensor TDS <strong>bersamaan</strong>{" "}
+                  ke dalam larutan kalibrasi. ESP32 akan membaca suhu air
+                  secara otomatis untuk kompensasi.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Live sensor status */}
+          {/* Sensor status */}
           <div className="rounded-xl border border-border bg-muted/30 p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
@@ -156,73 +177,26 @@ export function TdsCalibrationSteps({
         </div>
       ),
     },
+
+    // Step 2: Calibrate
     {
       id: "calibrate",
       title: "Kalibrasi",
       description:
-        "Celupkan sensor ke larutan kalibrasi dan capture reading",
+        "Celupkan sensor TDS + sensor suhu ke larutan kalibrasi",
       icon: <Target className="w-5 h-5" />,
       requiresAction: true,
-      actionCompleted: capturedPoint !== null,
+      actionCompleted: commandStatus === "success",
       content: (
-        <div className="space-y-6">
-          <div className="rounded-xl border-2 border-blue-500/20 bg-blue-500/5 p-4">
+        <div className="space-y-5">
+          {/* Instructions */}
+          <div className="rounded-xl border border-border bg-muted/30 p-4">
             <p className="text-sm text-foreground">
-              <strong>Langkah:</strong> Bilas sensor TDS dengan aquadest,
-              celupkan ke larutan kalibrasi. Masukkan nilai ppm larutan di
-              bawah, tunggu reading stabil, lalu capture.
+              <strong>Langkah:</strong> Bilas sensor TDS dan sensor suhu dengan
+              aquadest. Celupkan <strong>keduanya bersamaan</strong> ke dalam
+              larutan kalibrasi {TDS_REFERENCE_PPM} ppm. Tunggu pembacaan stabil
+              (~30 detik), lalu tekan tombol di bawah.
             </p>
-          </div>
-
-          {/* Target PPM Input */}
-          <div className="rounded-xl border-2 border-border bg-card p-4">
-            <label className="block text-sm font-semibold text-foreground mb-2">
-              Target PPM Larutan Kalibrasi
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="number"
-                value={targetPpm}
-                onChange={(e) => setTargetPpm(e.target.value)}
-                className="flex-1 px-4 py-3 rounded-lg bg-muted border border-border text-foreground font-mono text-lg
-                           focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500
-                           transition-all"
-                placeholder="1382"
-                min={1}
-              />
-              <span className="text-sm text-muted-foreground font-medium">
-                ppm (mg/L)
-              </span>
-            </div>
-            <div className="flex gap-2 mt-2">
-              {["342", "500", "1000", "1382"].map((preset) => (
-                <button
-                  key={preset}
-                  onClick={() => setTargetPpm(preset)}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors border ${
-                    targetPpm === preset
-                      ? "bg-blue-500/20 text-blue-500 border-blue-500/30"
-                      : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
-                  }`}
-                >
-                  {preset} ppm
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Water Temp Info */}
-          <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-muted/50 border border-border">
-            <Thermometer className="w-4 h-4 text-amber-500" />
-            <span className="text-sm text-muted-foreground">
-              Water Temperature:
-            </span>
-            <span className="text-sm font-bold font-mono text-foreground">
-              {sensor.waterTemp.toFixed(1)}°C
-            </span>
-            <span className="text-xs text-muted-foreground">
-              (auto-compensation)
-            </span>
           </div>
 
           {/* Live Reading */}
@@ -236,146 +210,124 @@ export function TdsCalibrationSteps({
             color="#3b82f6"
           />
 
-          {/* Capture Button */}
-          <div className="flex items-center gap-4">
-            <Button
-              size="lg"
-              onClick={handleCapture}
-              disabled={
-                !sensor.isOnline ||
-                !targetPpm ||
-                parseFloat(targetPpm) <= 0
-              }
-              className="flex-1 h-14 text-base font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 transition-all"
-            >
-              <Target className="w-5 h-5 mr-2" />
-              {capturedPoint
-                ? `Recapture (Current raw: ${capturedPoint.rawValue})`
-                : `Capture ${targetPpm} ppm`}
-            </Button>
+          {/* Water temp display */}
+          <div className="rounded-xl border border-border bg-muted/30 p-3 flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              Suhu air (auto-read oleh ESP32):
+            </span>
+            <span className="font-bold font-mono text-amber-500">
+              {sensor.waterTemp?.toFixed(1) ?? "—"}°C
+            </span>
           </div>
 
-          {capturedPoint && (
-            <div className="rounded-xl border-2 border-emerald-500/20 bg-emerald-500/5 p-4 flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-emerald-500">
-                  Calibration point captured!
+          {/* Capture + Send Button */}
+          <Button
+            size="lg"
+            onClick={handleCapture}
+            disabled={!sensor.isOnline || isSending}
+            className="w-full h-14 text-base font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 transition-all"
+          >
+            {isSending ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Mengirim ke ESP32...
+              </>
+            ) : commandStatus === "success" ? (
+              <>
+                <CheckCircle2 className="w-5 h-5 mr-2" />
+                Recalibrate TDS
+              </>
+            ) : (
+              <>
+                <Target className="w-5 h-5 mr-2" />
+                Calibrate TDS ({TDS_REFERENCE_PPM} ppm)
+              </>
+            )}
+          </Button>
+
+          {/* Result */}
+          {commandStatus !== "idle" && (
+            <div
+              className={`rounded-xl border-2 p-4 ${
+                commandStatus === "success"
+                  ? "border-emerald-500/20 bg-emerald-500/5"
+                  : commandStatus === "failed"
+                  ? "border-red-500/20 bg-red-500/5"
+                  : commandStatus === "sending"
+                  ? "border-blue-500/20 bg-blue-500/5"
+                  : "border-amber-500/20 bg-amber-500/5"
+              }`}
+            >
+              <StatusBadge status={commandStatus} />
+              <p className="text-xs text-muted-foreground mt-2">
+                Dikirim: known_value = {TDS_REFERENCE_PPM} ppm
+              </p>
+              {commandResult?.error && (
+                <p className="text-xs text-red-500 mt-1">
+                  {commandResult.error}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Raw ADC = {capturedPoint.rawValue} → {capturedPoint.targetPpm}{" "}
-                  ppm (at {capturedPoint.waterTempC.toFixed(1)}°C)
-                </p>
-              </div>
+              )}
             </div>
           )}
         </div>
       ),
     },
+
+    // Step 3: Review
     {
       id: "review",
-      title: "Review & Save",
-      description: "Review koefisien kalibrasi dan simpan",
+      title: "Review",
+      description: "Review hasil kalibrasi",
       icon: <CheckCircle2 className="w-5 h-5" />,
-      requiresAction: true,
-      actionCompleted: coefficients !== null,
       content: (
         <div className="space-y-6">
-          {coefficients && capturedPoint ? (
-            <>
-              {/* Calibration Point Summary */}
-              <div className="rounded-xl border-2 border-border bg-card p-5 space-y-4">
-                <h4 className="font-semibold text-foreground">
-                  Calibration Point
-                </h4>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-3">
-                    <p className="text-xs text-muted-foreground">Raw ADC</p>
-                    <p className="text-xl font-bold font-mono text-blue-500">
-                      {capturedPoint.rawValue}
-                    </p>
-                  </div>
-                  <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-3">
-                    <p className="text-xs text-muted-foreground">Target</p>
-                    <p className="text-xl font-bold font-mono text-emerald-500">
-                      {capturedPoint.targetPpm}
-                    </p>
-                    <p className="text-xs text-muted-foreground">ppm</p>
-                  </div>
-                  <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 p-3">
-                    <p className="text-xs text-muted-foreground">Temp</p>
-                    <p className="text-xl font-bold font-mono text-amber-500">
-                      {capturedPoint.waterTempC.toFixed(1)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">°C</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Computed Coefficients */}
-              <div className="rounded-xl border-2 border-emerald-500/20 bg-emerald-500/5 p-5 space-y-3">
-                <h4 className="font-semibold text-emerald-500 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Koefisien Kalibrasi
-                </h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">K-Factor</p>
-                    <p className="text-lg font-bold font-mono text-foreground">
-                      {coefficients.k_factor}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Offset</p>
-                    <p className="text-lg font-bold font-mono text-foreground">
-                      {coefficients.offset}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Formula: TDS = {coefficients.k_factor} × (rawADC ÷ tempCoeff) +{" "}
-                  {coefficients.offset}
+          {/* Summary */}
+          <div className="rounded-xl border-2 border-border bg-card p-5 space-y-4">
+            <h4 className="font-semibold text-foreground">
+              Calibration Summary
+            </h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-4 text-center">
+                <p className="text-xs text-muted-foreground">Target</p>
+                <p className="text-2xl font-bold font-mono text-blue-500">
+                  {TDS_REFERENCE_PPM}
                 </p>
+                <p className="text-xs text-muted-foreground">ppm</p>
               </div>
+              <div
+                className={`rounded-lg p-4 text-center ${
+                  commandStatus === "success"
+                    ? "bg-emerald-500/5 border border-emerald-500/20"
+                    : "bg-red-500/5 border border-red-500/20"
+                }`}
+              >
+                <p className="text-xs text-muted-foreground">Status</p>
+                {commandStatus === "success" ? (
+                  <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mt-2" />
+                ) : (
+                  <XCircle className="w-8 h-8 text-red-500 mx-auto mt-2" />
+                )}
+              </div>
+            </div>
+          </div>
 
-              {/* Preview */}
-              <div className="rounded-xl border-2 border-border bg-card p-5">
-                <h4 className="font-semibold text-foreground mb-3">
-                  Preview Konversi (at 25°C)
-                </h4>
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="font-semibold text-muted-foreground py-1 border-b border-border">
-                    Raw ADC
-                  </div>
-                  <div className="font-semibold text-muted-foreground py-1 border-b border-border">
-                    →
-                  </div>
-                  <div className="font-semibold text-muted-foreground py-1 border-b border-border">
-                    TDS (ppm)
-                  </div>
-                  {getPreviewValues().map(({ raw, calibrated }) => (
-                    <div key={`row-${raw}`} className="contents">
-                      <div className="font-mono py-1 text-foreground">
-                        {raw}
-                      </div>
-                      <div className="text-muted-foreground py-1">
-                        →
-                      </div>
-                      <div
-                        className="font-mono font-medium py-1 text-foreground"
-                      >
-                        {calibrated.toFixed(1)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
+          {commandStatus === "success" ? (
+            <div className="rounded-xl border-2 border-emerald-500/20 bg-emerald-500/5 p-5 text-center">
+              <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
+              <h4 className="font-semibold text-emerald-500 text-lg">
+                Kalibrasi TDS Berhasil!
+              </h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                ESP32 Rack {rackId} sudah dikalibrasi dengan {TDS_REFERENCE_PPM}{" "}
+                ppm. Sensor sekarang mengirim nilai TDS yang sudah dikalibrasi.
+              </p>
+            </div>
           ) : (
             <div className="rounded-xl border-2 border-amber-500/20 bg-amber-500/5 p-5 text-center">
               <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
-                Anda harus capture titik kalibrasi sebelum bisa menyimpan.
+                Kalibrasi belum berhasil. Kembali ke langkah sebelumnya untuk
+                mencoba lagi.
               </p>
             </div>
           )}
@@ -387,9 +339,9 @@ export function TdsCalibrationSteps({
   return (
     <CalibrationWizard
       title={`TDS Calibration — Rack ${rackId}`}
-      subtitle="Kalibrasi 1 titik dengan larutan referensi"
+      subtitle={`Kalibrasi 1 titik: ${TDS_REFERENCE_PPM} ppm (kompensasi suhu otomatis oleh ESP32)`}
       steps={steps}
-      onComplete={handleSave}
+      onComplete={onComplete}
       onCancel={onCancel}
       accentColor="#3b82f6"
     />

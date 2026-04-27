@@ -47,9 +47,9 @@ const store: Map<number, RackStore> = new Map();
 // since localStorage is not available server-side.
 const calibrationStore: Map<number, CalibrationCoefficients> = new Map();
 
-function getOrCreateRack(deviceId: number, rackId: number): RackStore {
-    if (!store.has(deviceId)) {
-        store.set(deviceId, {
+function getOrCreateRack(rackId: number): RackStore {
+    if (!store.has(rackId)) {
+        store.set(rackId, {
             sensors: {},
             rackId,
             lastUpdated: null,

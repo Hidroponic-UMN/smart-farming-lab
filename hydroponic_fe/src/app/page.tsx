@@ -3,10 +3,13 @@
 import { useRacks } from "@/lib/use-racks";
 import { useRoomSensor } from "@/lib/simulation";
 import { useNotifications } from "@/lib/notifications";
-import { Header } from "@/components/header";
+import { TopNavbar } from "@/components/top-navbar";
 import { RoomMonitor } from "@/components/room-monitor";
 import { RackCard } from "@/components/rack-card";
-import { SummaryPanel } from "@/components/summary-panel";
+// import { SummaryPanel } from "@/components/summary-panel"; // hidden as requested
+// Import backgrounds
+import bgTop from "@/assets/images/bgsmartfarmingtop.avif";
+import bgBot from "@/assets/images/bgsmartfarmingbot.avif";
 
 export default function Dashboard() {
   const { racks, system } = useRacks();
@@ -14,13 +17,13 @@ export default function Dashboard() {
   const notifications = useNotifications(
     racks
       ? {
-          room: {
-            temperature: roomData?.temperature ?? { value: 0, history: [], status: "Normal" as const },
-            humidity: roomData?.humidity ?? { value: 0, history: [], status: "Normal" as const },
-          },
-          racks,
-          system,
-        }
+        room: {
+          temperature: roomData?.temperature ?? { value: 0, history: [], status: "Normal" as const },
+          humidity: roomData?.humidity ?? { value: 0, history: [], status: "Normal" as const },
+        },
+        racks,
+        system,
+      }
       : null
   );
 
@@ -41,66 +44,75 @@ export default function Dashboard() {
   ).length;
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-background">
-      {/* Main content */}
-      <div className="flex-1 flex flex-col gap-3 p-4 min-h-0 m-10">
-        {/* Greeting Banner */}
-        <div className="flex flex-col items-center text-center flex-shrink-0 mb-8">
-          <h2 className="text-3xl font-bold tracking-tight">
-            Welcome to Lab Smart Farming
-          </h2>
-          {criticalCount > 0 ? (
-            <span className="text-lg font-medium text-red-500 mt-1">
-              {criticalCount} rack{criticalCount > 1 ? "s" : ""} need{criticalCount === 1 ? "s" : ""} attention!
-            </span>
-          ) : warningCount > 0 ? (
-            <span className="text-lg font-medium text-amber-500 mt-1">
-              {warningCount} rack{warningCount > 1 ? "s" : ""} in warning state
-            </span>
-          ) : (
-            <span className="text-lg font-medium text-emerald-500 mt-1">
-              All Systems Operating Normally
-            </span>
-          )}
-        </div>
+    <div className="min-h-screen w-screen relative overflow-x-hidden flex flex-col font-sans bg-[#f5f4f0]">
+      {/* Background Section Bottom (Green Field) - Positioned at the very bottom of the page */}
+      <div
+        className="absolute bottom-0 left-0 w-full h-[50vh] bg-cover bg-bottom z-0 opacity-80"
+        style={{ backgroundImage: `url(${bgBot.src})` }}
+      />
 
-        {/* Row 1: Room Monitoring + Summary */}
-        <div className="flex gap-4 flex-shrink-0 items-stretch">
-          <div className="flex-1 flex">
-            <div className="w-full">
-              <RoomMonitor
-                temperature={roomTemperature}
-                humidity={roomHumidity}
+      {/* Background Section Top (Garden) - Fixed height on top */}
+      <div
+        className="absolute top-0 left-0 w-full h-[600px] md:h-[500px] bg-cover bg-center z-0 rounded-b-[30px] overflow-hidden"
+        style={{ backgroundImage: `url(${bgTop.src})` }}
+      >
+        {/* Soft overlay to blend top and bottom */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/5" />
+      </div>
+
+      {/* Main content container - Scrollable */}
+      <div className="relative z-10 flex-1 flex flex-col p-4 md:p-10 overflow-visible">
+
+        {/* Header Section: Welcome text & Navbar (Top) | Room Monitor (Below) */}
+        <div className="flex flex-col gap-6 md:gap-8 mb-8">
+          <div className="flex justify-between items-start w-full">
+            <div className="flex flex-col">
+              <h1 className="text-2xl md:text-4xl font-semibold text-[#34473d] tracking-tight leading-tight">
+                Welcome to
+              </h1>
+              <h1 className="text-3xl md:text-[52px] font-bold text-[#34473d] tracking-tight leading-none">
+                Lab Smart Farming
+              </h1>
+              <p className="text-base md:text-xl text-[#34473d]/70 font-medium mt-2 md:mt-3">
+                {criticalCount > 0 ? (
+                  <span className="text-red-600 italic">Attention required on some racks!</span>
+                ) : (
+                  "All System Working Normally"
+                )}
+              </p>
+            </div>
+
+            <div className="flex justify-end pt-1">
+              <TopNavbar
+                system={{ ...system, esp32Online: esp32Online || system.esp32Online }}
+                warningCount={warningCount}
+                criticalCount={criticalCount}
+                notifications={notifications.notifications}
+                unreadCount={notifications.unreadCount}
+                onMarkAllRead={notifications.markAllRead}
+                onClearAll={notifications.clearAll}
               />
             </div>
           </div>
-          <div className="flex-1 flex">
-            <div className="w-full">
-              <SummaryPanel racks={displayRacks} />
-            </div>
+
+          {/* Room Monitoring - Now spanning below the header row */}
+          <div className="w-full max-w-[550px]">
+            <RoomMonitor
+              temperature={roomTemperature}
+              humidity={roomHumidity}
+            />
           </div>
         </div>
 
-        {/* Separator */}
-        <div className="border-t-2 border-muted my-3" />
-        {/* Row 2: Rack Cards */}
-        <div className="flex-1 grid grid-cols-5 gap-3 min-h-0">
-          {displayRacks.map((rack) => (
-            <RackCard key={rack.id} rack={rack} />
-          ))}
+        <div className="mt-8">
+          {/* Row 2: Rack Cards - Responsive Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {displayRacks.map((rack) => (
+              <RackCard key={rack.id} rack={rack} />
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* Floating Bottom Header */}
-      <Header
-        system={{ ...system, esp32Online: esp32Online || system.esp32Online }}
-        warningCount={warningCount}
-        criticalCount={criticalCount}
-        notifications={notifications.notifications}
-        unreadCount={notifications.unreadCount}
-        onMarkAllRead={notifications.markAllRead}
-        onClearAll={notifications.clearAll}
-      />
     </div>
   );
 }

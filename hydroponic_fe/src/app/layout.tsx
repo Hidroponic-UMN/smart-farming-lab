@@ -29,16 +29,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <TooltipProvider delayDuration={200}>
-            {children}
-          </TooltipProvider>
-        </ThemeProvider>
+        <TooltipProvider delayDuration={200}>
+          {children}
+        </TooltipProvider>
       </body>
     </html>
   );
