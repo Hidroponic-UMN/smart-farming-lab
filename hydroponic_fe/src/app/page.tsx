@@ -44,11 +44,15 @@ export default function Dashboard() {
   ).length;
 
   return (
-    <div className="min-h-screen w-screen relative overflow-x-hidden flex flex-col font-sans bg-[#f5f4f0]">
+    <div className="min-h-screen w-screen relative overflow-x-hidden flex flex-col font-sans bg-[#ece9e5]">
       {/* Background Section Bottom (Green Field) - Positioned at the very bottom of the page */}
       <div
-        className="absolute bottom-0 left-0 w-full h-[50vh] bg-cover bg-bottom z-0 opacity-80"
-        style={{ backgroundImage: `url(${bgBot.src})` }}
+        className="absolute bottom-0 left-0 w-full h-[50vh] bg-cover bg-bottom z-0 opacity-60"
+        style={{ 
+          backgroundImage: `url(${bgBot.src})`,
+          maskImage: 'linear-gradient(to bottom, transparent, black)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent, black)'
+        }}
       />
 
       {/* Background Section Top (Garden) - Fixed height on top */}
