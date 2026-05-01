@@ -19,13 +19,19 @@ import {
 } from "@/components/ui/tooltip";
 import {
     Bell,
-    AlertTriangle,
-    XCircle,
     CheckCheck,
     Trash2,
-    Info,
 } from "lucide-react";
 import type { Notification } from "@/lib/notifications";
+
+const SENSOR_LABELS: Record<string, string> = {
+    lightIntensity: "Light",
+    ph: "Water pH Level",
+    ec: "Nutrition",
+    waterLevel: "Water Level",
+    waterTemp: "Water Temp",
+    waterFlow: "Water Flow",
+};
 
 interface NotificationCenterProps {
     notifications: Notification[];
@@ -35,22 +41,10 @@ interface NotificationCenterProps {
     collapsed?: boolean;
 }
 
-function getStatusIcon(status: string) {
-    if (status === "Critical") return <XCircle className="w-4 h-4 text-red-500" />;
-    return <AlertTriangle className="w-4 h-4 text-amber-500" />;
-}
-
-function getStatusBadgeClass(status: string) {
-    if (status === "Critical")
-        return "text-red-500";
-    return "text-amber-500";
-}
-
 function formatTime(date: Date) {
     return date.toLocaleTimeString("id-ID", {
         hour: "2-digit",
         minute: "2-digit",
-        second: "2-digit",
     });
 }
 
@@ -73,7 +67,7 @@ export function NotificationCenter({
                         >
                             <Bell className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                             {unreadCount > 0 && (
-                                <span className="absolute top-1 right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold leading-none animate-pulse border-2 border-background">
+                                <span className="absolute top-1 right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold leading-none border-2 border-background">
                                     {unreadCount > 99 ? "99+" : unreadCount}
                                 </span>
                             )}
@@ -83,136 +77,106 @@ export function NotificationCenter({
                 <TooltipContent>Pusat Notifikasi</TooltipContent>
             </Tooltip>
 
-            <DrawerContent className="h-full">
+            <DrawerContent className="h-full bg-[#f5f4f0]/95 backdrop-blur-xl border-l border-white/30 shadow-2xl">
                 <div className="flex flex-col h-full w-full">
-                    <DrawerHeader className="pb-2">
+                    <DrawerHeader className="pb-6 border-b border-white/20 px-6 pt-8">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <DrawerTitle className="text-lg">Pusat Notifikasi</DrawerTitle>
-                                {notifications.length > 0 && (
-                                    <Badge
-                                        variant="outline"
-                                        className="text-xs bg-muted/50"
-                                    >
-                                        {notifications.length} log
-                                    </Badge>
-                                )}
+                            <div className="flex flex-col gap-1">
+                                <DrawerTitle className="text-xl font-bold text-[#34473d] tracking-tight">
+                                    Pusat Notifikasi ({notifications.length})
+                                </DrawerTitle>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
                                 {unreadCount > 0 && (
-                                    <button
-                                        onClick={onMarkAllRead}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-muted/50 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                                    >
-                                        <CheckCheck className="w-3.5 h-3.5" />
-                                        Tandai dibaca
-                                    </button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <button
+                                                onClick={onMarkAllRead}
+                                                className="flex items-center justify-center w-8 h-8 text-[#34473d] hover:opacity-70 transition-all"
+                                            >
+                                                <CheckCheck className="w-5 h-5" />
+                                            </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Tandai dibaca</TooltipContent>
+                                    </Tooltip>
                                 )}
                                 {notifications.length > 0 && (
-                                    <button
-                                        onClick={onClearAll}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-muted/50 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                                    >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                        Hapus semua
-                                    </button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <button
+                                                onClick={onClearAll}
+                                                className="flex items-center justify-center w-8 h-8 text-[#8c0000] hover:opacity-70 transition-all"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Hapus semua</TooltipContent>
+                                    </Tooltip>
                                 )}
                             </div>
                         </div>
-                        <DrawerDescription className="text-xs text-muted-foreground">
-                            Log peringatan sensor dan cara penanganannya
-                        </DrawerDescription>
                     </DrawerHeader>
 
                     {/* Notification List */}
-                    <div className="px-4 pb-4 overflow-y-auto flex-1">
+                    <div className="px-6 py-4 overflow-y-auto flex-1 custom-scrollbar">
                         {notifications.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                                <div className="p-4 rounded-full bg-muted/30 mb-4">
-                                    <Bell className="w-8 h-8 text-muted-foreground/50" />
+                            <div className="flex flex-col items-center justify-center py-20 text-center">
+                                <div className="w-16 h-16 rounded-3xl bg-white/40 flex items-center justify-center mb-6 shadow-inner">
+                                    <Bell className="w-6 h-6 text-[#34473d]/20" />
                                 </div>
-                                <p className="text-sm font-medium text-muted-foreground">
-                                    Tidak ada notifikasi
-                                </p>
-                                <p className="text-xs text-muted-foreground/70 mt-1">
-                                    Notifikasi akan muncul jika ada sensor dalam kondisi Warning
-                                    atau Critical
+                                <h3 className="text-base font-bold text-[#34473d] mb-1">Semua Terkendali</h3>
+                                <p className="text-xs text-[#34473d]/60 max-w-[200px]">
+                                    Belum ada aktivitas sensor yang memerlukan perhatian khusus.
                                 </p>
                             </div>
                         ) : (
-                            <div className="space-y-2">
+                            <div className="space-y-4">
                                 {notifications.map((notif, index) => (
                                     <div
                                         key={notif.id}
-                                        className={`group relative rounded-xl border p-3.5 transition-all duration-200 ${index < unreadCount
-                                            ? "bg-muted/30 border-border/80"
-                                            : "bg-background border-border/40 opacity-70"
+                                        className={`relative rounded-2xl p-4 transition-all duration-300 ${index < unreadCount
+                                            ? "bg-white/60 shadow-md border border-white/60"
+                                            : "bg-white/20 border border-white/20 opacity-70"
                                             }`}
                                     >
-                                        <div className="flex items-start gap-3">
-                                            {/* Status Icon */}
-                                            <div
-                                                className={`flex-shrink-0 mt-0.5 p-1.5 rounded-lg ${notif.status === "Critical"
-                                                    ? "bg-red-500/10"
-                                                    : "bg-amber-500/10"
-                                                    }`}
-                                            >
-                                                {getStatusIcon(notif.status)}
-                                            </div>
-
-                                            {/* Content */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-xs font-bold">
-                                                        {notif.rackLabel}
-                                                    </span>
-                                                    <span className="text-muted-foreground text-xs">
-                                                        •
-                                                    </span>
-                                                    <span className="text-xs font-medium text-muted-foreground">
-                                                        {notif.sensorLabel}
-                                                    </span>
-                                                    <Badge
-                                                        variant="outline"
-                                                        className={`text-[10px] px-0 py-0 font-bold border-none ${getStatusBadgeClass(
-                                                            notif.status
-                                                        )}`}
-                                                    >
-                                                        {notif.status}
-                                                    </Badge>
+                                        <div className="flex flex-col">
+                                            {/* Top Content */}
+                                            <div className="flex gap-4 items-center">
+                                                {/* Left: Rack Label Box */}
+                                                <div className="w-16 h-10 rounded-xl bg-gradient-to-br from-[#50705f] to-[#86a293] text-white flex items-center justify-center font-bold text-[10px] shrink-0 shadow-sm px-2 text-center leading-tight">
+                                                    {notif.rackLabel}
                                                 </div>
 
-                                                {/* Value */}
-                                                <p className="text-sm font-semibold tabular-nums mb-1.5">
-                                                    {notif.value.toFixed(
-                                                        notif.sensorType === "ph" || notif.sensorType === "ec"
-                                                            ? 2
-                                                            : notif.sensorType === "lightIntensity" ||
-                                                                notif.sensorType === "waterLevel"
-                                                                ? 0
-                                                                : 1
-                                                    )}{" "}
-                                                    <span className="text-xs font-normal text-muted-foreground">
-                                                        {notif.unit}
-                                                    </span>
-                                                </p>
-
-                                                {/* Remediation */}
-                                                <div className="flex items-start gap-1.5 p-2 rounded-lg bg-muted/40 border border-border/30">
-                                                    <Info className="w-3.5 h-3.5 text-blue-500 flex-shrink-0 mt-0.5" />
-                                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                                        <span className="font-semibold text-foreground/80">
-                                                            Penanganan:{" "}
+                                                {/* Right: Data Content */}
+                                                <div className="flex-1 min-w-0">
+                                                    {/* Top Line */}
+                                                    <div className="flex items-center justify-between mb-0.5">
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#34473d]">
+                                                            {SENSOR_LABELS[notif.sensorType] || notif.sensorLabel}
                                                         </span>
-                                                        {notif.message}
-                                                    </p>
+                                                        <span className="text-[10px] text-[#34473d]/40 font-bold tabular-nums shrink-0 ml-2">
+                                                            {formatTime(notif.timestamp)}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Bottom Line (Data) */}
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-[10px] font-black uppercase tracking-widest ${notif.status === 'Critical' ? 'text-rose-600' : 'text-[#f8650c]'}`}>
+                                                            {notif.status}
+                                                        </span>
+                                                        <span className="text-xs font-bold text-[#34473d] tabular-nums">
+                                                            {notif.value.toFixed(notif.sensorType === "ph" || notif.sensorType === "ec" ? 2 : notif.sensorType === "lightIntensity" || notif.sensorType === "waterLevel" ? 0 : 1)}
+                                                            <span className="ml-0.5 text-[9px] font-medium opacity-50 uppercase">{notif.unit}</span>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            {/* Timestamp */}
-                                            <span className="text-[10px] text-muted-foreground/70 font-mono flex-shrink-0 tabular-nums">
-                                                {formatTime(notif.timestamp)}
-                                            </span>
+                                            {/* Bottom Content */}
+                                            <div className="h-[1px] bg-[#34473d]/10 w-full my-3" />
+                                            <p className="text-[11px] leading-relaxed text-[#34473d]/80 px-1">
+                                                {notif.message}
+                                            </p>
                                         </div>
                                     </div>
                                 ))}

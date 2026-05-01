@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { SensorData } from "@/lib/simulation";
+import type { SensorData } from "@/lib/sensor-data";
 import { getStatusBg, getStatusColor, THRESHOLDS } from "@/lib/thresholds";
 import { Thermometer, Droplets } from "lucide-react";
 import { MiniChart } from "./mini-chart";
@@ -32,9 +32,12 @@ function RoomSensor({
     const isInverted = variant === "inverted";
 
     return (
-        <Card className={`py-4 px-5 h-full transition-all duration-300 border border-white/20 backdrop-blur-md shadow-lg ${type === "roomTemp"
-            ? "bg-gradient-to-br from-[#50705f] to-[#86a293] text-white" 
-            : "bg-white/30 text-[#34473d]"
+        <Card className={`py-4 px-5 h-full transition-all duration-300 border border-white/20 backdrop-blur-md shadow-lg ${
+            sensor.status !== "Normal"
+                ? `${getStatusBg(sensor.status)} ${getStatusColor(sensor.status)}`
+                : type === "roomTemp"
+                    ? "bg-gradient-to-br from-[#50705f] to-[#86a293] text-white" 
+                    : "bg-white/30 text-[#34473d]"
             }`}>
             <CardContent className="p-0">
                 <div className="flex items-center justify-between">

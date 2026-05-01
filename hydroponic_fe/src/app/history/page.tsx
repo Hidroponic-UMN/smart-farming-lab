@@ -74,9 +74,9 @@ export default function HistoryHubPage() {
           </Badge>
         </div>
 
-        {/* Rack Grid - Forced to 5 columns on desktop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {[1, 2, 3, 4, 5].map((rackId) => {
+        {/* Rack Grid - Forced to 3 columns on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+          {[1, 2, 3].map((rackId) => {
             const rack = displayRacks.find(r => r.id === rackId);
 
             return (

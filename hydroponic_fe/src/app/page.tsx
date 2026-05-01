@@ -1,17 +1,34 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRacks } from "@/lib/use-racks";
-import { useRoomSensor } from "@/lib/simulation";
+import { useRoomSensor } from "@/lib/sensor-data";
 import { useNotifications } from "@/lib/notifications";
 import { TopNavbar } from "@/components/top-navbar";
 import { RoomMonitor } from "@/components/room-monitor";
 import { RackCard } from "@/components/rack-card";
+import { RackCardHorizontal } from "@/components/rack-card-horizontal";
 // import { SummaryPanel } from "@/components/summary-panel"; // hidden as requested
 // Import backgrounds
 import bgTop from "@/assets/images/bgsmartfarmingtop.avif";
 import bgBot from "@/assets/images/bgsmartfarmingbot.avif";
 
 export default function Dashboard() {
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  
+  // Auto-switch to grid view if screen is too narrow for TV Mode (Horizontal)
+  useEffect(() => {
+    const checkWidth = () => {
+      if (window.innerWidth < 1200 && viewMode === "list") {
+        setViewMode("grid");
+      }
+    };
+    
+    checkWidth();
+    window.addEventListener("resize", checkWidth);
+    return () => window.removeEventListener("resize", checkWidth);
+  }, [viewMode]);
+
   const { racks, system } = useRacks();
   const { roomData, esp32Online } = useRoomSensor();
   const notifications = useNotifications(
@@ -93,6 +110,8 @@ export default function Dashboard() {
                 criticalCount={criticalCount}
                 notifications={notifications.notifications}
                 unreadCount={notifications.unreadCount}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
                 onMarkAllRead={notifications.markAllRead}
                 onClearAll={notifications.clearAll}
               />
@@ -109,12 +128,20 @@ export default function Dashboard() {
         </div>
 
         <div className="mt-8">
-          {/* Row 2: Rack Cards - Responsive Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-            {displayRacks.map((rack) => (
-              <RackCard key={rack.id} rack={rack} />
-            ))}
-          </div>
+          {/* Row 2: Rack Cards - Responsive Layout */}
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+              {displayRacks.slice(0, 3).map((rack) => (
+                <RackCard key={rack.id} rack={rack} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {displayRacks.slice(0, 3).map((rack) => (
+                <RackCardHorizontal key={rack.id} rack={rack} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

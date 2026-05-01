@@ -117,22 +117,22 @@ export function getStatusColor(status: Status): string {
     case "Low":
     case "High":
     case "Warning":
-      return "text-amber-500";
+      return "text-[#f8650c]";
     case "Critical":
-      return "text-red-500";
+      return "text-[#8c0000]";
   }
 }
 
 export function getStatusBg(status: Status): string {
   switch (status) {
     case "Normal":
-      return "text-[#34473d]";
+      return "bg-white/40 dark:bg-gray-950/40";
     case "Low":
     case "High":
     case "Warning":
-      return "text-amber-500";
+      return "bg-gradient-to-tl from-[#f8650c]/40 to-white";
     case "Critical":
-      return "text-red-500";
+      return "bg-gradient-to-tl from-[#8c0000]/40 to-white";
   }
 }
 
@@ -143,9 +143,9 @@ export function getStatusDot(status: Status): string {
     case "Low":
     case "High":
     case "Warning":
-      return "bg-amber-500";
+      return "bg-[#f8650c]";
     case "Critical":
-      return "bg-red-500 animate-pulse";
+      return "bg-[#8c0000]";
   }
 }
 
@@ -163,8 +163,8 @@ export function getProgressColor(status: Status): string {
     case "Low":
     case "High":
     case "Warning":
-      return "[&>div]:bg-amber-500";
+      return "[&>div]:bg-[#f8650c]";
     case "Critical":
-      return "[&>div]:bg-red-500";
+      return "[&>div]:bg-[#8c0000]";
   }
 }

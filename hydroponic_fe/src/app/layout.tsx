@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+import { SimulationProvider } from "@/lib/simulation-context";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -29,9 +31,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <TooltipProvider delayDuration={200}>
-          {children}
-        </TooltipProvider>
+        <SimulationProvider>
+          <TooltipProvider delayDuration={200}>
+            {children}
+          </TooltipProvider>
+        </SimulationProvider>
       </body>
     </html>
   );
