@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "simulate": "node scripts/simulate-esp32.mjs"
+    "lint": "eslint"
   },
   "dependencies": {
     "@tanstack/react-table": "^8.21.3",

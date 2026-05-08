@@ -22,7 +22,7 @@ import {
     Wrench,
     History,
 } from "lucide-react";
-import type { SystemStatus } from "@/lib/simulation";
+import type { SystemStatus } from "@/lib/sensor-data";
 import {
     Tooltip,
     TooltipContent,

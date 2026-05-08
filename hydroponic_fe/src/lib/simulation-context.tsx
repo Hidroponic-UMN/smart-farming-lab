@@ -1,45 +1,20 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import type { DashboardData, RackData, RoomData, SensorData } from "./sensor-data";
 import { getStatus, type Status } from "./thresholds";
 
-export interface SensorData {
-    value: number;
-    history: number[];
-    status: Status;
-}
-
-export interface RackData {
-    id: number;
-    label: string;
-    waterLevel: SensorData;
-    ph: SensorData;
-    ec: SensorData;
-    waterTemp: SensorData;
-    waterFlow: SensorData;
-    lightIntensity: SensorData;
-    overallStatus: Status;
-}
-
-export interface RoomData {
-    temperature: SensorData;
-    humidity: SensorData;
-}
-
-export interface SystemStatus {
-    esp32Online: boolean;
-    serverOnline: boolean;
-    lastUpdated: Date;
-    simulationActive: boolean;
-}
-
-export interface DashboardData {
-    room: RoomData;
-    racks: RackData[];
-    system: SystemStatus;
-}
-
 export type SimulationMode = "stable" | "trending_up" | "trending_down";
+
+interface SimulationContextValue {
+    isSimulating: boolean;
+    simulationMode: SimulationMode;
+    simulatedData: DashboardData | null;
+    toggleSimulation: (active: boolean) => void;
+    setSimulationMode: (mode: SimulationMode) => void;
+}
+
+const SimulationContext = createContext<SimulationContextValue | null>(null);
 
 const HISTORY_LENGTH = 25;
 
@@ -56,17 +31,14 @@ function drift(current: number, min: number, max: number, volatility: number = 0
 
     switch (mode) {
         case "trending_up":
-            // Pull toward 85% of range (high warning / critical zone)
             target = min + range * 0.85;
             pullStrength = 0.03;
             break;
         case "trending_down":
-            // Pull toward 15% of range (low warning / critical zone)
             target = min + range * 0.15;
             pullStrength = 0.03;
             break;
         default:
-            // Pull toward center (normal stable)
             target = (min + max) / 2;
             pullStrength = 0.01;
             break;
@@ -166,19 +138,17 @@ function createInitialData(): DashboardData {
             esp32Online: true,
             serverOnline: true,
             lastUpdated: new Date(),
-            simulationActive: true,
         },
     };
 }
 
-export function useSimulation() {
+export function SimulationProvider({ children }: { children: React.ReactNode }) {
     const [data, setData] = useState<DashboardData | null>(null);
-    const [simulationActive, setSimulationActive] = useState(true);
+    const [isSimulating, setIsSimulating] = useState(false);
     const [simulationMode, setSimulationMode] = useState<SimulationMode>("stable");
     const initialized = useRef(false);
     const modeRef = useRef<SimulationMode>(simulationMode);
 
-    // Keep ref in sync so tick callback always reads latest mode
     useEffect(() => {
         modeRef.current = simulationMode;
     }, [simulationMode]);
@@ -195,73 +165,40 @@ export function useSimulation() {
         setData((prev) => {
             if (!prev) return prev;
             return {
-                room: prev.room, // Room data comes from API (useRoomSensor), not simulation
+                room: {
+                    temperature: updateSensor(prev.room.temperature, "roomTemp", 22, 34, 0.2, mode),
+                    humidity: updateSensor(prev.room.humidity, "roomHumidity", 40, 80, 0.2, mode),
+                },
                 racks: prev.racks.map((r) => updateRack(r, mode)),
                 system: {
                     ...prev.system,
                     lastUpdated: new Date(),
-                    simulationActive: true,
                 },
             };
         });
     }, []);
 
     useEffect(() => {
-        if (!simulationActive) return;
+        if (!isSimulating) return;
         const interval = setInterval(tick, 2500);
         return () => clearInterval(interval);
-    }, [simulationActive, tick]);
+    }, [isSimulating, tick]);
 
-    const toggleSimulation = useCallback(() => {
-        setSimulationActive((prev) => !prev);
-    }, []);
+    const value: SimulationContextValue = {
+        isSimulating,
+        simulationMode,
+        simulatedData: data,
+        toggleSimulation: setIsSimulating,
+        setSimulationMode,
+    };
 
-    return { data, simulationActive, toggleSimulation, simulationMode, setSimulationMode };
+    return <SimulationContext.Provider value={value}>{children}</SimulationContext.Provider>;
 }
 
-/**
- * Hook to fetch real room sensor data from the API.
- * Polls GET /api/room every 3 seconds.
- * Returns null if no data from ESP32 yet.
- */
-export function useRoomSensor() {
-    const [roomData, setRoomData] = useState<RoomData | null>(null);
-    const [esp32Online, setEsp32Online] = useState(false);
-
-    useEffect(() => {
-        let active = true;
-
-        async function fetchRoom() {
-            try {
-                const res = await fetch("/api/room");
-                if (!res.ok) return;
-                const json = await res.json();
-
-                if (!active) return;
-
-                if (json.temperature && json.humidity) {
-                    setRoomData({
-                        temperature: json.temperature,
-                        humidity: json.humidity,
-                    });
-                    setEsp32Online(json.esp32Online);
-                } else {
-                    setEsp32Online(false);
-                }
-            } catch {
-                if (active) setEsp32Online(false);
-            }
-        }
-
-        fetchRoom();
-        const interval = setInterval(fetchRoom, 3000);
-        return () => {
-            active = false;
-            clearInterval(interval);
-        };
-    }, []);
-
-    return { roomData, esp32Online };
+export function useSimulationContext() {
+    const ctx = useContext(SimulationContext);
+    if (!ctx) {
+        throw new Error("useSimulationContext must be used within a SimulationProvider");
+    }
+    return ctx;
 }
-
-

@@ -55,8 +55,12 @@ export default function CalibrationHubPage() {
     <div className="min-h-screen w-screen relative overflow-x-hidden flex flex-col font-sans bg-[#f5f4f0]">
       {/* Background Section Bottom */}
       <div 
-        className="absolute bottom-0 left-0 w-full h-[50vh] bg-cover bg-bottom z-0 opacity-80"
-        style={{ backgroundImage: `url(${bgBot.src})` }}
+        className="absolute bottom-0 left-0 w-full h-[50vh] bg-cover bg-bottom z-0 opacity-60"
+        style={{ 
+          backgroundImage: `url(${bgBot.src})`,
+          maskImage: 'linear-gradient(to bottom, transparent, black)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent, black)'
+        }}
       />
       
       {/* Background Section Top */}
@@ -93,7 +97,7 @@ export default function CalibrationHubPage() {
             className="bg-white/40 backdrop-blur-md text-[#34473d] border-white/40 px-6 py-2 rounded-2xl text-sm font-bold shadow-lg"
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            5 Racks Monitoring
+            3 Racks Monitoring
           </Badge>
         </div>
 
@@ -114,9 +118,9 @@ export default function CalibrationHubPage() {
           </div>
         </div>
 
-        {/* Rack Grid - 5 columns on desktop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {[1, 2, 3, 4, 5].map((rackId) => {
+        {/* Rack Grid - 3 columns on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+          {[1, 2, 3].map((rackId) => {
             const cal = calibrations[rackId];
             const phCalibrated = cal?.ph_slope != null;
             const tdsCalibrated = cal?.tds_k_factor != null;
