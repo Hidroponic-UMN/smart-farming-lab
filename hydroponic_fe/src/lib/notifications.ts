@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { getStatus, type Status, THRESHOLDS } from "./thresholds";
-import type { DashboardData, RackData, SensorData } from "./simulation";
+import type { DashboardData, RackData, SensorData } from "./sensor-data";
 
 export interface Notification {
     id: string;
@@ -92,11 +92,11 @@ const SENSOR_LABELS: Record<string, string> = {
     waterLevel: "Water Level",
     ph: "pH",
     ec: "EC/Nutrisi",
-    waterTemp: "Suhu Air",
+    waterTemp: "Water Temperature",
     waterFlow: "Water Flow",
-    lightIntensity: "Intensitas Cahaya",
-    roomTemp: "Suhu Ruangan",
-    roomHumidity: "Kelembaban Ruangan",
+    lightIntensity: "Light Intensity",
+    roomTemp: "Room Temperature",
+    roomHumidity: "Room Humidity",
 };
 
 function checkSensor(

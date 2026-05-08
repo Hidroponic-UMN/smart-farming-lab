@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { RackData } from "@/lib/simulation";
+import type { RackData } from "@/lib/sensor-data";
 import { CheckCircle2, AlertTriangle, AlertOctagon, Layers } from "lucide-react";
 
 interface SummaryPanelProps {

@@ -26,47 +26,7 @@ let store: {
     lastUpdated: null,
 };
 
-/**
- * POST /api/room
- * Receives sensor data from ESP32 or simulator.
- * Body: { temperature: number, humidity: number }
- */
-export async function POST(request: Request) {
-    try {
-        const body = await request.json();
-        const { temperature, humidity } = body;
 
-        if (typeof temperature !== "number" || typeof humidity !== "number") {
-            return NextResponse.json(
-                { error: "Invalid data. Expected { temperature: number, humidity: number }" },
-                { status: 400 }
-            );
-        }
-
-        // Update temperature
-        store.temperature.value = temperature;
-        store.temperature.history = [
-            ...store.temperature.history.slice(-(HISTORY_LENGTH - 1)),
-            temperature,
-        ];
-
-        // Update humidity
-        store.humidity.value = humidity;
-        store.humidity.history = [
-            ...store.humidity.history.slice(-(HISTORY_LENGTH - 1)),
-            humidity,
-        ];
-
-        store.lastUpdated = new Date();
-
-        return NextResponse.json({ success: true });
-    } catch {
-        return NextResponse.json(
-            { error: "Invalid JSON body" },
-            { status: 400 }
-        );
-    }
-}
 
 /**
  * GET /api/room

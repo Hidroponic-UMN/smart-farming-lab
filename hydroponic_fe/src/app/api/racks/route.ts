@@ -169,7 +169,7 @@ export async function GET(request: NextRequest) {
 
                 try {
                     const parsed = row.data_log;
-                    const sensorData = parsed;
+                    const sensorData = parsed as Record<string, any>;
                     for (const [espKey, { feKey }] of Object.entries(SENSOR_MAP)) {
                         if (sensorData[espKey] !== undefined) {
                             updateSensor(rack, feKey, Number(sensorData[espKey]));
