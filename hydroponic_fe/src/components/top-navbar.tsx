@@ -16,6 +16,7 @@ import {
     TrendingUp,
     TrendingDown,
     Activity,
+    Sprout,
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -158,13 +159,24 @@ export function TopNavbar({
 
                     <Tooltip>
                         <TooltipTrigger asChild>
+                            <Link href="/planted-date">
+                                <button className="flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 hover:bg-white/20 active:scale-95">
+                                    <Sprout className="w-5 h-5 text-[#34473d]" />
+                                </button>
+                            </Link>
+                        </TooltipTrigger>
+                        <TooltipContent>Planting Management</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                        <TooltipTrigger asChild>
                             <Link href="/calibration">
                                 <button className="flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 hover:bg-white/20 active:scale-95">
                                     <Wrench className="w-5 h-5 text-[#34473d]" />
                                 </button>
                             </Link>
                         </TooltipTrigger>
-                        <TooltipContent>Sensor Calibration</TooltipContent>
+                        <TooltipContent>Sensor Adjustment</TooltipContent>
                     </Tooltip>
 
                     <DropdownMenu>
@@ -266,8 +278,13 @@ export function TopNavbar({
                                         <History className="w-5 h-5 text-black" />
                                     </Link>
 
+                                    <Link href="/planted-date" className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors">
+                                        <span className="font-semibold text-[#34473d]">Planting Management</span>
+                                        <Sprout className="w-5 h-5 text-black" />
+                                    </Link>
+
                                     <Link href="/calibration" className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors">
-                                        <span className="font-semibold text-[#34473d]">Calibration</span>
+                                        <span className="font-semibold text-[#34473d]">Sensor Adjustment</span>
                                         <Wrench className="w-5 h-5 text-black" />
                                     </Link>
 

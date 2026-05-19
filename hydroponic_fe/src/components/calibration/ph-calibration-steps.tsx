@@ -182,12 +182,12 @@ export function PhCalibrationSteps({
             ) : result?.commandStatus === "success" ? (
               <>
                 <CheckCircle2 className="w-5 h-5 mr-2" />
-                Recalibrate {buf.label}
+                Readjust {buf.label}
               </>
             ) : (
               <>
                 <Target className="w-5 h-5 mr-2" />
-                Calibrate {buf.label}
+                Adjust {buf.label}
               </>
             )}
           </Button>
@@ -228,9 +228,8 @@ export function PhCalibrationSteps({
   const steps: WizardStep[] = [
     // Step 1: Preparation
     {
-      id: "prepare",
       title: "Persiapan",
-      description: "Siapkan alat dan bahan untuk kalibrasi sensor pH",
+      description: "Siapkan alat dan bahan untuk adjustment sensor pH",
       icon: <FlaskConical className="w-5 h-5" />,
       content: (
         <div className="space-y-6">
@@ -339,7 +338,7 @@ export function PhCalibrationSteps({
     {
       id: "review",
       title: "Review",
-      description: "Review hasil kalibrasi",
+      description: "Review hasil adjustment",
       icon: <CheckCircle2 className="w-5 h-5" />,
       content: (
         <div className="space-y-6">
@@ -387,19 +386,19 @@ export function PhCalibrationSteps({
             <div className="rounded-xl border-2 border-emerald-500/20 bg-emerald-500/5 p-5 text-center">
               <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
               <h4 className="font-semibold text-emerald-500 text-lg">
-                Kalibrasi pH Berhasil!
+                Adjustment pH Berhasil!
               </h4>
               <p className="text-sm text-muted-foreground mt-1">
-                Kedua titik sudah dikalibrasi pada ESP32 Rack {rackId}.
+                Kedua titik sudah di-adjust pada ESP32 Rack {rackId}.
                 <br />
-                Sensor sekarang mengirim nilai pH yang sudah dikalibrasi.
+                Sensor sekarang mengirim nilai pH yang sudah di-adjust.
               </p>
             </div>
           ) : (
             <div className="rounded-xl border-2 border-amber-500/20 bg-amber-500/5 p-5 text-center">
               <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
-                Beberapa titik belum dikalibrasi. Kembali ke langkah sebelumnya
+                Beberapa titik belum di-adjust. Kembali ke langkah sebelumnya
                 untuk menyelesaikan.
               </p>
             </div>
@@ -411,8 +410,8 @@ export function PhCalibrationSteps({
 
   return (
     <CalibrationWizard
-      title={`pH Calibration — Rack ${rackId}`}
-      subtitle="Kalibrasi 2 titik: pH 7.00 (netral) dan pH 4.00 (asam)"
+      title={`pH Adjustment — Rack ${rackId}`}
+      subtitle="Adjustment 2 titik: pH 7.00 (netral) dan pH 4.00 (asam)"
       steps={steps}
       onComplete={onComplete}
       onCancel={onCancel}

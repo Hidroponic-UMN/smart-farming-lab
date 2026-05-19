@@ -85,9 +85,9 @@ export default function CalibrationHubPage() {
             </Link>
             
             <div className="pt-2">
-              <h1 className="text-4xl md:text-5xl font-bold text-[#34473d] tracking-tight">Sensor Calibration</h1>
+              <h1 className="text-4xl md:text-5xl font-bold text-[#34473d] tracking-tight">Sensor Adjustment</h1>
               <p className="text-lg text-[#34473d]/70 font-medium mt-2">
-                Manage and calibrate pH & TDS sensors for all racks
+                Manage and adjust pH & TDS sensors for all racks
               </p>
             </div>
           </div>
@@ -108,11 +108,11 @@ export default function CalibrationHubPage() {
               <FlaskConical className="w-8 h-8" />
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-[#34473d] mb-2">Panduan Kalibrasi Sensor</h2>
+              <h2 className="text-2xl font-bold text-[#34473d] mb-2">Panduan Sensor Adjustment</h2>
               <p className="text-[#34473d]/80 font-medium leading-relaxed max-w-3xl">
-                Kalibrasi sensor pH dan TDS sangat penting untuk memastikan akurasi pembacaan. 
-                Disarankan melakukan kalibrasi <span className="font-bold text-[#34473d]">setiap 2–4 minggu</span> atau saat sensor baru dipasang. 
-                Pilih rak di bawah ini untuk memulai proses kalibrasi mendetail.
+                Adjustment sensor pH dan TDS sangat penting untuk memastikan akurasi pembacaan. 
+                Disarankan melakukan adjustment <span className="font-bold text-[#34473d]">setiap 2–4 minggu</span> atau saat sensor baru dipasang. 
+                Pilih rak di bawah ini untuk memulai proses adjustment mendetail.
               </p>
             </div>
           </div>
@@ -147,7 +147,7 @@ export default function CalibrationHubPage() {
                           Rack {rackId}
                         </h3>
                         <p className={`text-[10px] font-bold uppercase tracking-widest ${allCalibrated ? "text-emerald-600" : "text-orange-500"}`}>
-                          {allCalibrated ? "Fully Calibrated" : "Needs Attention"}
+                          {allCalibrated ? "Fully Adjusted" : "Needs Attention"}
                         </p>
                       </div>
                     </div>
@@ -192,7 +192,7 @@ export default function CalibrationHubPage() {
                         : "bg-orange-500 hover:bg-orange-600"
                       }`}
                     >
-                      {allCalibrated ? "Recalibrate" : "Start Calibration"}
+                      {allCalibrated ? "Readjust" : "Start Adjustment"}
                       <ChevronRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </Link>
@@ -202,7 +202,7 @@ export default function CalibrationHubPage() {
                     <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-[#34473d]/50 px-1 uppercase tracking-wider">
                       <Clock className="w-3 h-3" />
                       <span>
-                        Last: {formatDate(cal?.ph_calibrated_at || cal?.tds_calibrated_at || null)}
+                        Last Adjustment: {formatDate(cal?.ph_calibrated_at || cal?.tds_calibrated_at || null)}
                       </span>
                     </div>
                   )}

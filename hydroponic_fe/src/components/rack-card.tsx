@@ -22,6 +22,8 @@ import {
     Activity,
     Circle,
     TrendingUp,
+    CalendarIcon,
+    Sprout,
 } from "lucide-react";
 import type { RackData, SensorData } from "@/lib/sensor-data";
 import {
@@ -87,8 +89,7 @@ function SensorCard({
         <Tooltip>
             <TooltipTrigger asChild>
                 <div className="group cursor-pointer">
-                    <div className={`relative rounded-xl p-3 backdrop-blur-sm shadow-md transition-all duration-300 ${
-                        status !== "Normal"
+                    <div className={`relative rounded-xl p-3 backdrop-blur-sm shadow-md transition-all duration-300 ${status !== "Normal"
                             ? getStatusBg(status)
                             : type === "lightIntensity"
                                 ? "bg-gradient-to-tl from-[#e9e6de] to-white"
@@ -156,6 +157,7 @@ function SensorCard({
 }
 
 export function RackCard({ rack }: RackCardProps) {
+    const daysSince = rack.plantedAt ? Math.floor((new Date().getTime() - new Date(rack.plantedAt).getTime()) / (1000 * 60 * 60 * 24)) + 1 : null;
 
     const borderColors: Record<string, string> = {
         Critical: "border-rose-200 dark:border-rose-950",
@@ -174,8 +176,13 @@ export function RackCard({ rack }: RackCardProps) {
 
             <CardContent className="relative p-4 space-y-4">
                 {/* Header */}
-                <div className="flex items-center justify-center p-3 mb-6 rounded-lg bg-gradient-to-br from-[#50705f] to-[#86a293] border-none text-white"> {/* adjust disini (gradient warna) */}
+                <div className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-br from-[#50705f] to-[#86a293] border-none text-white shadow-lg mb-6">
                     <h3 className="text-lg font-bold">{rack.label}</h3>
+                    {daysSince && (
+                        <Badge variant="outline" className="bg-white/20 text-white border-white/20 px-3 py-1 rounded-lg font-bold backdrop-blur-md">
+                            Day {daysSince}
+                        </Badge>
+                    )}
                 </div>
 
                 {/* On Rack Section */}

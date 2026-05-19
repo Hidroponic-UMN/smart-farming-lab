@@ -20,6 +20,7 @@ export interface RackData {
     waterFlow: SensorData;
     lightIntensity: SensorData;
     overallStatus: Status;
+    plantedAt?: string | null;
 }
 
 export interface RoomData {

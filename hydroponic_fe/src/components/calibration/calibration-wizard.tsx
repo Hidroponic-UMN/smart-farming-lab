@@ -188,7 +188,7 @@ export function CalibrationWizard({
             {isLastStep ? (
               <>
                 <Check className="w-4 h-4 mr-1" />
-                Save Calibration
+                Save Adjustment
               </>
             ) : (
               <>

@@ -88,9 +88,9 @@ export default function RackCalibrationPage() {
             </Link>
             
             <div className="pt-2">
-              <h1 className="text-4xl md:text-5xl font-bold text-[#34473d] tracking-tight">Rack {rackId} Calibration</h1>
+              <h1 className="text-4xl md:text-5xl font-bold text-[#34473d] tracking-tight">Rack {rackId} Adjustment</h1>
               <p className="text-lg text-[#34473d]/70 font-medium mt-2">
-                Pilih sensor yang ingin Anda kalibrasi pada rak ini
+                Pilih sensor yang ingin Anda sesuaikan pada rak ini
               </p>
             </div>
           </div>
@@ -100,7 +100,7 @@ export default function RackCalibrationPage() {
             className="bg-white/40 backdrop-blur-md text-[#34473d] border-white/40 px-6 py-2 rounded-2xl text-sm font-bold shadow-lg"
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            Active Calibration Mode
+            Active Adjustment Mode
           </Badge>
         </div>
 
@@ -124,17 +124,17 @@ export default function RackCalibrationPage() {
                   )}
                 </div>
                 <p className="text-[#34473d]/70 font-medium mb-6 leading-relaxed">
-                  Kalibrasi 2 titik menggunakan larutan buffer pH 7.0 dan pH 4.0. 
+                  Adjustment 2 titik menggunakan larutan buffer pH 7.0 dan pH 4.0. 
                   Penting untuk akurasi nutrisi tanaman.
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-6">
-                  <span className="px-3 py-1 rounded-lg bg-white/40 text-[10px] font-bold text-[#34473d] uppercase tracking-wider">2-Point Cal</span>
+                  <span className="px-3 py-1 rounded-lg bg-white/40 text-[10px] font-bold text-[#34473d] uppercase tracking-wider">2-Point Adj</span>
                   <span className="px-3 py-1 rounded-lg bg-white/40 text-[10px] font-bold text-[#34473d] uppercase tracking-wider">~5 Mins</span>
                 </div>
 
                 <div className="flex items-center text-[#34473d] font-bold group-hover:gap-3 gap-2 transition-all">
-                  Select pH Calibration <ChevronRight className="w-4 h-4" />
+                  Select pH Adjustment <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
             </button>
@@ -156,17 +156,17 @@ export default function RackCalibrationPage() {
                   )}
                 </div>
                 <p className="text-[#34473d]/70 font-medium mb-6 leading-relaxed">
-                  Kalibrasi 1 titik dengan larutan referensi 1382 ppm. 
+                  Adjustment 1 titik dengan larutan referensi 1382 ppm. 
                   Memastikan konsentrasi mineral air terkontrol.
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-6">
-                  <span className="px-3 py-1 rounded-lg bg-white/40 text-[10px] font-bold text-[#34473d] uppercase tracking-wider">1-Point Cal</span>
+                  <span className="px-3 py-1 rounded-lg bg-white/40 text-[10px] font-bold text-[#34473d] uppercase tracking-wider">1-Point Adj</span>
                   <span className="px-3 py-1 rounded-lg bg-white/40 text-[10px] font-bold text-[#34473d] uppercase tracking-wider">~3 Mins</span>
                 </div>
 
                 <div className="flex items-center text-[#34473d] font-bold group-hover:gap-3 gap-2 transition-all">
-                  Select TDS Calibration <ChevronRight className="w-4 h-4" />
+                  Select TDS Adjustment <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
             </button>
@@ -180,11 +180,11 @@ export default function RackCalibrationPage() {
                   <CheckCircle2 className="w-10 h-10 text-white" />
                 </div>
                 <h3 className="text-3xl font-bold text-white mb-3">
-                  Calibration Complete! 🎉
+                  Adjustment Complete! 🎉
                 </h3>
                 <p className="text-white/80 font-medium mb-8 max-w-lg mx-auto leading-relaxed">
-                  Semua sensor pada Rack {rackId} telah berhasil dikalibrasi. 
-                  Dashboard akan menampilkan nilai yang telah dikalibrasi.
+                  Semua sensor pada Rack {rackId} telah berhasil disesuaikan. 
+                  Dashboard akan menampilkan nilai yang telah di-adjust.
                 </p>
                 <Link href="/">
                   <Button className="h-14 px-10 rounded-2xl bg-white text-[#34473d] hover:bg-white/90 font-bold text-lg shadow-xl hover:scale-105 active:scale-95 transition-all">
