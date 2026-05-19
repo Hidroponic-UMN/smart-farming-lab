@@ -102,9 +102,8 @@ export function TdsCalibrationSteps({
   const steps: WizardStep[] = [
     // Step 1: Preparation
     {
-      id: "prepare",
       title: "Persiapan",
-      description: "Siapkan alat dan bahan untuk kalibrasi sensor TDS",
+      description: "Siapkan alat dan bahan untuk adjustment sensor TDS",
       icon: <Zap className="w-5 h-5" />,
       content: (
         <div className="space-y-6">
@@ -181,9 +180,9 @@ export function TdsCalibrationSteps({
     // Step 2: Calibrate
     {
       id: "calibrate",
-      title: "Kalibrasi",
+      title: "Adjustment",
       description:
-        "Celupkan sensor TDS + sensor suhu ke larutan kalibrasi",
+        "Celupkan sensor TDS + sensor suhu ke larutan adjustment",
       icon: <Target className="w-5 h-5" />,
       requiresAction: true,
       actionCompleted: commandStatus === "success",
@@ -194,7 +193,7 @@ export function TdsCalibrationSteps({
             <p className="text-sm text-foreground">
               <strong>Langkah:</strong> Bilas sensor TDS dan sensor suhu dengan
               aquadest. Celupkan <strong>keduanya bersamaan</strong> ke dalam
-              larutan kalibrasi {TDS_REFERENCE_PPM} ppm. Tunggu pembacaan stabil
+              larutan adjustment {TDS_REFERENCE_PPM} ppm. Tunggu pembacaan stabil
               (~30 detik), lalu tekan tombol di bawah.
             </p>
           </div>
@@ -235,12 +234,12 @@ export function TdsCalibrationSteps({
             ) : commandStatus === "success" ? (
               <>
                 <CheckCircle2 className="w-5 h-5 mr-2" />
-                Recalibrate TDS
+                Readjust TDS
               </>
             ) : (
               <>
                 <Target className="w-5 h-5 mr-2" />
-                Calibrate TDS ({TDS_REFERENCE_PPM} ppm)
+                Adjust TDS ({TDS_REFERENCE_PPM} ppm)
               </>
             )}
           </Button>
@@ -277,14 +276,14 @@ export function TdsCalibrationSteps({
     {
       id: "review",
       title: "Review",
-      description: "Review hasil kalibrasi",
+      description: "Review hasil adjustment",
       icon: <CheckCircle2 className="w-5 h-5" />,
       content: (
         <div className="space-y-6">
           {/* Summary */}
           <div className="rounded-xl border-2 border-border bg-card p-5 space-y-4">
             <h4 className="font-semibold text-foreground">
-              Calibration Summary
+              Adjustment Summary
             </h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-4 text-center">
@@ -315,18 +314,18 @@ export function TdsCalibrationSteps({
             <div className="rounded-xl border-2 border-emerald-500/20 bg-emerald-500/5 p-5 text-center">
               <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
               <h4 className="font-semibold text-emerald-500 text-lg">
-                Kalibrasi TDS Berhasil!
+                Adjustment TDS Berhasil!
               </h4>
               <p className="text-sm text-muted-foreground mt-1">
-                ESP32 Rack {rackId} sudah dikalibrasi dengan {TDS_REFERENCE_PPM}{" "}
-                ppm. Sensor sekarang mengirim nilai TDS yang sudah dikalibrasi.
+                ESP32 Rack {rackId} sudah di-adjust dengan {TDS_REFERENCE_PPM}{" "}
+                ppm. Sensor sekarang mengirim nilai TDS yang sudah di-adjust.
               </p>
             </div>
           ) : (
             <div className="rounded-xl border-2 border-amber-500/20 bg-amber-500/5 p-5 text-center">
               <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
-                Kalibrasi belum berhasil. Kembali ke langkah sebelumnya untuk
+                Adjustment belum berhasil. Kembali ke langkah sebelumnya untuk
                 mencoba lagi.
               </p>
             </div>
@@ -338,8 +337,8 @@ export function TdsCalibrationSteps({
 
   return (
     <CalibrationWizard
-      title={`TDS Calibration — Rack ${rackId}`}
-      subtitle={`Kalibrasi 1 titik: ${TDS_REFERENCE_PPM} ppm (kompensasi suhu otomatis oleh ESP32)`}
+      title={`TDS Adjustment — Rack ${rackId}`}
+      subtitle={`Adjustment 1 titik: ${TDS_REFERENCE_PPM} ppm (kompensasi suhu otomatis oleh ESP32)`}
       steps={steps}
       onComplete={onComplete}
       onCancel={onCancel}

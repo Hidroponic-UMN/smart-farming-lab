@@ -11,7 +11,11 @@ import {
     TrendingUp,
     Circle,
     Activity,
+    CalendarIcon,
+    Sprout,
 } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
     Tooltip,
     TooltipContent,
@@ -76,14 +80,13 @@ function SensorCard({
         <Tooltip>
             <TooltipTrigger asChild>
                 <div className="group cursor-pointer h-full">
-                    <div className={`relative rounded-xl p-3 backdrop-blur-sm shadow-md transition-all duration-300 h-full flex flex-col justify-between ${
-                        status !== "Normal"
-                            ? getStatusBg(status)
-                            : type === "lightIntensity"
-                                ? "bg-gradient-to-tl from-[#e9e6de] to-white"
-                                : isInverted
-                                    ? "bg-gray-900/40 dark:bg-gray-950/40"
-                                    : "bg-white/50 dark:bg-gray-900/40"
+                    <div className={`relative rounded-xl p-3 backdrop-blur-sm shadow-md transition-all duration-300 h-full flex flex-col justify-between ${status !== "Normal"
+                        ? getStatusBg(status)
+                        : type === "lightIntensity"
+                            ? "bg-gradient-to-tl from-[#e9e6de] to-white"
+                            : isInverted
+                                ? "bg-gray-900/40 dark:bg-gray-950/40"
+                                : "bg-white/50 dark:bg-gray-900/40"
                         }`}>
                         {/* Header */}
                         <div className={`flex ${badgePosition === "bottom" ? "flex-col items-start gap-0.5" : "items-start justify-between"} mb-2`}>
@@ -139,15 +142,24 @@ interface RackCardHorizontalProps {
 }
 
 export function RackCardHorizontal({ rack }: RackCardHorizontalProps) {
+    const daysSince = rack.plantedAt ? Math.floor((new Date().getTime() - new Date(rack.plantedAt).getTime()) / (1000 * 60 * 60 * 24)) + 1 : null;
+
     return (
         <Card className="relative overflow-hidden bg-white/40 dark:bg-gray-950/40 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 min-w-[1200px]">
             <CardContent className="p-4 flex flex-row items-stretch gap-6">
 
                 {/* 1. Rack Label Section */}
-                <div className="flex flex-col min-w-[150px] border-r border-white/20 pr-4">
-                    {/* Header Spacer (to align with other sections) */}
-                    <div className="flex-1 w-full rounded-2xl bg-gradient-to-br from-[#50705f] to-[#86a293] text-white flex items-center justify-center font-bold text-xl shadow-lg border-none text-center">
-                        {rack.label}
+                <div className="flex flex-col min-w-[150px] border-r border-white/20 pr-4 gap-3">
+                    <div className="flex-1 w-full rounded-2xl bg-gradient-to-br from-[#50705f] to-[#86a293] text-white flex flex-col items-center justify-center font-bold shadow-lg border-none text-center py-6 gap-2">
+                        <span className="text-2xl">{rack.label}</span>
+                        {daysSince && (
+                            <Badge variant="outline" className="bg-white/20 text-white border-white/20 px-4 py-1 rounded-xl text-sm font-bold backdrop-blur-md">
+                                Day {daysSince}
+                            </Badge>
+                        )}
+                        {!daysSince && (
+                            <span className="text-[10px] opacity-60 uppercase tracking-widest font-bold">Empty</span>
+                        )}
                     </div>
                 </div>
 
@@ -173,11 +185,10 @@ export function RackCardHorizontal({ rack }: RackCardHorizontalProps) {
                         </div>
 
                         {/* Water Flow */}
-                        <div className={`flex-[1.2] backdrop-blur-sm rounded-xl p-3 shadow-md flex flex-col justify-between ${
-                            rack.waterFlow.status !== "Normal"
-                                ? getStatusBg(rack.waterFlow.status)
-                                : "bg-gradient-to-tl from-[#7f9c8c]/20 to-white/40"
-                        }`}>
+                        <div className={`flex-[1.2] backdrop-blur-sm rounded-xl p-3 shadow-md flex flex-col justify-between ${rack.waterFlow.status !== "Normal"
+                            ? getStatusBg(rack.waterFlow.status)
+                            : "bg-gradient-to-tl from-[#7f9c8c]/20 to-white/40"
+                            }`}>
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
                                     <Activity className="w-3 h-3 text-[#34473d]/50" />

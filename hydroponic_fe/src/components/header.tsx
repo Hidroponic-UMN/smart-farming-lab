@@ -188,7 +188,7 @@ export function Header({
                                 </button>
                             </Link>
                         </TooltipTrigger>
-                        <TooltipContent>Sensor Calibration</TooltipContent>
+                        <TooltipContent>Sensor Adjustment</TooltipContent>
                     </Tooltip>
 
                     <Tooltip>

@@ -37,6 +37,7 @@ interface RackStore {
     sensors: Record<string, SensorStore>;
     rackId: number;
     lastUpdated: Date | null;
+    plantedAt?: string | null;
 }
 
 // Map of device_id → RackStore
@@ -53,6 +54,7 @@ function getOrCreateRack(rackId: number): RackStore {
             sensors: {},
             rackId,
             lastUpdated: null,
+            plantedAt: null,
         });
     }
     return store.get(rackId)!;
@@ -119,6 +121,7 @@ function buildRackResponse(deviceId: number, rack: RackStore, rawMode: boolean =
     return {
         id: rack.rackId,
         label: `Rack ${rack.rackId}`,
+        plantedAt: rack.plantedAt || null,
         ...sensors,
         overallStatus,
     };
@@ -177,6 +180,24 @@ export async function GET(request: NextRequest) {
                     }
                 } catch (e) {
                     // Ignore JSON parsing errors
+                }
+            }
+        }
+        
+        // Fetch device details to get plantedAt from attr
+        const devicesRes = await fetch(`${BACKEND_URL}/api/v1/generals/devices`, {
+            cache: "no-store",
+        });
+        
+        if (devicesRes.ok) {
+            const devices = await devicesRes.json();
+            for (const device of devices) {
+                // Determine rack ID: use attr.rack_id if available, fallback to id
+                const rackId = device.attr?.rack_id ?? device.id;
+                // Only HYDROPONIC_RACKS (type 1) or assume 1-5
+                if (rackId && rackId >= 1 && rackId <= 5) {
+                    const rack = getOrCreateRack(rackId);
+                    rack.plantedAt = device.attr?.planted_at || null;
                 }
             }
         }
