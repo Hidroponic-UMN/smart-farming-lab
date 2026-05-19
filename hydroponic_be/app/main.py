@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.db.session import engine, Session
 from app.services.mqtt_worker import mqtt_worker
 from app.utils.utils_seeding import seeding_to_db
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,17 +18,14 @@ async def lifespan(app: FastAPI):
     mqtt_worker.start()
 
     print("MQTT Worker started & Database tables verified.")
-    
+
     yield
 
     mqtt_worker.stop()
     print("MQTT Worker disconnected.")
 
-app = FastAPI(
-    title="Smart-Hydroponic",
-    lifespan=lifespan,
-    version="0.0.1"
-)
+
+app = FastAPI(title="Smart-Hydroponic", lifespan=lifespan, version="0.0.1")
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,6 +36,7 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix="/api/v1")
+
 
 @app.get("/health")
 def health_check():
