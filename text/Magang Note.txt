@@ -1,0 +1,869 @@
+﻿
+Progress Report Week1
+Senin, 23 Februari 2026 (Day 1)
+9.00-18.00
+
+
+Pada hari pertama, saya melakukan beberapa aktivitas awal untuk memahami konteks dan arah proyek yang akan dikerjakan.
+
+
+1. Memahami kembali project Smart Garden semester 4 sebagai dasar referensi sistem sebelumnya, baik dari sisi arsitektur maupun implementasi perangkat keras dan perangkat lunak.
+
+2. Mempelajari project Smart Farming UMN berdasarkan penjelasan dan deskripsi dari Pak Niki, untuk memahami perbedaan konsep, skala, serta tujuan sistem yang akan dikembangkan.
+
+
+   3. Mengamati proses pemasangan paralon hidroponik secara langsung untuk memahami struktur fisik sistem dan alur distribusi air/nutrisi.
+
+
+   4. Membayangkan dan menganalisis sistem IoT hidroponik yang akan diterapkan. Awalnya saya memperkirakan sistem akan menggunakan konsep closed-loop control, namun setelah dipahami lebih lanjut, sistem yang dirancang saat ini masih berfokus pada monitoring.
+  
+
+
+
+   5. Memahami ToR (Term of Reference) yang diberikan sebagai acuan ruang lingkup pekerjaan, target, dan output yang diharapkan.
+
+   6. List Draft kebutuhan sensor yang dibutuhkan
+sensor temperatur, sensor humidity. ini nanti digantung di plafon
+
+
+di Water Tank (tandon) ada:
+Sensor Water Level
+Sensor PH
+Sensor Nutrisi
+Sensor Water Temperature 
+
+
+di Rak ada:
+Sensor Intensitas Cahaya
+Sensor Arus Air
+Sama tambahan nanti sensor Oksigen di air
+David: Saya mulai melakukan evaluasi mendalam terhadap arsitektur sistem Smart Garden dan Smart Farming sebagai referensi dasar untuk merancang struktur backend yang lebih skalabel, sembari menyesuaikan alur data dengan kondisi fisik distribusi nutrisi di lapangan. Fokus utama saya adalah melakukan analisis fungsional terhadap Term of Reference (ToR) untuk menentukan skema integrasi sensor, yang mencakup pemetaan data dari sensor temperatur, kelembapan, water level, pH, nutrisi, hingga parameter oksigen terlarut ke dalam sistem monitoring. 
+
+
+Selasa, 24 Februari 2026 (Day 2)
+8.00-17.00
+saya mulai mengerjakan frontend dashboard untuk kebutuhan Open House. Project dibangun menggunakan Next.js 16 dengan kombinasi TypeScript, Tailwind CSS, dan komponen UI dari shadcn/ui. Target yang ditetapkan adalah dashboard sudah siap dan stabil saat pelaksanaan Open House.
+Pada tahap ini, saya mulai menyusun struktur dasar project, konfigurasi layout utama, serta merancang komponen awal untuk tampilan dashboard real-time monitoring sistem hidroponik.
+David: Saya mulai merancang arsitektur server menggunakan FastAPI dan broker MQTT sebagai fondasi sistem. Fokus utama saat ini adalah menyusun struktur backend, konfigurasi integrasi layanan, serta merancang alur pertukaran data untuk mendukung kebutuhan real-time monitoring pada proyek ini. Target yang ditetapkan adalah memastikan stabilitas dan kesiapan infrastruktur server agar dapat beroperasi optimal saat pelaksanaan acara.
+Rabu, 25 Februari 2026 (Day 3)
+8.00-17.00
+Melanjutkan pengembangan frontend dashboard. Fokus utama pada:
+      * Implementasi tampilan 5 rak hidroponik dengan parameter:
+Water Level, pH, EC/Nutrisi, Water Temperature, Water Flow, dan Light Intensity.
+
+      * Pembuatan Room Monitor untuk menampilkan suhu dan kelembaban ruangan.
+
+      * Implementasi mini chart (Recharts) untuk menampilkan 25 data point terakhir.
+
+      * Integrasi sistem threshold dan status otomatis (Normal, Warning, Low, High, Critical).
+
+      * Implementasi dark/light mode dengan next-themes.
+
+      * Pembuatan sistem simulasi data dummy (Stable, Trending Up, Trending Down) untuk kebutuhan testing tanpa hardware.
+
+Pada tahap ini, dashboard sudah dapat melakukan pembaruan data setiap 2,5 detik dengan mode simulasi.
+David: Melanjutkan pengembangan sisi Backend dengan FastAPI dan Docker.
+
+
+Kamis, 26 Februari 2026 (Day 4)
+8.00-17.00
+Dilakukan proses finishing frontend dan penyempurnaan fitur. Selain itu, dilakukan diskusi lanjutan dengan David terkait penggunaan sensor temperature dan humidity untuk kebutuhan demo Open House.
+Diputuskan untuk menggunakan sensor DHT22 milik lab IOT yang dihubungkan dengan ESP32 milik pribadi. Sensor langsung diimplementasikan dan diintegrasikan dengan backend.
+Pengembangan Backend & Integrasi IoT:
+         * Pembuatan API endpoint:
+POST /api/room untuk menerima data dari ESP32
+GET /api/room untuk pakai dashboard
+
+         * Implementasi penyimpanan data secara in-memory beserta histori 25 data terakhir.
+
+         * Penambahan deteksi status koneksi ESP32 (online/offline berdasarkan interval POST terakhir).
+
+         * Dashboard melakukan polling setiap 3 detik untuk mengambil data terbaru.
+
+Arsitektur Sistem:
+            * ESP32 + DHT22 membaca suhu dan kelembaban setiap 5 detik
+            * Mengirim HTTP POST (JSON) ke server Next.js
+            *  API menyimpan data dan histori
+            *  Dashboard melakukan GET berkala
+            *  Room Monitor menampilkan data real-time.
+Rak hidroponik masih menggunakan simulasi internal dan belum terhubung ke sensor fisik.
+________________
+
+
+Fitur yang Berhasil Diimplementasikan
+            1. Dashboard Real-Time
+Data sensor diperbarui otomatis (2,5 detik simulasi / 5 detik ESP32).
+
+            2. Monitoring 5 Rak Hidroponik
+Masing-masing rak menampilkan 6 parameter sensor lengkap dengan indikator status dan mini chart.
+
+            3. Room Monitor (Sensor Fisik DHT22)
+Menampilkan suhu dan kelembaban ruangan dari ESP32 secara real-time.
+
+            4. Sistem Threshold & Status Otomatis
+Setiap sensor memiliki batas Normal, Warning, dan Critical yang dikonfigurasi terpisah.
+
+            5. Sistem Notifikasi
+Alert otomatis ketika sensor melewati batas aman, disertai saran penanganan.
+
+            6. Mode Simulasi
+Digunakan untuk testing skenario kenaikan/penurunan nilai sensor.
+
+            7. Deteksi ESP32 Online/Offline
+Sistem mengecek waktu POST terakhir (< 15 detik dianggap online).
+David: Diskusi dengan Rafael terkait integrasi IoT, server dan dashboard.
+
+
+Jumat, 27 Februari 2026 (Day 5)
+8.00-17.00
+
+
+mempersiapkan dht22 yang akan digunakan untuk open house dengan david
+pengerjaan laporan mingguan, 
+list sensor dan esp yang perlu dibeli. 
+diskusi peletakan sensor dht22 untuk open house
+Pembelian sensor sensor yang di butuhkan untuk open house
+  
+
+
+
+Progress Report Week 2
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Senin, 2 Maret 2026 (Day 6)
+8.00-17.00
+
+
+Dilakukan diskusi mendalam bersama David mengenai perancangan arsitektur sistem IoT yang akan digunakan pada Smart Farming. Pada tahap ini dibahas alur komunikasi data dari sensor hingga dashboard monitoring.
+
+
+Selain itu dilakukan eksplorasi penggunaan Docker sebagai environment deployment untuk memudahkan manajemen service seperti backend, MQTT broker, dan database. Diskusi juga mencakup pemilihan server yang akan digunakan untuk menjalankan sistem.
+
+
+David: melakukan perancangan arsitektur komunikasi data IoT untuk memastikan efisiensi alur informasi dari lapisan sensor hingga ke dashboard monitoring. Saya memimpin eksplorasi penggunaan Docker sebagai strategi kontainerisasi sistem guna mengintegrasikan layanan backend, MQTT broker, dan basis data ke dalam satu environment deployment yang terisolasi dan konsisten. 
+
+
+Selasa, 3 Maret 2026 (Day 7)
+8.00-17.00
+
+
+Mulai dilakukan implementasi awal arsitektur sistem menggunakan Docker container. Beberapa service utama yang mulai disiapkan antara lain:
+
+
+               * Frontend dashboard
+               * Backend API server
+               * MQTT broker
+               * Database server
+
+
+Selain itu dilakukan eksplorasi konsep arsitektur master–slave pada ESP32, di mana beberapa node sensor akan bertindak sebagai slave yang mengirimkan data ke node master sebelum diteruskan ke server.
+
+
+David: memulai implementasi infrastruktur sistem melalui orkestrasi Docker untuk mengintegrasikan layanan backend API server, MQTT broker, dan database server ke dalam lingkungan kontainer yang terstandarisasi. Fokus pengembangan saat ini diarahkan pada penyusunan konfigurasi jaringan antar-layanan serta eksplorasi arsitektur komunikasi master-slave pada level perangkat keras guna mengoptimalkan agregasi data dari berbagai node sensor sebelum diproses oleh sistem backend.
+
+
+Rabu, 4 Maret 2026 (Day 8)
+8.00-17.00
+
+
+Dilakukan perapihan struktur repository project agar lebih terorganisir dan mudah dikembangkan ke depannya. Kegiatan yang dilakukan meliputi:
+
+
+               * Penyusunan dokumentasi awal project dalam bentuk README.
+               * Penataan ulang struktur folder utama project.
+               * Push kode versi lengkap ke repository GitHub.
+
+
+Selain itu dilakukan sinkronisasi repository dengan David dengan cara saling melakukan cloning repository masing-masing untuk menyatukan perkembangan kode yang telah dibuat.
+
+
+Frontend dashboard serta modul simulasi data dipisahkan ke branch berbeda untuk menjaga stabilitas branch utama.
+
+
+David: Saya melakukan standarisasi repositori backend dengan menata ulang struktur folder utama dan menyusun dokumentasi teknis pada file README guna memastikan skalabilitas pengembangan jangka panjang. Proses ini meliputi migrasi serta sinkronisasi kode ke GitHub untuk mengintegrasikan logika server yang telah dikembangkan. Selain itu, saya menerapkan strategi branching dengan memisahkan main branch untuk menjaga stabilitas infrastruktur API, sekaligus memastikan seluruh pembaruan kode versi lengkap telah tersimpan.
+
+
+Kamis, 5 Maret 2026 (Day 9)
+8.00-17.00
+
+
+Dilakukan diskusi lanjutan mengenai penyimpanan data sensor, khususnya untuk kebutuhan time-series data yang dihasilkan oleh sistem IoT. Setelah melakukan pembahasan, diputuskan untuk menggunakan PostgreSQL sebagai database utama sistem.
+
+
+Pada tahap ini juga dilakukan evaluasi terhadap stack frontend yang digunakan sebelumnya. Diputuskan untuk melakukan perubahan dari Next.js ke React + Vite agar pengembangan dashboard menjadi lebih ringan dan modular.
+
+
+Kegiatan teknis yang dilakukan meliputi:
+
+
+               * Instalasi awal environment React + Vite
+               * Perancangan struktur penyimpanan data sensor berbasis time series
+               * Implementasi awal fitur pencatatan log data sensor
+David: Saya melakukan analisis mendalam terhadap kebutuhan penyimpanan data time-series dari jaringan sensor dan menetapkan PostgreSQL sebagai database utama karena dalam mengelola relasi data IoT. Fokus teknis saya diarahkan pada perancangan skema penyimpanan yang efisien untuk mencatat log data sensor secara kronologis.
+
+
+Jumat, 6 Maret 2026 (Day 10)
+8.00-17.00
+Pengerjaan Laporan mingguan,
+Penambahan fitur log time series
+
+
+Progress Report Week 3
+Senin, 9 Maret 2026 (Day 11)
+8.00-17.00
+
+
+Saya dan david melakukan diskusi terkait kebutuhan hardware untuk pengembangan sistem. Dari hasil diskusi, diputuskan untuk membeli perangkat ESP32 terlebih dahulu agar bisa segera melakukan pengujian sistem IoT secara langsung. Selain itu, saya juga melakukan setup ulang environment backend menggunakan Docker dan memastikan semua service (MQTT, backend, database) bisa berjalan bersamaan menggunakan docker compose.
+
+
+David: Saya dan Rafael diskusi terkait penggunaan Hardware dan Perbaikkan Docker untuk integrasi environment backend dan frontend.
+
+
+Selasa, 10 Maret 2026 (Day 12)
+8.00-17.00
+
+
+Melakukan diskusi lanjutan terkait arsitektur sistem. Pada tahap ini diputuskan untuk mengubah pendekatan dari arsitektur master–slave menjadi arsitektur langsung (direct connection), di mana setiap ESP32 akan terhubung ke WiFi dan langsung publish data ke MQTT broker.
+
+
+Alasan perubahan:
+
+
+               * Lebih sederhana
+               * Tidak bergantung pada satu node master
+               * Lebih scalable untuk penambahan device ke depannya
+
+
+David: Saya terlibat dalam diskusi strategis mengenai desain sistem komunikasi IoT, di mana diputuskan untuk beralih dari model master-slave ke arsitektur direct connection guna menyederhanakan alur data dari ESP32 menuju backend. Melalui pendekatan ini, saya mengoptimalkan sisi server agar dapat menangani koneksi langsung dari setiap perangkat ke MQTT broker via WiFi, yang bertujuan untuk menghilangkan ketergantungan pada satu titik kegagalan (single point of failure) dan meningkatkan skalabilitas infrastruktur saat terjadi penambahan perangkat di masa depan.
+
+
+Rabu, 11 Maret 2026 (Day 13)
+8.00-17.00
+
+
+ESP32 sudah datang. Saya mulai eksplorasi awal penggunaan ESP32 dan mempersiapkan konsep firmware yang akan digunakan. Fokusnya adalah bagaimana setiap ESP32 bisa mengirim data sensor (sementara masih simulasi) ke MQTT broker dengan format yang sudah disesuaikan dengan backend.
+
+
+David: Pengembangan Firmware untuk ESP32 bersama Rafael dan integrasinya dengan Frontend dan Backend.
+
+
+Kamis, 12 Maret 2026 (Day 14)
+8.00-17.00
+
+
+Saya mulai mengembangkan fitur time series graph untuk dashboard. (balik ke nextjs lagi)
+
+
+Yang saya kerjakan:
+
+
+               * Menambahkan endpoint backend untuk mengambil histori data sensor berdasarkan waktu
+               * Membuat halaman baru di frontend untuk menampilkan grafik 6 sensor per rack
+               * Menambahkan pilihan range waktu (1 jam, 6 jam, 24 jam, 7 hari)
+
+
+Selain itu, saya juga mulai implementasi halaman detail per sensor (zoom chart) yang menampilkan statistik seperti nilai rata-rata, minimum, maksimum, dan nilai saat ini.
+
+
+David: Pengembangan API baru untuk mendukung fitur time-series dimana API akan memberikan output historis dari start datetime sampai end datetime.
+
+
+Jumat, 13 Maret 2026 (Day 15)
+8.00-17.00
+
+
+Melanjutkan pengembangan fitur lanjutan:
+
+
+Database Viewer
+               * Membuat endpoint untuk mengambil data sensor dengan pagination
+               * Menambahkan fitur export data ke CSV
+               * Implementasi tabel di frontend menggunakan TanStack Table (dengan filter dan pagination)
+
+
+Authentication
+               * Membuat sistem login sederhana (username & password)
+               * Menggunakan token (JWT) untuk proteksi endpoint tertentu
+               * Menambahkan halaman login di frontend dengan validasi menggunakan Zod
+               * Proteksi halaman data agar hanya bisa diakses setelah login
+
+
+Selain itu, semua fitur yang sudah dibuat (time series, database viewer, dan authentication) sudah berhasil diuji dan berjalan dengan baik.
+
+
+David: Perbaikkan MQTT Handler di bagian backend dan testing simulasi dengan ESP32, Penambahan opsi baru untuk download data historis melalui API historis dalam bentuk format CSV.
+Progress Report Week 4
+WEEK 4
+________________
+
+
+
+
+Senin, 16 Maret 2026 (Day 16)
+8.00-17.00
+
+
+Saya mencoba memanfaatkan perangkat STB Indihome B860H sebagai alternatif server. Dilakukan proses instalasi Linux pada STB tersebut dengan tujuan agar bisa digunakan sebagai server lokal untuk menjalankan sistem IoT.
+
+
+David: Memperbaharui semua table schema untuk database, penambahan metadata untuk table device.
+
+
+Selasa, 17 Maret 2026 (Day 17)
+8.00-17.00
+
+
+Melanjutkan setup STB sebagai server. Saya mulai menyiapkan environment agar STB bisa digunakan untuk menjalankan service seperti MQTT broker, backend, dan database.
+
+
+Fokus utama di tahap ini adalah menjadikan sistem bisa berjalan tidak hanya di laptop, tapi di device terpisah yang berfungsi sebagai server.
+
+
+David: Penambahan table baru untuk data log, Perbaikkan bug pada API latest dan API untuk historis data. 
+
+
+Rabu, 18 Maret 2026 - Jumat, 20 Maret 2026
+Libur Hari raya idul fitri
+
+
+Progress Report Week 5
+WEEK 5
+________________
+
+
+
+
+Senin, 23 Maret 2026 - Selasa, 24 Maret 2026
+Cuti bersama Hari raya idul fitri
+
+
+Rabu, 25 Maret 2026 (Day 18)
+8.00-17.00
+
+
+Hari pertama masuk pasca libur Lebaran. Melakukan diskusi dengan David mengenai perancangan hardware dan komponen lanjutan yang akan dipasang di sistem hidroponik.
+
+
+Pembahasan berfokus pada spesifikasi dan penempatan sensor waterproof ultrasonic untuk mendeteksi water level di tandon utama, penggunaan water flow sensor untuk mengukur debit sirkulasi air, serta float switch sensor sebagai pengaman tambahan.
+
+
+David: Diskusi dengan Rafael terkait waterproof sensor untuk water level di tandon dan penggunaan water flow sensor. Perbaikan bug pada MQTT Handler, Perbaikan pada firmware ESP32 untuk bacaan sensor pH dan TDS. 
+
+
+Kamis, 26 Maret 2026 (Day 19)
+8.00-17.00
+
+
+Melakukan penyesuaian skema database PostgreSQL dan endpoint API backend untuk mengakomodasi parameter dari sensor-sensor baru yang didiskusikan sebelumnya (sensor ultrasonik untuk water level, flow sensor untuk debit air, dan float switch).
+
+
+Membuat simulasi payload MQTT dummy untuk parameter tambahan tersebut guna memastikan dashboard frontend dapat mengolah dan menampilkan data aliran air serta status tandon tanpa error sebelum hardware aslinya dirakit.
+
+
+Mengikuti kegiatan Google Meet untuk persiapan Akreditasi Program Studi Informatika (IF) dan Teknik Komputer (TK).
+
+
+David: melakukan optimasi skema database PostgreSQL dan pengembangan endpoint API untuk mengintegrasikan parameter sensor baru, termasuk sensor ultrasonik, flow sensor. Simulasi Backend dan Frontend.
+
+
+
+
+
+
+
+
+Jumat, 27 Maret 2026 (Day 20)
+8.00-17.00
+
+
+Pelaksanaan gladi resik untuk Akreditasi IF & TK di kampus.
+
+
+Melakukan pengecekan fisik di Smart Farming Lab, memastikan dashboard monitoring dapat berjalan stabil tanpa interupsi, serta merapikan wiring sementara pada area rak hidroponik.
+
+
+Pengerjaan laporan mingguan.
+
+
+David: Gladi resik akreditasi IF dan TK, simulasi menjalankan docker untuk frontend, backend, database, dan MQTT broker untuk akreditasi.
+Progress Report Week 6
+WEEK 6
+________________
+
+
+
+
+Senin, 30 Maret 2026 (Day 21)
+8.00-17.00
+
+
+Pelaksanaan Akreditasi Program Studi Informatika (IF).
+
+
+Standby di laboratorium untuk memastikan sistem Smart Farming berjalan lancar dan siap jika ada kunjungan atau pertanyaan teknis dari asesor terkait implementasi IoT dan dashboard.
+
+
+Selasa, 31 Maret 2026 (Day 22)
+8.00-17.00
+
+
+Merencanakan pembuatan prototype sistem hidroponik secara fisik.
+
+
+Menyusun daftar spesifikasi komponen final hasil diskusi minggu sebelumnya.
+
+
+Mengajukan permohonan pembelian komponen-komponen (ultrasonic, flow sensor, float switch, dll) kepada Pak Niki.
+
+
+Rabu, 1 April 2026 (Day 23)
+8.00-17.00
+
+
+Mulai mengembangkan fitur baru di frontend: Sistem Kalibrasi Sensor pH & TDS.
+
+
+Menganalisis alur data: ESP32 saat ini mengirim nilai raw ADC (0-4095), sehingga konversi ke unit yang benar (pH 0-14 dan TDS ppm) harus dilakukan secara dinamis di frontend.
+
+
+Membuat file calibration.ts yang berisi logic matematika untuk regresi kalibrasi (2-point/3-point untuk pH, dan perhitungan K-factor untuk TDS).
+
+
+Kamis, 2 April 2026 (Day 24)
+8.00-17.00
+
+
+Mengembangkan UI/UX untuk Calibration Wizard (calibration-wizard.tsx).
+
+
+Membuat route baru di /calibration yang menampilkan 5 card rak beserta status kalibrasinya (Calibrated / Not Calibrated).
+
+
+Membangun komponen live-sensor-display.tsx untuk melakukan polling data raw secara real-time dari /api/racks?raw_mode=true sehingga proses kalibrasi bisa dilakukan sambil melihat nilai ADC yang masuk.
+
+
+Jumat, 3 April 2026 (Day 25)
+8.00-17.00
+
+
+Persiapan final untuk Akreditasi Program Studi Teknik Komputer (TK) yang akan dilaksanakan esok hari (Sabtu, 4 April).
+
+
+Memastikan environment lab bersih, jaringan lokal stabil, dan dokumentasi arsitektur sistem tersedia.
+
+
+Menulis laporan mingguan.
+
+
+Sabtu, 4 April 2026 - Pelaksanaan Akreditasi Prodi TK
+Progress Report Week 7
+WEEK 7
+________________
+
+
+
+
+Senin, 6 April 2026 (Day 26)
+8.00-17.00
+
+
+Melakukan proses pembelian komponen hardware yang sudah disetujui permohonannya pada minggu lalu.
+
+
+Melanjutkan development software: memodifikasi rack-card.tsx dan header.tsx untuk menampilkan notifikasi "Uncalibrated" jika belum ada data kalibrasi pada rak tersebut.
+
+
+Selasa, 7 April 2026 (Day 27)
+8.00-17.00
+
+
+Karena endpoint API kalibrasi dari tim backend belum tersedia, saya mengimplementasikan fallback menggunakan localStorage di browser.
+
+
+Menyiapkan API proxy placeholder di frontend (/api/calibration/route.ts) agar nantinya mudah di-switch ketika endpoint dari backend (GET/POST /api/v1/calibration/{device_id}) sudah siap.
+
+
+Rabu, 8 April 2026 (Day 28)
+8.00-17.00
+
+
+Melakukan integrasi logic kalibrasi ke dashboard utama. Memodifikasi rute /api/racks/route.ts agar membaca koefisien (slope & offset) yang tersimpan.
+
+
+Menguji konversi raw value dari ESP32 menjadi nilai pH dan TDS terkalibrasi sebelum ditampilkan ke grafik time-series dan indikator numerik di dashboard. Uji coba berjalan sukses.
+
+
+Kamis, 9 April 2026 (Day 29)
+8.00-17.00
+
+
+Komponen sensor perangkat keras yang dipesan telah datang.
+
+
+Melakukan pengecekan fisik kelengkapan komponen (waterproof ultrasonic, flow sensor, float switch).
+
+
+Mulai merangkai skema wiring dasar komponen-komponen baru tersebut ke development board ESP32.
+
+
+Jumat, 10 April 2026 (Day 30)
+8.00-17.00
+
+
+Menulis script pengujian (test code) sederhana pada Arduino IDE untuk membaca nilai awal dari sensor ultrasonik dan flow sensor secara terpisah, memastikan sensor berfungsi baik sebelum digabung ke arsitektur firmware utama.
+
+
+Pengerjaan laporan progres mingguan.
+Progress Report Week 8
+(belum masuk prostep)
+WEEK 8
+________________
+
+
+
+
+Senin, 13 April 2026
+8.00-17.00
+
+
+Melakukan perbaikan pada sistem pengiriman perintah (command) via MQTT agar komunikasi dua arah antara frontend dashboard dan ESP32 dapat berjalan lebih stabil.
+
+
+Menguji coba fungsi publish dan subscribe untuk memastikan delay komunikasi seminimal mungkin.
+
+
+Selasa, 14 April 2026 
+8.00-17.00
+
+
+Mengembangkan dan mengintegrasikan entitas MQTT user baru khusus untuk fitur monitoring ruangan (Room Monitoring).
+
+
+Menyempurnakan pembacaan data lingkungan suhu dan kelembaban lab agar dapat terpisah dari data parameter rak hidroponik.
+
+
+Rabu, 15 April 2026 
+8.00-17.00
+
+
+Sinkronisasi progres software dengan David. Melakukan merge branch utama ke frontend.
+
+
+Menerapkan pembaruan dari sisi backend API, di mana endpoint terbaru kini sudah dioptimasi dan tidak lagi memerlukan parameter device_id untuk pengambilan data tertentu.
+
+
+Kamis, 16 April 2026
+8.00-17.00
+
+
+Testing dan perbaikkan bug untuk penggunaan parameter rack_id di API terbaru
+Menerima kunjungan dari Pak Niki dan Jacob Brown di laboratorium Smart Farming.
+
+
+Jumat, 17 April 2026
+8.00-17.00
+merapikan codebase.
+
+
+Pengerjaan laporan progres mingguan.
+Progress Report Week 9
+WEEK 9
+________________
+
+
+
+
+Senin, 20 April 2026
+8.00-17.00
+
+
+Melakukan integrasi besar-besaran pada repositori GitHub untuk memastikan backend FastAPI (dari David) dan frontend sinkron.
+
+
+Menyelesaikan merge Pull Request dan branch utama ke backend untuk mengunci fungsionalitas dasar sistem.
+
+
+Selasa, 21 April 2026
+8.00-17.00
+
+
+Persiapan arsitektur UI untuk perombakan dashboard, memastikan fungsionalitas logika yang sudah dibangun (seperti fetching data dan autentikasi) tidak terganggu saat desain diubah.
+
+Pembuatan asset untuk redesign visual dari dashboard
+
+
+Rabu, 22 April 2026
+8.00-17.00
+
+
+Menyelesaikan beberapa penyatuan kode krusial (Merge PR) yang menggabungkan update terbaru API dengan struktur komponen UI frontend.
+
+
+Melakukan testing komprehensif pada fungsionalitas dasar sebelum memulai redesign visual.
+
+
+Kamis, 23 April 2026
+8.00-17.00
+
+
+Sisi Software: Memulai update tema UI dengan palet warna baru, penambahan background, dan styling komponen yang lebih modern. Mengintegrasikan eksekusi perintah (ESP32 command execution) secara langsung dari dashboard untuk memfasilitasi proses kalibrasi pH dan TDS secara remote.
+
+
+Sisi Hardware: Melakukan uji coba fisik pada water flow sensor. Pergi ke toko material di daerah Medang untuk membeli sambungan pipa agar sensor flow dapat terpasang presisi pada jalur irigasi rak hidroponik.
+
+
+
+
+
+
+Jumat, 24 April 2026
+8.00-17.00
+
+
+Memutuskan untuk melakukan redesign dashboard secara besar-besaran (perombakan total).
+
+
+Mengganti aset latar belakang (background), menyederhanakan komponen monitor, dan menghapus theme provider yang memberatkan.
+
+
+Memperbaiki responsivitas layout agar kompatibel saat diakses melalui perangkat mobile.
+
+
+Mendesain ulang UI pada halaman History dan memperbarui indikator konektivitas pada top navbar.
+Progress Report Week 10
+WEEK 10
+________________
+
+
+
+
+Senin, 27 April 2026
+8.00-17.00
+
+
+Melakukan heavy maintenance secara fisik di dalam laboratorium. Kegiatannya meliputi pencabutan tanaman bayam merah yang mati, pengurasan dan pembersihan total pada tank hidroponik.
+
+
+Mengaktifkan kembali pompa nutrisi dan memastikan sirkulasi air kembali normal agar sisa tanaman yang ada tetap hidup dan mendapat nutrisi cukup.
+
+
+Menyetujui dan melakukan merge Pull Request di frontend pasca perombakan UI hari Sabtu kemarin.
+
+
+Selasa, 28 April 2026 
+8.00-17.00
+
+
+Observasi sistem sirkulasi air pasca heavy maintenance dan memantau stabilitas penerimaan data dari sistem dummy/sensor ke dashboard versi terbaru (redesign).
+
+
+Melakukan stress-testing ringan pada UI frontend di layar mobile dan desktop.
+
+
+Rabu, 29 April 2026 
+8.00-17.00
+
+
+Melanjutkan kegiatan pembersihan dan maintenance tambahan di lab untuk menjaga kebersihan area kerja dan area sensor.
+
+
+Melaksanakan sesi bimbingan bersama Pak Dareen dan Pak Niki (Supervisor).
+
+
+Mempresentasikan persentase kelengkapan software (90%) dan berdiskusi secara mendalam mengenai transisi fokus pekerjaan ke perencanaan perakitan dan instalasi hardware ke depannya.
+
+
+Kamis, 30 April 2026
+8.00-17.00
+
+
+Mengevaluasi catatan feedback dari bimbingan sebelumnya dan menyusun daftar prioritas perakitan perangkat keras untuk beberapa minggu ke depan.
+
+
+Jumat, 1 mei 2026
+8.00-17.00
+
+
+Tanggal merah
+Week 11 daily report
+Week 11 daily report
+
+
+Senin, 4 Mei 2026
+8.00-17.00
+
+
+Hari ini kita fokus mengimplementasikan fitur baru yaitu Kalender Tanggal Tanam (Planted Date) secara menyeluruh (Fullstack) untuk memantau usia tanaman pada masing-masing rak hidroponik.
+Detail Pekerjaan:
+               1. Fitur Kalender & Day X (Frontend)
+               * Menambahkan fitur kalender (pilih tanggal) untuk menandai kapan bibit ditanam di setiap rak.
+               * Membuat sistem kalkulasi cerdas yang otomatis menampilkan status "Day X" berdasarkan tanggal yang dipilih.
+               * Menambahkan fungsionalitas "Panen" untuk mereset kembali kalender ke status awal (Belum ditanam/Ready).
+               * Fitur ini sudah diintegrasikan dengan mulus ke dalam tampilan komponen antarmuka yang ada (Rack Card Grid, Horizontal Card, dan Page khusus).
+
+
+
+
+1. Backend (API & Database)
+               * Implementasi Endpoint Baru: Menambahkan endpoint PATCH /generals/devices/{id}/planted-date untuk menyimpan dan mereset (panen) tanggal tanam rak hidroponik.
+               * Optimasi Penyimpanan Atribut: Mengembangkan fungsi update_device_attr menggunakan kolom attr berformat JSONB pada tabel Device agar tidak perlu melakukan migrasi skema tabel utama.
+               * Upsert Handler: Menambahkan logika pembuatan dummy device / placeholder secara otomatis apabila data telemetry dari rak fisik (ESP32) belum ada di dalam database.
+               * Perbaikan Bug SQLAlchemy: Memperbaiki isu di mana framework database tidak mendeteksi mutasi pada objek JSON dengan menambahkan dictionary cloning dan flag_modified.
+               * Perbaikan Startup Script: Memperbaiki format line-ending (Windows \r\n ke Linux \n) pada entrypoint.sh yang sebelumnya membuat skrip migrasi database (Alembic) crash di Docker.
+2. Frontend (UI/UX & Integrasi)
+               * Proxy API Route: Membuat route handler perantara di Next.js (/api/racks/[id]/planted-date) untuk menjembatani komunikasi ke backend serta menghindari issue CORS.
+               * Sinkronisasi Data: Memperbarui logika pengambilan data di dashboard (api/racks/route.ts) untuk menggabungkan status telemetry alat dengan atribut plantedAt yang didapat dari database generals.
+               * Pengembangan UI Card & Halaman:
+               * Mengintegrasikan native date picker yang dibungkus dengan komponen tombol kustom (lengkap dengan ikon Kalender dan Tunas/Sprout) di dalam UI.
+               * Menambahkan kalkulasi otomatis untuk menghitung dan menampilkan masa tanam "Day X".
+               * Memberikan penanganan showPicker() berbasis JavaScript agar kalender muncul responsif ketika area tombol mana pun diklik.
+               * Mendukung adaptasi antarmuka fitur ini baik di komponen Grid Card, Horizontal Card (TV Mode), maupun halaman terdedikasi planted-date/page.tsx.
+
+
+
+
+1. Refactoring Manajemen Penanaman
+               * Pemisahan Halaman: Memindahkan fitur "Set Tanggal Tanam" dan tombol "Panen" dari Dashboard utama ke halaman baru yang lebih terfokus (Planting Management).
+               * Penyederhanaan UI Dashboard: Menyederhanakan tampilan kartu rak (Grid & List view) agar lebih bersih. Sekarang hanya menampilkan data sensor dan badge status "Day X" yang lebih menonjol di bagian header.
+               * Pusat Manajemen Baru: Membuat halaman /planted-date untuk mengelola siklus tanam.
+               * Membatasi tampilan manajemen hanya untuk 3 rak utama sesuai kebutuhan operasional.
+               * Mengubah warna tombol "Panen" menjadi Hijau Premium (#50705f) agar lebih konsisten dengan tema tanaman.
+               * Navigasi: Menambahkan shortcut baru dengan ikon Sprout di Top Navbar untuk akses cepat ke manajemen penanaman.
+2. Rebranding: Sensor Adjustment
+               * Perubahan Label: Mengubah semua terminologi "Sensor Calibration" atau "Kalibrasi Sensor" menjadi "Sensor Adjustment" di seluruh aplikasi.
+               * Cakupan Update:
+               * Navbar tooltips dan menu mobile.
+               * Halaman Hub Adjustment dan halaman spesifik per rak.
+               * Wizard dan langkah-langkah penyesuaian sensor (pH & TDS).
+               * Stabilitas Sistem: Perubahan hanya dilakukan pada label UI agar user-friendly, sementara logika internal (API & function names) tetap dipertahankan untuk menjamin stabilitas integrasi backend.
+3. Bug Fixes & Optimasi
+               * Memperbaiki error import pada komponen rack-card.tsx (duplicate Badge dan missing TooltipTrigger).
+               * Memperbaiki syntax error pada komponen TDS Adjustment yang sempat menyebabkan build error.
+               * Melakukan restart service frontend via Docker Compose untuk memastikan seluruh perubahan terdeploy dengan benar.
+
+
+________________
+
+
+Selasa, 5 Mei 2026
+8.00-17.00
+
+
+Hari ini Buat schematic EasyEDA
+Perencanaan hasil akhir hardware
+Pembelian extra untuk solder
+
+
+Rabu, 6 Mei 2026
+8.00-17.00
+
+
+Bug Fix FE & BE, Belajar FreeCAD buat design nya, EasyEDA buat design PCB. (Diskusi mendalam)
+
+
+Kamis, 7 Mei 2026
+8.00-17.00
+
+
+Prototyping dengan perf board dan XH, lanjutin buat schematic.
+
+
+Jumat, 8 Mei 2026
+8.00-17.00
+
+
+DIskusi dengan Bernard anak management, bernard expert punya pengalaman di hidroponik. Diskusi sensor yang dibutuhkan apa saja. Finalisasi prototype dan tes koneksi dengan server.
+
+
+Pengukuran prototype dengan perfboard buat 3D casing.
+Week 12 daily report
+Week 12 daily report
+
+
+Senin, 11 Mei 2026
+8.00-17.00
+
+
+Pengukuran setiap komponen yang digunakan, mengubah prototype perfboard menjadi 3d
+Design 3D PCB dengan komponen, Design PCB, peletakkan komponen sensor
+________________
+
+
+Selasa, 12 Mei 2026
+8.00-17.00
+3D casing Pael, Wiring PCB.
+
+
+Rabu, 13 Mei 2026
+8.00-17.00
+
+
+Print mock up 3D, finalization PCB tata letak komponennya
+Research vendor print pcb
+
+
+Kamis, 14 Mei 2026
+8.00-17.00
+
+
+Tanggal merah 
+
+
+Jumat, 15 Mei 2026
+8.00-17.00
+
+
+Finishing Wiring PCB, order pcb
+Week 13 daily report
+Week 13 daily report
+
+
+Senin, 18 Mei 2026
+8.00-17.00
+
+
+Membuat laporan magang dan dokumentasi, pembelian komponen terakhir, order cetak PCB ke RaftechID.
+Frontend: buat page dokumentasi di website
+
+
+________________
+
+
+Selasa, 19 Mei 2026
+8.00-17.00
+Melanjutkan laporan dokumentasi, Fix gerber buat cetak PCB (order PCB ke raftech id), Buat SPMB.
+Frontend: Menambahkan dokumentasi (dalam format Markdown)
+
+
+Rabu, 20 Mei 2026
+8.00-17.00
+
+
+
+
+
+
+Kamis, 21 Mei 2026
+8.00-17.00
+
+
+
+
+Jumat, 22 Mei 2026
+8.00-17.00
+
+
