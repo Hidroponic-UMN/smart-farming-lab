@@ -17,6 +17,7 @@ import {
     TrendingDown,
     Activity,
     Sprout,
+    BookOpen,
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -24,6 +25,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
+    DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import { useSimulationContext, type SimulationMode } from "@/lib/simulation-context";
@@ -219,6 +221,18 @@ export function TopNavbar({
                                     <TrendingDown className="w-4 h-4" />
                                 </button>
                             </div>
+                            <DropdownMenuSeparator className="bg-gray-100 mt-2" />
+                            <DropdownMenuItem asChild>
+                                <a
+                                    href="http://localhost:3000/docs"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 cursor-pointer w-full text-xs font-semibold text-[#34473d] hover:bg-gray-100 p-2 rounded-lg transition-colors"
+                                >
+                                    <BookOpen className="w-4 h-4 text-[#34473d]" />
+                                    <span>Documentation</span>
+                                </a>
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -287,6 +301,16 @@ export function TopNavbar({
                                         <span className="font-semibold text-[#34473d]">Sensor Adjustment</span>
                                         <Wrench className="w-5 h-5 text-black" />
                                     </Link>
+
+                                    <a
+                                        href="http://localhost:3000/docs"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors"
+                                    >
+                                        <span className="font-semibold text-[#34473d]">API Documentation</span>
+                                        <BookOpen className="w-5 h-5 text-black" />
+                                    </a>
 
                                     <div className="flex flex-col gap-3 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
                                         <div className="flex items-center justify-between">

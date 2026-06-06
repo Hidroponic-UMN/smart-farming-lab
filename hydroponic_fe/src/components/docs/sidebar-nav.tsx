@@ -55,10 +55,15 @@ export function SidebarNav() {
       </nav>
 
       <div className="mt-auto pt-8">
-        <button className="w-full bg-doc-primary text-on-doc-primary font-bold py-3 px-4 rounded-full flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+        <a
+          href="http://localhost:8000/docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full bg-doc-primary text-on-doc-primary font-bold py-3 px-4 rounded-full flex items-center justify-center gap-2 hover:opacity-90 transition-opacity text-center text-sm"
+        >
           <span>API Reference</span>
           <ExternalLink className="w-4 h-4" />
-        </button>
+        </a>
       </div>
     </aside>
   );

@@ -1,6 +1,6 @@
 # 🌱 Smart Farming Lab — Project Context
 
-> Dokumentasi lengkap untuk AI Agent dan member baru agar memahami project ini secara menyeluruh.
+> Dokumentasi lengkap member baru agar memahami project ini secara menyeluruh.
 > Last updated: 2026-04-25
 
 ---
