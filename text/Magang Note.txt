@@ -845,25 +845,127 @@ ________________
 
 Selasa, 19 Mei 2026
 8.00-17.00
-Melanjutkan laporan dokumentasi, Fix gerber buat cetak PCB (order PCB ke raftech id), Buat SPMB.
-Frontend: Menambahkan dokumentasi (dalam format Markdown)
 
+Melanjutkan penyusunan laporan dokumentasi sistem.
+
+Melakukan pengecekan ulang dan perbaikan (fixing) pada format file Gerber guna memastikan standar Design Rule Check terpenuhi sebelum pesanan cetak PCB ke RaftechID diproses penuh.
+
+Menyusun dan mengurus dokumen SPMB (Surat Permohonan Material/Barang) untuk kebutuhan administrasi laboratorium.
+
+Sisi Frontend: Mengimplementasikan fitur rendering teks berformat Markdown ke dalam dashboard, sehingga panduan sistem dapat ditulis dan diperbarui dengan mudah melalui file Markdown.
 
 Rabu, 20 Mei 2026
 8.00-17.00
 
+Meneruskan penulisan draf laporan magang, berfokus pada penjabaran latar belakang proyek dan metodologi pengembangan.
 
-
-
+Sisi Frontend: Menyempurnakan antarmuka (UI/UX) halaman dokumentasi dengan mengintegrasikan fitur navigasi daftar isi dinamis (Table of Contents) yang di-generate otomatis dari struktur heading Markdown, sehingga pengguna lebih mudah mencari informasi spesifik.
 
 
 Kamis, 21 Mei 2026
 8.00-17.00
 
+Mendetailkan isi dokumentasi teknis dengan memecah panduan operasional secara spesifik berdasarkan masing-masing job desk, mencakup arsitektur hardware, alur komunikasi backend/MQTT, dan struktur frontend.
 
+Melanjutkan pengetikan Laporan Magang.
+
+Sisi Frontend: Menambahkan fitur pendukung visual pada halaman dokumentasi, seperti code syntax highlighting, agar cuplikan source code (seperti format payload JSON atau struktur endpoint API) lebih mudah dibaca dan dipahami oleh user.
 
 
 Jumat, 22 Mei 2026
 8.00-17.00
+
+Melakukan peninjauan kembali (review) draf awal laporan magang dan panduan dokumentasi bersama rekan kerja (David) untuk memastikan konsistensi penjelasan antara sisi software dan hardware.
+
+
+Membatalkan proses pemesanan cetak PCB di vendor RaftechID dikarenakan kurangnya responsivitas dan komunikasi dari pihak vendor.
+
+
+Melakukan transisi ke vendor manufaktur baru (Oxtica). Menyelesaikan proses administrasi, finalisasi desain, dan pelunasan pembayaran dengan estimasi waktu produksi 1 minggu (di luar waktu pengiriman).
+
+
+Penulisan dan penyusunan laporan progres mingguan.
+
+Week 14 daily report
+
+
+Senin, 25 Mei 2026
+8.00-17.00
+
+Berencana melakukan flashing firmware Linux pada perangkat STB (Set Top Box) untuk difungsikan sebagai server lokal proyek Smart Farming.
+
+Terjadi critical error dan insiden teknis (accidental format) pada SSD perangkat kerja utama (laptop/PC) selama proses persiapan bootable drive, yang mengakibatkan hilangnya akses ke sistem operasi dan seluruh data lokal.
+
+Sisa waktu kerja difokuskan untuk melakukan mitigasi awal, pencarian solusi, dan persiapan tools pemulihan data.
+
+Selasa, 26 Mei 2026
+8.00-17.00
+
+Fokus penuh melakukan proses data recovery pada SSD penyimpanan utama yang mengalami format tidak disengaja.
+
+Menggunakan perangkat lunak pemulihan (recovery tools) untuk menyelamatkan file-file krusial, terutama dokumen laporan magang yang belum sempat di-backup ke cloud, serta aset-aset hardware (desain PCB/3D) yang masih tersimpan secara lokal.
+
+Rabu, 27 Mei 2026
+8.00-17.00
+ 
+Libur Nasional (Hari Raya Idul Adha).
+
+Kamis, 28 Mei 2026
+8.00-17.00
+
+Melakukan setup ulang environment pengembangan (development environment) dari nol pada PC/Laptop pasca insiden hilangnya data.
+
+Menginstal kembali tools perangkat lunak yang esensial (Docker, Node.js, VS Code, Arduino IDE, Git).
+
+Melakukan clone ulang repositori proyek Smart Farming (repositori frontend dan backend) dari GitHub, serta memastikan sinkronisasi versi codebase terakhir aman.
+
+Jumat, 29 Mei 2026
+8.00-17.00
+
+Papan PCB yang dipesan dari vendor Oxtica telah tiba di laboratorium.
+
+Langsung melakukan proses perakitan komponen keras (hardware assembly) dan penyolderan komponen sensor ke papan PCB sesuai dengan skematik dan tata letak yang sudah didesain sebelumnya.
+
+Penulisan laporan progres mingguan.
+
+Week 15 daily report
+
+
+Senin, 1 Juni 2026
+8.00-17.00
+
+Libur Nasional (Hari Lahir Pancasila).
+
+Selasa, 2 Juni 2026
+8.00-17.00
+
+Mengoperasikan mesin 3D printer untuk mencetak casing pelindung perangkat utama versi 1.
+
+Melakukan kalibrasi parameter cetak (seperti persentase infill, suhu nozzle, dan jenis filamen) guna memastikan casing memiliki struktur yang kokoh dan tahan terhadap lingkungan laboratorium hidroponik
+
+Rabu, 3 Juni 2026
+8.00-17.00
+ 
+Melakukan proses perakitan fisik (assembly) dengan memasukkan papan PCB yang sudah disolder ke dalam casing 3D hasil cetakan.
+
+Mengevaluasi kesesuaian lubang port, baut, dan ruang komponen pada casing fisik.
+
+Kamis, 4 Juni 2026
+8.00-17.00
+
+Mengidentifikasi adanya sedikit ketidaksesuaian dimensi dan pergeseran letak lubang (fitting issue) pada casing saat dipasangkan dengan PCB.
+
+Melakukan revisi pada desain model 3D.
+
+Menyesuaikan parameter dimensi ruang dalam dan menggeser letak lubang konektor agar fitting komponen dapat terpasang dengan lebih presisi dan sempurna.
+
+Jumat, 5 Juni 2026
+8.00-17.00
+
+Melakukan cetak ulang (re-print) casing 3D menggunakan file desain revisi terbaru.
+
+Memantau jalannya proses 3D printing untuk memastikan tidak ada cacat cetak (print failure) pada lapisan filamen.
+
+Pengerjaan dan kompilasi laporan progres mingguan.
 
 
