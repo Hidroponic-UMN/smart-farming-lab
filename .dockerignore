@@ -1,5 +1,3 @@
-./start.dev.sh
-./stop.dev.sh
 ./start.prod.sh
 ./stop.prod.sh
 .env
