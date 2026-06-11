@@ -26,7 +26,7 @@ export function useRacks(): UseRacksResult {
             if (sim.isSimulating) return; // Skip fetch if simulating
 
             try {
-                const res = await fetch("/api/racks");
+                const res = await fetch("/api/racks", { cache: "no-store" });
                 if (!res.ok) {
                     if (active) setIsOnline(false);
                     return;

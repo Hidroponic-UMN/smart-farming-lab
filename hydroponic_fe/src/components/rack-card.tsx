@@ -105,9 +105,7 @@ function SensorCard({
                                 : "items-start justify-between"
                             } mb-2`}>
                             <div className="flex items-center gap-1.5">
-                                <div className={`p-1.5 rounded-lg ${getStatusBg(status)}/10`}>
-                                    <Icon className={`w-3.5 h-3.5 ${getStatusColor(status)}`} />
-                                </div>
+                                <Icon className={`w-3.5 h-3.5 ${getStatusColor(status)}`} />
                                 <span className={`text-xs font-medium ${isInverted ? "text-gray-300 dark:text-gray-400" : "text-gray-500 dark:text-gray-400"}`}>
                                     {label}
                                 </span>
@@ -210,30 +208,29 @@ export function RackCard({ rack }: RackCardProps) {
                 <div className="space-y-3">
 
                     {/* Water Flow Chart */}
-                    <div className="bg-gradient-to-tl from-[#7f9c8c]/40 to-white backdrop-blur-sm rounded-xl p-3 shadow-md">
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1 rounded-lg bg-gray-100 dark:bg-gray-800">
-                                    <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                                </div>
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Water Flow</span>
-                                <Badge
-                                    variant="outline"
-                                    className={`px-0 py-0 text-[10px] font-bold border-none ${getStatusColor(rack.waterFlow.status)}`}
-                                >
-                                    {rack.waterFlow.status}
-                                </Badge>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className={`text-sm font-bold tabular-nums ${getStatusColor(rack.waterFlow.status)}`}>
-                                    {rack.waterFlow.value.toFixed(1)} L/min
+                    <div className={`relative rounded-xl p-3 backdrop-blur-sm shadow-md transition-all duration-300 ${rack.waterFlow.value > 0 ? "bg-white/50 dark:bg-gray-900/40" : getStatusBg("Critical")}`}>
+                        <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center gap-1.5">
+                                <Activity className={`w-3.5 h-3.5 ${getStatusColor(rack.waterFlow.value > 0 ? "Normal" : "Critical")}`} />
+                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Water Flow
                                 </span>
                             </div>
+                            <div className={`text-[10px] px-1.5 py-0.5 font-bold uppercase tracking-wider ${getStatusColor(rack.waterFlow.value > 0 ? "Normal" : "Critical")}`}>
+                                {rack.waterFlow.value > 0 ? "Normal" : "Critical"}
+                            </div>
                         </div>
-                        <div className="h-12">
-                            <MiniChart
-                                data={rack.waterFlow.history}
-                                status={rack.waterFlow.status}
+
+                        <div className="flex items-baseline gap-1 mb-1">
+                            <span className={`text-xl font-bold ${getStatusColor(rack.waterFlow.value > 0 ? "Normal" : "Critical")}`}>
+                                {rack.waterFlow.value > 0 ? "Flow Normally" : "Water Stuck"}
+                            </span>
+                        </div>
+
+                        <div className="relative h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 mt-2">
+                            <div
+                                className={`absolute inset-y-0 left-0 transition-all duration-500 rounded-full ${getProgressColor(rack.waterFlow.value > 0 ? "Normal" : "Critical")}`}
+                                style={{ width: rack.waterFlow.value > 0 ? "100%" : "0%" }}
                             />
                         </div>
                     </div>
@@ -280,7 +277,7 @@ export function RackCard({ rack }: RackCardProps) {
                             type="ec"
                             tooltip="nutrient concentration"
                             trend={calcTrend(rack.ec)}
-                            badgePosition="bottom"
+                            badgePosition="responsive"
                         />
                         <SensorCard
                             icon={Thermometer}
@@ -292,7 +289,7 @@ export function RackCard({ rack }: RackCardProps) {
                             type="waterTemp"
                             tooltip="Water temperature — optimal: 18–28°C"
                             trend={calcTrend(rack.waterTemp)}
-                            badgePosition="bottom"
+                            badgePosition="responsive"
                         />
                     </div>
                 </div>

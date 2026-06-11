@@ -35,6 +35,7 @@ export default function PlantedDatePage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ planted_at: new Date(date).toISOString() })
             });
+            window.location.reload();
         } catch (error) {
             console.error(error);
         } finally {
@@ -51,6 +52,7 @@ export default function PlantedDatePage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ planted_at: null })
             });
+            window.location.reload();
         } catch (error) {
             console.error(error);
         } finally {
@@ -58,7 +60,7 @@ export default function PlantedDatePage() {
         }
     }
 
-    function calculateDays(plantedAt: string | null) {
+    function calculateDays(plantedAt: string | null | undefined) {
         if (!plantedAt) return null;
         return Math.floor((new Date().getTime() - new Date(plantedAt).getTime()) / (1000 * 60 * 60 * 24)) + 1;
     }
@@ -189,19 +191,12 @@ export default function PlantedDatePage() {
                                     {/* Actions */}
                                     <div className="flex flex-col gap-3">
                                         {!rack.plantedAt ? (
-                                            <div className="relative group">
-                                                <Button
-                                                    disabled={isThisUpdating}
-                                                    className="w-full h-12 rounded-2xl bg-[#34473d] hover:bg-[#34473d]/90 text-white font-bold shadow-lg flex items-center justify-center gap-2"
-                                                >
-                                                    <Calendar className="w-4 h-4" />
-                                                    Set Tanggal Tanam
-                                                    <ChevronRight className="w-4 h-4 ml-auto" />
-                                                </Button>
+                                            <div className="flex flex-col gap-2">
+                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider pl-1">Set Tanggal Tanam</label>
                                                 <input
                                                     type="date"
                                                     disabled={isThisUpdating}
-                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                                    className="w-full h-12 rounded-2xl bg-white border-2 border-[#50705f]/20 text-[#34473d] font-bold px-4 shadow-sm focus:border-[#50705f] focus:ring-0 outline-none cursor-pointer disabled:cursor-not-allowed transition-colors"
                                                     onChange={(e) => handleSetPlantedDate(rack.id, e.target.value)}
                                                 />
                                             </div>
@@ -218,18 +213,12 @@ export default function PlantedDatePage() {
                                         )}
                                         
                                         {rack.plantedAt && (
-                                            <div className="relative">
-                                                <Button
-                                                    variant="outline"
-                                                    disabled={isThisUpdating}
-                                                    className="w-full h-10 rounded-xl border-dashed border-gray-300 text-gray-500 hover:bg-gray-50 text-xs font-semibold"
-                                                >
-                                                    Ubah Tanggal
-                                                </Button>
+                                            <div className="flex flex-col gap-2 mt-1">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">Ubah Tanggal</label>
                                                 <input
                                                     type="date"
                                                     disabled={isThisUpdating}
-                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                                    className="w-full h-10 rounded-xl bg-gray-50 border border-gray-200 text-gray-600 font-semibold px-3 shadow-sm focus:border-[#50705f] outline-none cursor-pointer disabled:cursor-not-allowed transition-colors"
                                                     onChange={(e) => handleSetPlantedDate(rack.id, e.target.value)}
                                                 />
                                             </div>

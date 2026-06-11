@@ -165,8 +165,8 @@ export async function GET(request: NextRequest) {
 
             // Update in-memory store with fresh data
             for (const row of rows) {
-                // Gunakan rack_id dari row jika ada, fallback ke device_id jika tidak tersedia
-                const rackId = row.rack_id ?? row.device_id;
+                // Gunakan rack_id dari attr device (dikirim via API), fallback ke device_id
+                const rackId = Number(row.rack_id ?? row.device_id);
                 const rack = getOrCreateRack(rackId);
                 rack.lastUpdated = new Date();
 
@@ -193,7 +193,7 @@ export async function GET(request: NextRequest) {
             const devices = await devicesRes.json();
             for (const device of devices) {
                 // Determine rack ID: use attr.rack_id if available, fallback to id
-                const rackId = device.attr?.rack_id ?? device.id;
+                const rackId = Number(device.attr?.rack_id ?? device.id);
                 // Only HYDROPONIC_RACKS (type 1) or assume 1-5
                 if (rackId && rackId >= 1 && rackId <= 5) {
                     const rack = getOrCreateRack(rackId);
@@ -229,5 +229,9 @@ export async function GET(request: NextRequest) {
         racks,
         isOnline,
         lastUpdated: isOnline ? now.toISOString() : null,
+    }, {
+        headers: {
+            "Cache-Control": "no-store, max-age=0"
+        }
     });
 }

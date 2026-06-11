@@ -91,9 +91,7 @@ function SensorCard({
                         {/* Header */}
                         <div className={`flex ${badgePosition === "bottom" ? "flex-col items-start gap-0.5" : "items-start justify-between"} mb-2`}>
                             <div className="flex items-center gap-1.5">
-                                <div className={`p-1.5 rounded-lg ${getStatusBg(status)}/10`}>
-                                    <Icon className={`w-3.5 h-3.5 ${getStatusColor(status)}`} />
-                                </div>
+                                <Icon className={`w-3.5 h-3.5 ${getStatusColor(status)}`} />
                                 <span className={`text-[10px] font-bold ${isInverted ? "text-gray-300 dark:text-gray-400" : "text-gray-500 dark:text-gray-400"} uppercase tracking-tight`}>
                                     {label}
                                 </span>
@@ -185,29 +183,32 @@ export function RackCardHorizontal({ rack }: RackCardHorizontalProps) {
                         </div>
 
                         {/* Water Flow */}
-                        <div className={`flex-[1.2] backdrop-blur-sm rounded-xl p-3 shadow-md flex flex-col justify-between ${rack.waterFlow.status !== "Normal"
-                            ? getStatusBg(rack.waterFlow.status)
-                            : "bg-gradient-to-tl from-[#7f9c8c]/20 to-white/40"
-                            }`}>
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                    <Activity className="w-3 h-3 text-[#34473d]/50" />
-                                    <span className="text-[10px] font-bold uppercase tracking-tight text-gray-500">Water Flow</span>
+                        <div className="flex-[1.2]">
+                            <div className={`relative rounded-xl p-3 backdrop-blur-sm shadow-md transition-all duration-300 h-full flex flex-col justify-between ${rack.waterFlow.value > 0 ? "bg-white/50 dark:bg-gray-900/40" : getStatusBg("Critical")}`}>
+                                <div className="flex items-start justify-between mb-2">
+                                    <div className="flex items-center gap-1.5">
+                                        <Activity className={`w-3.5 h-3.5 ${getStatusColor(rack.waterFlow.value > 0 ? "Normal" : "Critical")}`} />
+                                        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">
+                                            Water Flow
+                                        </span>
+                                    </div>
+                                    <div className={`text-[10px] px-1.5 py-0.5 font-bold uppercase tracking-wider ${getStatusColor(rack.waterFlow.value > 0 ? "Normal" : "Critical")}`}>
+                                        {rack.waterFlow.value > 0 ? "Normal" : "Critical"}
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <Badge variant="outline" className={`px-2 py-0 text-[10px] font-bold border-none ${getStatusColor(rack.waterFlow.status)}`}>
-                                        {rack.waterFlow.status}
-                                    </Badge>
-                                    <span className={`text-sm font-bold tabular-nums ${getStatusColor(rack.waterFlow.status)}`}>
-                                        {rack.waterFlow.value.toFixed(1)} <span className="text-[10px] opacity-60">L/min</span>
+
+                                <div className="flex items-baseline justify-center gap-1 mb-1">
+                                    <span className={`text-xl font-bold ${getStatusColor(rack.waterFlow.value > 0 ? "Normal" : "Critical")}`}>
+                                        {rack.waterFlow.value > 0 ? "Flow Normally" : "Water Stuck"}
                                     </span>
                                 </div>
-                            </div>
-                            <div className="h-10">
-                                <MiniChart
-                                    data={rack.waterFlow.history}
-                                    status={rack.waterFlow.status}
-                                />
+
+                                <div className="relative h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 mt-2">
+                                    <div
+                                        className={`absolute inset-y-0 left-0 transition-all duration-500 rounded-full ${getProgressColor(rack.waterFlow.value > 0 ? "Normal" : "Critical")}`}
+                                        style={{ width: rack.waterFlow.value > 0 ? "100%" : "0%" }}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>

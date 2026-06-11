@@ -1,3 +1,76 @@
+Pael
+Jobdesk: Frontend Engineer and Embedded Hardware Engineer
+Week
+Pekerjaan
+1
+Mempelajari konsep Smart Farming UMN dari penjelasan supervisor
+Mengamati langsung proses pemasangan paralon hidroponik di lab — memahami struktur fisik dan alur distribusi air/nutrisi, Menganalisis konsep sistem IoT yang akan diterapkan 
+Membuat draft komponen yang dibutuhkan 
+Memulai development frontend dashboard 
+2
+Mengimplementasikan visualisasi monitoring 5 rak hidroponik dan kondisi ruangan yang dilengkapi grafik trend, sistem threshold otomatis, serta simulasi data dummy dengan polling real-time untuk kebutuhan demonstrasi 
+Perancangan sistem monitoring suhu dan kelembaban ruangan berbasis IoT menggunakan sensor DHT22 dan Wemos D1 Mini. 
+Finalisasi arsitektur komunikasi data IoT dengan team
+Penataan repository Github Smart Farming
+3
+Pengembangan fitur time series graph di frontend
+Pengembangan halaman detail per sensor yang berisikan statistik avg, min, max, current
+Pengembangan halaman database viewer dan implementasi fitur ekspor data ke format CSV 
+4
+Implementasi sistem autentikasi di sisi frontend 
+Finalisasi kebutuhan hardware
+Mengonstruksi STB Indihome B860H dengan instalasi sistem operasi Linux sebagai alternatif server lokal mandiri guna mendukung stabilitas environment IoT di lab
+5
+Implementasi sensor water level dan water flow pada sistem monitoring sesuai dengan feedback dari supervisor
+Menyesuaikan tampilan frontend dashboard untuk mengakomodasi parameter sensor baru
+Pembuatan simulasi payload dummy untuk pengujian stabilitas dashboard serta penataan fisik dan wiring laboratorium dalam rangka persiapan akreditasi program studi Informatika dan Teknik Komputer. 
+6
+Pengembangan awal fitur Sensor Adjustment
+Mengembangkan Tampilan UI untuk Calibration Wizard 
+Menyusun spesifikasi teknis dan perencanaan kebutuhan komponen fisik untuk pengembangan prototype hardware tahap final
+7
+melanjutkan Pengembangan fitur Sensor Adjustment
+Melanjutkan pengembangan Tampilan UI untuk halaman sensor adjustment
+merangkai skema wiring dasar komponen baru ke development board ESP32
+8
+Pengembangkan fitur command execution pada dashboard untuk pengiriman instruksi kalibrasi sensor secara remote  
+Pembuatan mockup desain tampilan baru secara menyeluruh
+9
+Pembuatan asset visual baru untuk redesign
+Mengimplementasikan pembaruan UI secara menyeluruh pada website
+Pengembangan responsif seluruh halaman website. 
+Pengujian pemasangan water flow sensor 
+10
+Pemeliharaan sistem hidroponik secara komprehensif serta pengujian stabilitas operasional sensor 
+Implementasi fitur Kalender Tanggal Tanam
+Melakukan evaluasi perkembangan software serta menyusun prioritas transisi pekerjaan ke tahap perakitan dan instalasi hardware
+11
+Finalisasi schematic di EasyEDA 
+Finalisasi prototyping dengan perfboard
+Mengubah prototype perfboard menjadi desain 3D 
+12
+Desain Layout PCB
+Print mock-up 3D PCB dan testing penempatan komponen
+Finalisasi PCB dan pencarian vendor pencetakan PCB
+13
+Pembuatan dokumentasi teknis sistem secara keseluruhan.
+Pengembangan halaman dokumentasi teknis berbasis teks Markdown pada frontend website, lengkap dengan navigasi Table of Contents dan syntax highlighting.
+Pengalihan vendor manufaktur dan finalisasi pemesanan cetak PCB.
+
+
+14
+Melakukan konfigurasi dan sinkronisasi ulang environment pengembangan lokal, serta pengujian stabilitas layanan software menggunakan Docker Compose.
+Melakukan perakitan fisik (hardware assembly) dan penyolderan komponen-komponen sensor ke papan PCB utama.
+
+
+15
+Pencetakan prototype casing 3D pelindung device
+Melakukan assembly papan PCB ke dalam casing dan mengevaluasi ruang serta kesesuaian lubang 
+Finalisasi prototype 3d print
+
+
+
+
 # Laporan Pekerjaan Magang: Smart Farming Lab UMN
 **Nama:** Pael (Frontend & Hardware Integration)
 
