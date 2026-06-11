@@ -2,11 +2,11 @@ services:
   backend:
     image: ${DOCKER_IMAGE_BE}
     restart: unless-stopped
-    ports:
-      - "8000:8000"
-    # Only accessible to the host Nginx on this machine
     # ports:
-    #   - "127.0.0.1:8000:8000"
+    #   - "8000:8000"
+    # Only accessible to the host Nginx on this machine
+    ports:
+      - "127.0.0.1:8000:8000"
     # Use this for local development only
     # volumes:
     #   - ./hydroponic_be:/app:Z
@@ -17,13 +17,15 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_SERVER}/${POSTGRES_DB}
+      DATABASE_URL: postgresql://${APP_DB_USER}:${APP_DB_PASSWORD}@${POSTGRES_SERVER}/${POSTGRES_DB}
       MQTT_BROKER: broker
     depends_on:
       db:
         condition: service_healthy
       broker:
         condition: service_healthy
+      db-initializer:
+        condition: service_completed_successfully
     networks:
       - hydroponic_net
     deploy:
@@ -32,30 +34,45 @@ services:
           cpus: '0.50'
           memory: 512M
 
-  frontend:
-    image: ${DOCKER_IMAGE_FE}
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    # Only accessible to the host Nginx on this machine
-    # ports:
-    #   - "127.0.0.1:3000:3000"
-    # Use this for local development only
-    # volumes:
-    #   - ./hydroponic_fe:/app:Z
-    #   - node_modules:/app/node_modules
-    build:
-      context: .
-      dockerfile: hydroponic_fe/Dockerfile
+  # frontend:
+  #   image: ${DOCKER_IMAGE_FE}
+  #   restart: unless-stopped
+  #   # ports:
+  #   #   - "3000:3000"
+  #   # Only accessible to the host Nginx on this machine
+  #   ports:
+  #     - "127.0.0.1:3000:3000"
+  #   # Use this for local development only
+  #   # volumes:
+  #   #   - ./hydroponic_fe:/app:Z
+  #   #   - node_modules:/app/node_modules
+  #   build:
+  #     context: .
+  #     dockerfile: hydroponic_fe/Dockerfile
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - hydroponic_net
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.50'
+  #         memory: 512M
+
+  db-initializer:
+    image: "postgres:18.3-alpine"
+    restart: "no" # Do not restart; it runs once and shuts down
+    env_file:
+      - .env
+    volumes:
+      # Mount your configuration script into the initialization container
+      - ./scripts/init-db.sh:/init-db.sh:ro,Z
+    entrypoint: ["/bin/sh", "/init-db.sh"]
     depends_on:
-      - backend
+      db:
+        condition: service_healthy
     networks:
       - hydroponic_net
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 512M
 
   db:
     image: "postgres:18.3-alpine"
