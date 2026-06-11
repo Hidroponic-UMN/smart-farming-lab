@@ -58,7 +58,7 @@ export function useRoomSensor() {
             if (sim.isSimulating) return; // Skip fetch if simulating
 
             try {
-                const res = await fetch("/api/room");
+                const res = await fetch("/api/room", { cache: "no-store" });
                 if (!res.ok) return;
                 const json = await res.json();
 
