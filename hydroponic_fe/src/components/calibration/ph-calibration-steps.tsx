@@ -228,6 +228,7 @@ export function PhCalibrationSteps({
   const steps: WizardStep[] = [
     // Step 1: Preparation
     {
+      id: "preparation",
       title: "Persiapan",
       description: "Siapkan alat dan bahan untuk adjustment sensor pH",
       icon: <FlaskConical className="w-5 h-5" />,

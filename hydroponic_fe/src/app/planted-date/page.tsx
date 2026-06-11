@@ -60,7 +60,7 @@ export default function PlantedDatePage() {
         }
     }
 
-    function calculateDays(plantedAt: string | null) {
+    function calculateDays(plantedAt: string | null | undefined) {
         if (!plantedAt) return null;
         return Math.floor((new Date().getTime() - new Date(plantedAt).getTime()) / (1000 * 60 * 60 * 24)) + 1;
     }
