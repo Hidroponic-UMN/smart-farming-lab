@@ -1,2 +1,5 @@
 .env
 text/
+.gitattributes
+hydroponic-backend-prod.tar.gz
+hydroponic-frontend-prod.tar.gz
