@@ -111,7 +111,7 @@ export default function CalibrationHubPage() {
               <h2 className="text-2xl font-bold text-[#34473d] mb-2">Panduan Sensor Adjustment</h2>
               <p className="text-[#34473d]/80 font-medium leading-relaxed max-w-3xl">
                 Adjustment sensor pH dan TDS sangat penting untuk memastikan akurasi pembacaan. 
-                Disarankan melakukan adjustment <span className="font-bold text-[#34473d]">setiap 2–4 minggu</span> atau saat sensor baru dipasang. 
+                Disarankan melakukan adjustment <span className="font-bold text-[#34473d]">setiap 1 bulan</span> atau saat sensor baru dipasang. 
                 Pilih rak di bawah ini untuk memulai proses adjustment mendetail.
               </p>
             </div>
@@ -122,8 +122,17 @@ export default function CalibrationHubPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           {[1, 2, 3].map((rackId) => {
             const cal = calibrations[rackId];
-            const phCalibrated = cal?.ph_slope != null;
-            const tdsCalibrated = cal?.tds_k_factor != null;
+            
+            // Masa berlaku kalibrasi adalah 30 hari (dalam milidetik)
+            const MAX_CALIBRATION_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+            const now = Date.now();
+
+            const phCalibrated = cal?.ph_calibrated_at != null 
+              && (now - new Date(cal.ph_calibrated_at).getTime() < MAX_CALIBRATION_AGE_MS);
+              
+            const tdsCalibrated = cal?.tds_calibrated_at != null
+              && (now - new Date(cal.tds_calibrated_at).getTime() < MAX_CALIBRATION_AGE_MS);
+
             const allCalibrated = phCalibrated && tdsCalibrated;
 
             return (
@@ -197,15 +206,25 @@ export default function CalibrationHubPage() {
                     </Button>
                   </Link>
 
-                  {/* Last Calibrated - Now below the button */}
-                  {(cal?.ph_calibrated_at || cal?.tds_calibrated_at) && (
-                    <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-[#34473d]/50 px-1 uppercase tracking-wider">
-                      <Clock className="w-3 h-3" />
-                      <span>
-                        Last Adjustment: {formatDate(cal?.ph_calibrated_at || cal?.tds_calibrated_at || null)}
-                      </span>
+                  {/* Last Calibrated & Expiration Note */}
+                  <div className="flex flex-col items-center justify-center gap-1.5 mt-2">
+                    {(cal?.ph_calibrated_at || cal?.tds_calibrated_at) ? (
+                      <div className="flex items-center gap-2 text-[10px] font-bold text-[#34473d]/50 px-1 uppercase tracking-wider">
+                        <Clock className="w-3 h-3" />
+                        <span>
+                          Last: {formatDate(cal?.ph_calibrated_at || cal?.tds_calibrated_at || null)}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-[10px] font-bold text-orange-500/80 px-1 uppercase tracking-wider">
+                        <Clock className="w-3 h-3" />
+                        <span>Belum Pernah Dikalibrasi</span>
+                      </div>
+                    )}
+                    <div className="text-[10px] font-bold text-[#34473d]/40 uppercase tracking-wider text-center">
+                      * Kalibrasi ulang disarankan setiap 30 hari
                     </div>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             );

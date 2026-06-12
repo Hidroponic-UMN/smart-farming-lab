@@ -9,6 +9,7 @@ import {
 const HISTORY_LENGTH = 25;
 const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000";
 const OFFLINE_TIMEOUT_MS = 15_000; // 15 seconds
+const TANK_MAX_WATER_CM = 20; // Max water height in tank (cm). Sensor mounted 54cm above bottom, full at 34cm reading = 20cm water.
 
 // --- Key mapping: ESP32 snake_case → frontend camelCase ---
 const SENSOR_MAP: Record<string, { feKey: string; thresholdType: string }> = {
@@ -92,6 +93,12 @@ function buildRackResponse(deviceId: number, rack: RackStore, rawMode: boolean =
                     value = applyTdsCalibration(value, cal.tds_k_factor, cal.tds_offset, waterTemp);
                     history = history.map((v) => applyTdsCalibration(v, cal.tds_k_factor!, cal.tds_offset!, waterTemp));
                 }
+            }
+
+            // Convert water level from cm → percentage
+            if (feKey === "waterLevel") {
+                value = Math.min(100, Math.max(0, (value / TANK_MAX_WATER_CM) * 100));
+                history = history.map((v) => Math.min(100, Math.max(0, (v / TANK_MAX_WATER_CM) * 100)));
             }
 
             sensors[feKey] = {

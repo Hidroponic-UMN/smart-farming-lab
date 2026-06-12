@@ -14,6 +14,7 @@ import {
   Sparkles,
   BarChart3,
   Calendar,
+  Download,
 } from "lucide-react";
 import { useRacks } from "@/lib/use-racks";
 
@@ -65,23 +66,93 @@ export default function HistoryHubPage() {
             </div>
           </div>
 
-          <Badge
-            variant="outline"
-            className="bg-white/40 backdrop-blur-md text-[#34473d] border-white/40 px-6 py-2 rounded-2xl text-sm font-bold shadow-lg"
-          >
-            <Calendar className="w-4 h-4 mr-2" />
-            System Logging Active
-          </Badge>
+          <div className="flex flex-col gap-3 items-end">
+            <Badge
+              variant="outline"
+              className="bg-white/40 backdrop-blur-md text-[#34473d] border-white/40 px-6 py-2 rounded-2xl text-sm font-bold shadow-lg w-fit"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              System Logging Active
+            </Badge>
+            <a href="/api/export/csv" target="_blank" rel="noreferrer">
+              <Button variant="outline" className="bg-white/40 backdrop-blur-md text-[#34473d] border-white/40 rounded-xl font-bold shadow-md hover:bg-white/60 hover:text-[#50705f] transition-colors w-fit">
+                <Download className="w-4 h-4 mr-2" />
+                Export All Data (CSV)
+              </Button>
+            </a>
+          </div>
         </div>
 
-        {/* Rack Grid - Forced to 3 columns on desktop */}
+        {/* Room Monitor Card */}
+        <div className="mb-6">
+          <Card
+            className="relative overflow-hidden bg-white/40 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 hover:-translate-y-2 group"
+          >
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#50705f] to-[#86a293] text-white flex items-center justify-center font-bold text-lg shadow-lg border border-white/20">
+                    <Activity className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-[#34473d]">
+                      Room Monitor
+                    </h3>
+                    <p className="text-xs font-semibold text-[#34473d]/60 uppercase tracking-widest">
+                      Suhu & Kelembaban Ruangan
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-8">
+                <div className="flex items-center justify-between py-3 px-4 rounded-2xl bg-white/30 border border-white/20 shadow-inner">
+                  <div className="flex items-center gap-3">
+                    <BarChart3 className="w-4 h-4 text-[#34473d]" />
+                    <span className="text-sm font-bold text-[#34473d]">
+                      Sensors
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-[#34473d]/70">
+                    Temperature, Humidity
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between py-3 px-4 rounded-2xl bg-white/30 border border-white/20 shadow-inner">
+                  <div className="flex items-center gap-3">
+                    <Activity className="w-4 h-4 text-[#34473d]" />
+                    <span className="text-sm font-bold text-[#34473d]">
+                      Last Sync
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-[#34473d]/70">
+                    {formatDate(system.lastUpdated)}
+                  </span>
+                </div>
+              </div>
+
+              <Link href="/rack/0" className="block">
+                <Button
+                  variant="outline"
+                  className="w-full h-12 rounded-2xl bg-[#34473d] text-white border-none hover:bg-[#34473d]/90 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold"
+                >
+                  View Room History
+                  <ChevronRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Rack Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-          {[1, 2, 3].map((rackId) => {
-            const rack = displayRacks.find(r => r.id === rackId);
+          {[1, 2, 3].map((rackNum) => {
+            const deviceId = rackNum + 1; // Rack 1 = device 2, Rack 2 = device 3, Rack 3 = device 4
+            const rack = displayRacks.find(r => r.id === rackNum);
 
             return (
               <Card
-                key={rackId}
+                key={rackNum}
                 className="relative overflow-hidden bg-white/40 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 hover:-translate-y-2 group"
               >
                 <CardContent className="p-6">
@@ -89,11 +160,11 @@ export default function HistoryHubPage() {
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#50705f] to-[#86a293] text-white flex items-center justify-center font-bold text-xl shadow-lg border border-white/20">
-                        {rackId}
+                        {rackNum}
                       </div>
                       <div>
                         <h3 className="text-xl font-bold text-[#34473d]">
-                          Rack {rackId}
+                          Rack {rackNum}
                         </h3>
                         <p className="text-xs font-semibold text-[#34473d]/60 uppercase tracking-widest">
                           {rack ? "Active Log" : "Inactive"}
@@ -130,7 +201,7 @@ export default function HistoryHubPage() {
                   </div>
 
                   {/* Action Button */}
-                  <Link href={`/rack/${rackId}`} className="block">
+                  <Link href={`/rack/${rackNum}`} className="block">
                     <Button
                       variant="outline"
                       className="w-full h-12 rounded-2xl bg-[#34473d] text-white border-none hover:bg-[#34473d]/90 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold"
