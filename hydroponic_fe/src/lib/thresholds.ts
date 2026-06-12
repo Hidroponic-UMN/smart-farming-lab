@@ -89,9 +89,7 @@ export const THRESHOLDS: Record<string, ThresholdConfig> = {
   lightIntensity: {
     min: 0,
     max: 50000,
-    warningLow: 10000,
-    warningHigh: 40000,
-    // Kritis dihilangkan khusus penggunaan Growlight Indoor
+    // Kritis dan Warning dihilangkan khusus penggunaan Growlight Indoor (pembacaan konstan ~5000 lux)
     unit: "lux",
     label: "Light Intensity",
     decimals: 0,

@@ -10,7 +10,23 @@ export async function PATCH(
         const { id } = await props.params;
         const body = await request.json();
 
-        const res = await fetch(`${BACKEND_URL}/api/v1/generals/devices/${id}/planted-date`, {
+        let deviceId = id;
+        try {
+            const latestRes = await fetch(`${BACKEND_URL}/api/v1/datalogs/latest?device_type=HYDROPONIC_RACKS`, { cache: "no-store" });
+            if (latestRes.ok) {
+                const latestRows = await latestRes.json();
+                const rackRecord = latestRows.find((r: any) => r.rack_id === Number(id));
+                if (rackRecord && rackRecord.device_id) {
+                    deviceId = rackRecord.device_id.toString();
+                } else {
+                    deviceId = (Number(id) + 1).toString(); // Fallback Rack ID -> DB ID
+                }
+            }
+        } catch (e) {
+            console.error("Failed to map rack_id to device_id:", e);
+        }
+
+        const res = await fetch(`${BACKEND_URL}/api/v1/generals/devices/${deviceId}/planted-date`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",

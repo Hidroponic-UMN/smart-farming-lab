@@ -33,7 +33,7 @@ export default function PlantedDatePage() {
             await fetch(`/api/racks/${rackId}/planted-date`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ planted_at: new Date(date).toISOString() })
+                body: JSON.stringify({ planted_at: new Date(date).toISOString().replace("Z", "") })
             });
             window.location.reload();
         } catch (error) {

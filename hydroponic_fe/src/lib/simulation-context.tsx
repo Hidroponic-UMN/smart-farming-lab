@@ -86,12 +86,12 @@ function getOverallStatus(sensors: Record<string, SensorData>): Status {
 }
 
 function createRack(id: number): RackData {
-    const wl = 40 + Math.random() * 50;
-    const ph = 5.5 + Math.random() * 1.0;
-    const ec = 1.2 + Math.random() * 1.0;
-    const wt = 20 + Math.random() * 6;
-    const flow = 2.0 + Math.random() * 3.0;
-    const light = 15000 + Math.random() * 15000;
+    const wl = 64 + Math.random() * 2;
+    const ph = 6.0 + Math.random() * 0.5;
+    const ec = 1.5 + Math.random() * 0.5;
+    const wt = 20.5 + Math.random() * 1.0;
+    const flow = 2.5 + Math.random() * 1.0;
+    const light = 5750 + Math.random() * 100;
 
     const sensors = {
         waterLevel: createSensor(wl, "waterLevel"),
@@ -112,12 +112,12 @@ function createRack(id: number): RackData {
 
 function updateRack(rack: RackData, mode: SimulationMode): RackData {
     const sensors = {
-        waterLevel: updateSensor(rack.waterLevel, "waterLevel", 5, 100, 0.15, mode),
-        ph: updateSensor(rack.ph, "ph", 4.0, 8.0, 0.1, mode),
-        ec: updateSensor(rack.ec, "ec", 0.5, 3.2, 0.15, mode),
-        waterTemp: updateSensor(rack.waterTemp, "waterTemp", 16, 32, 0.2, mode),
-        waterFlow: updateSensor(rack.waterFlow, "waterFlow", 0.0, 8.0, 0.2, mode),
-        lightIntensity: updateSensor(rack.lightIntensity, "lightIntensity", 3000, 45000, 0.15, mode),
+        waterLevel: updateSensor(rack.waterLevel, "waterLevel", 60, 70, 0.15, mode),
+        ph: updateSensor(rack.ph, "ph", 5.5, 6.5, 0.1, mode),
+        ec: updateSensor(rack.ec, "ec", 1.2, 2.2, 0.15, mode),
+        waterTemp: updateSensor(rack.waterTemp, "waterTemp", 20, 22, 0.2, mode),
+        waterFlow: updateSensor(rack.waterFlow, "waterFlow", 2.0, 3.5, 0.2, mode),
+        lightIntensity: updateSensor(rack.lightIntensity, "lightIntensity", 5700, 5900, 0.15, mode),
     };
 
     return {
@@ -130,8 +130,8 @@ function updateRack(rack: RackData, mode: SimulationMode): RackData {
 function createInitialData(): DashboardData {
     return {
         room: {
-            temperature: createSensor(26.5, "roomTemp"),
-            humidity: createSensor(62, "roomHumidity"),
+            temperature: createSensor(23.0, "roomTemp"),
+            humidity: createSensor(60.0, "roomHumidity"),
         },
         racks: [1, 2, 3, 4, 5].map(createRack),
         system: {
@@ -166,8 +166,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
             if (!prev) return prev;
             return {
                 room: {
-                    temperature: updateSensor(prev.room.temperature, "roomTemp", 22, 34, 0.2, mode),
-                    humidity: updateSensor(prev.room.humidity, "roomHumidity", 40, 80, 0.2, mode),
+                    temperature: updateSensor(prev.room.temperature, "roomTemp", 22, 24, 0.2, mode),
+                    humidity: updateSensor(prev.room.humidity, "roomHumidity", 58, 62, 0.2, mode),
                 },
                 racks: prev.racks.map((r) => updateRack(r, mode)),
                 system: {
