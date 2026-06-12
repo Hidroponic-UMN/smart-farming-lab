@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000";
 
 // Map from esp32 json key to human labels & units
 const SENSOR_META: Record<string, { label: string; unit: string; sensor_type: string }> = {
@@ -41,30 +41,64 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const range = searchParams.get("range") || "1h";
 
-    // Construct start_date iso string
-    const startDate = getStartDateForRange(range);
+    let startDate = "";
+    let endDate = new Date().toISOString();
+
+    if (searchParams.get("start_date") && searchParams.get("end_date")) {
+        // user selected YYYY-MM-DD format from the date picker
+        startDate = new Date(searchParams.get("start_date") as string).toISOString();
+        const endD = new Date(searchParams.get("end_date") as string);
+        endD.setHours(23, 59, 59, 999);
+        endDate = endD.toISOString();
+    } else {
+        startDate = getStartDateForRange(range);
+    }
 
     try {
         // Workaround: Cek device_id mana yang memiliki rack_id sesuai dengan id param. 
         // Mengingat backend hanya punya API /datalogs/{device_id}
         let deviceId = id;
         try {
-            const latestRes = await fetch(`${BACKEND_URL}/api/v1/datalogs/latest?device_type=HYDROPONIC_RACKS`, { cache: "no-store" });
-            if (latestRes.ok) {
-                const latestRows = await latestRes.json();
-                const rackRecord = latestRows.find((r: any) => r.rack_id === Number(id));
-                if (rackRecord && rackRecord.device_id) {
-                    deviceId = rackRecord.device_id.toString();
+            if (id === "0") {
+                const latestRes = await fetch(`${BACKEND_URL}/api/v1/datalogs/latest?device_type=ROOM_MONITORING`, { cache: "no-store" });
+                if (latestRes.ok) {
+                    const latestRows = await latestRes.json();
+                    if (latestRows.length > 0 && latestRows[0].device_id) {
+                        deviceId = latestRows[0].device_id.toString();
+                    } else {
+                        deviceId = "1"; // Fallback to Room DB ID
+                    }
+                }
+            } else {
+                const latestRes = await fetch(`${BACKEND_URL}/api/v1/datalogs/latest?device_type=HYDROPONIC_RACKS`, { cache: "no-store" });
+                if (latestRes.ok) {
+                    const latestRows = await latestRes.json();
+                    const rackRecord = latestRows.find((r: any) => r.rack_id === Number(id));
+                    if (rackRecord && rackRecord.device_id) {
+                        deviceId = rackRecord.device_id.toString();
+                    } else {
+                        deviceId = (Number(id) + 1).toString(); // Fallback Rack ID -> DB ID
+                    }
                 }
             }
         } catch (e) {
             console.error("Failed to map rack_id to device_id:", e);
         }
 
-        const fetchUrl = `${BACKEND_URL}/api/v1/datalogs/${deviceId}?start_date=${encodeURIComponent(startDate)}&limit=1000`;
+        const fetchUrl = `${BACKEND_URL}/api/v1/datalogs/${deviceId}?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}&limit=1000`;
         const res = await fetch(fetchUrl, { cache: "no-store" });
 
         if (!res.ok) {
+            // If backend returns 404 "No data", return empty result gracefully
+            if (res.status === 404) {
+                const label = Number(id) === 0 ? "Room / Ruangan Utama" : `Rack ${id}`;
+                return NextResponse.json({
+                    rack_id: Number(id),
+                    rack_label: label,
+                    time_range: range,
+                    sensors: []
+                });
+            }
             return NextResponse.json({ error: "Failed to fetch backend data" }, { status: res.status });
         }
 
@@ -108,9 +142,7 @@ export async function GET(
             };
         });
 
-        // Determine if this is a room or rack based on device_id (usually 1=room, 2-5=racks)
-        // Hardcoded generic label:
-        const label = Number(id) === 1 ? "Room / Ruangan Utama" : `Rack ${id}`;
+        const label = Number(id) === 0 ? "Room / Ruangan Utama" : `Rack ${id}`;
 
         const responseData = {
             rack_id: Number(id),
@@ -123,6 +155,6 @@ export async function GET(
 
     } catch (e) {
         console.error("Error in history route:", e);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ error: "Internal Server Error", details: String(e) }, { status: 500 });
     }
 }

@@ -23,7 +23,7 @@ export interface RackHistoryData {
 
 export type TimeRange = "1h" | "6h" | "24h" | "7d";
 
-export function useRackHistory(rackId: number, timeRange: TimeRange, sensor?: string) {
+export function useRackHistory(rackId: number, startDateStr: string, endDateStr: string, sensor?: string) {
   const [data, setData] = useState<RackHistoryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,11 @@ export function useRackHistory(rackId: number, timeRange: TimeRange, sensor?: st
   const fetchHistory = useCallback(async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({ range: timeRange });
+      const params = new URLSearchParams();
+      if (startDateStr && endDateStr) {
+        params.set("start_date", startDateStr);
+        params.set("end_date", endDateStr);
+      }
       if (sensor) params.set("sensor", sensor);
 
       const res = await fetch(`/api/rack/${rackId}/history?${params}`);
@@ -44,7 +48,7 @@ export function useRackHistory(rackId: number, timeRange: TimeRange, sensor?: st
     } finally {
       setLoading(false);
     }
-  }, [rackId, timeRange, sensor]);
+  }, [rackId, startDateStr, endDateStr, sensor]);
 
   useEffect(() => {
     fetchHistory();
