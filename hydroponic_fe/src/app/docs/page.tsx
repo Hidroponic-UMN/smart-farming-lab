@@ -1,6 +1,15 @@
 "use client";
 
+import Image from "next/image";
 import { CodeBlock } from "@/components/docs/code-block";
+
+import imgSchematic from "@/assets/images/schematic.png";
+import imgArchDevices from "@/assets/images/Architecture of SEED Lab Embedded Devices(racks) .jpg";
+import imgArchMonitor from "@/assets/images/Architecture of SEED Lab Monitoring System.jpg";
+import imgArchServer from "@/assets/images/Architecture of SEED Lab Server Multi-Container Apps.jpg";
+import imgERD from "@/assets/images/ERD.jpg";
+import imgBootFlow from "@/assets/images/ESP32 Boot & Registration Flow.jpg";
+import imgArchHighLevel from "@/assets/images/High-Level Diagram  Architecture Diagram.jpg";
 
 export default function DocsPage() {
   const mqttRegistrationPayload = `{
@@ -47,103 +56,6 @@ export default function DocsPage() {
   "cmd_log": {"known_value": 7.0, "ph": 6.98}
 }`;
 
-  const mermaidArchitecture = `graph TD
-    subgraph Edge Layer [Hardware & IoT Layer]
-        ESP_1[ESP32 - Rack 1]
-        ESP_2[ESP32 - Rack 2]
-        ESP_N[ESP32 - Rack N]
-        ESP_Room[Wemos D1 - Room Monitor]
-    end
-
-    subgraph Data & Logic Layer [Backend & DB Layer]
-        MQTT[Mosquitto MQTT Broker]
-        BE[FastAPI Backend\\nMQTT Worker Thread]
-        DB[(PostgreSQL)]
-    end
-
-    subgraph Presentation Layer [Frontend Layer]
-        FE_API[Next.js API Routes\\nIn-memory cache]
-        FE_UI[Next.js Client Components]
-    end
-
-    ESP_1 -- MQTT --> MQTT
-    ESP_2 -- MQTT --> MQTT
-    ESP_N -- MQTT --> MQTT
-    ESP_Room -- MQTT --> MQTT
-
-    MQTT -- Subscribe / Publish --> BE
-    BE -- Read / Write --> DB
-
-    FE_API -- HTTP REST --> BE
-    FE_UI -- HTTP / Polling 3s --> FE_API`;
-
-  const mermaidBootFlow = `sequenceDiagram
-    participant ESP32
-    participant Broker as MQTT Broker
-    participant Backend as FastAPI
-
-    ESP32->>ESP32: setup() Init sensors, load NVS
-    ESP32->>Broker: Connect (username/password)
-    ESP32->>Broker: Subscribe rack/{id}/cmd
-    ESP32->>Broker: Publish device/{id}/register
-    Broker->>Backend: Forward registration
-    Backend->>Backend: Validate, create Device
-    Backend->>Broker: Publish register/ack
-    Broker->>ESP32: ACK → isRegistered = true
-
-    loop Every 5 seconds
-        ESP32->>ESP32: Read sensors + filtering
-        ESP32->>Broker: Publish rack/{id}/data
-        Broker->>Backend: Forward telemetry
-        Backend->>Backend: Insert DataLog
-    end`;
-
-  const mermaidDB = `erDiagram
-    DeviceType ||--o{ Device : "has"
-    DeviceType {
-        int id PK
-        string desc
-        jsonb attr
-    }
-
-    Device ||--o{ DataLog : "generates"
-    Device ||--o{ CommandLog : "receives"
-    Device {
-        int id PK
-        string mac_addr
-        string desc
-        jsonb attr
-        int devicetype_id FK
-    }
-
-    DataLog {
-        int device_id PK_FK
-        datetime timestamp PK
-        jsonb data_log
-    }
-
-    CommandType ||--o{ CommandLog : "defines"
-    CommandType {
-        int id PK
-        string desc
-        jsonb attr
-    }
-
-    CommandStatus ||--o{ CommandLog : "tracks"
-    CommandStatus {
-        int id PK
-        string desc
-        jsonb attr
-    }
-
-    CommandLog {
-        int command_id PK_FK
-        int status_id PK_FK
-        int device_id PK_FK
-        datetime timestamp PK
-        string created_by
-        jsonb cmd_log
-    }`;
 
   const calibrationStruct = `struct PHCalibration {
   float slope;          // Default: 0.07
@@ -338,10 +250,19 @@ npm run dev`;
         </div>
 
         <h3 className="font-headline-md text-headline-md text-doc-primary mt-12 mb-6">2.1 High-Level Diagram</h3>
-        <CodeBlock code={mermaidArchitecture} language="mermaid" headerTitle="Architecture Diagram" />
+        <Image src={imgArchHighLevel} alt="High-Level Architecture Diagram" className="w-full rounded-xl border border-glass-border" />
 
         <h3 className="font-headline-md text-headline-md text-doc-primary mt-12 mb-6">2.2 ESP32 Boot &amp; Registration Flow</h3>
-        <CodeBlock code={mermaidBootFlow} language="mermaid" headerTitle="Boot Sequence Diagram" />
+        <Image src={imgBootFlow} alt="ESP32 Boot Flow" className="w-full rounded-xl border border-glass-border bg-white" />
+
+        <h3 className="font-headline-md text-headline-md text-doc-primary mt-12 mb-6">2.3 Architecture of SEED Lab Embedded Devices (Racks)</h3>
+        <Image src={imgArchDevices} alt="Architecture of SEED Lab Embedded Devices (Racks)" className="w-full rounded-xl border border-glass-border" />
+
+        <h3 className="font-headline-md text-headline-md text-doc-primary mt-12 mb-6">2.4 Architecture of SEED Lab Monitoring System</h3>
+        <Image src={imgArchMonitor} alt="Architecture of SEED Lab Monitoring System" className="w-full rounded-xl border border-glass-border" />
+
+        <h3 className="font-headline-md text-headline-md text-doc-primary mt-12 mb-6">2.5 Architecture of SEED Lab Server Multi-Container Apps</h3>
+        <Image src={imgArchServer} alt="Architecture of SEED Lab Server Multi-Container Apps" className="w-full rounded-xl border border-glass-border" />
       </section>
 
       {/* 3. Hardware, IoT, and Wiring */}
@@ -393,6 +314,14 @@ npm run dev`;
           </table>
         </div>
 
+        <div className="bg-white/40 backdrop-blur-sm rounded-xl border border-glass-border p-6 mb-8">
+          <h4 className="font-bold text-doc-primary text-lg mb-3">Wiring Diagram &amp; Pull-up Resistors</h4>
+          <p className="text-on-surface-variant text-sm mb-4">
+            Sensor I2C dan OneWire membutuhkan tambahan resistor pull-up 4.7kΩ agar komunikasi data stabil. Sangat disarankan untuk menggunakan kabel ber-shield (shielded cable) pada instalasi permanen untuk mengurangi noise elektromagnetik.
+          </p>
+          <Image src={imgSchematic} alt="ESP32 Wiring Schematic" className="w-full rounded-xl border border-glass-border mt-4" />
+        </div>
+
         <h3 className="font-headline-md text-headline-md text-doc-primary mt-8 mb-4">3.3 Sensor Filtering Pipeline</h3>
         <p className="text-on-surface-variant leading-relaxed mb-4">
           Raw ADC readings from analog sensors (pH, TDS) are noisy. The firmware implements a <strong>7-stage filtering pipeline</strong> in <code>readVoltage()</code>:
@@ -423,6 +352,40 @@ npm run dev`;
           Calibration coefficients are stored in ESP32 <strong>flash memory (NVS)</strong> using the <code>Preferences</code> library, surviving power cycles and reboots. Supports two-point calibration for pH and one/two-point for TDS.
         </p>
         <CodeBlock code={calibrationStruct} language="C++" headerTitle="Calibration Data Structures" />
+
+        <h3 className="font-headline-md text-headline-md text-doc-primary mt-8 mb-4">3.5 Step-by-Step Calibration Guide</h3>
+        <p className="text-on-surface-variant leading-relaxed mb-4">
+          Kalibrasi sangat penting untuk menjaga keakuratan pembacaan sensor pH dan TDS. Kapan harus melakukan kalibrasi?
+        </p>
+        <div className="bg-warning-amber/10 border border-warning-amber/30 rounded-xl p-4 mb-6">
+          <p className="text-sm font-bold text-doc-primary">Waktu Kalibrasi yang Disarankan:</p>
+          <ul className="list-disc pl-5 text-sm text-on-surface-variant mt-2 space-y-1">
+            <li>Setiap 2–4 minggu sekali untuk menjaga akurasi optimal.</li>
+            <li>Saat sensor baru pertama kali dipasang atau diganti.</li>
+            <li>Jika terdapat anomali atau pembacaan nilai yang tidak masuk akal secara terus-menerus.</li>
+          </ul>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <InfoCard title="pH Calibration (2-Point)">
+            <ol className="list-decimal pl-5 space-y-2 text-on-surface-variant text-sm">
+              <li>Bersihkan probe sensor menggunakan air distilasi (aquades) lalu keringkan.</li>
+              <li>Celupkan sensor ke dalam larutan buffer <strong>pH 7.00</strong> (netral). Biarkan nilai stabil lalu tekan confirm.</li>
+              <li>Bersihkan kembali probe sensor dengan aquades lalu keringkan.</li>
+              <li>Celupkan sensor ke dalam larutan buffer <strong>pH 4.00</strong> (asam). Biarkan nilai stabil lalu tekan confirm.</li>
+              <li>Sistem akan mengirimkan command <code className="bg-black/5 px-1 rounded">KALIBRASI_PH</code> via MQTT ke ESP32 untuk disimpan di memori internal (NVS).</li>
+            </ol>
+          </InfoCard>
+          <InfoCard title="TDS Calibration (1-Point)">
+            <ol className="list-decimal pl-5 space-y-2 text-on-surface-variant text-sm">
+              <li>Bersihkan probe TDS menggunakan air distilasi (aquades) lalu keringkan.</li>
+              <li>Celupkan sensor ke dalam cairan kalibrasi standar (contoh: larutan <strong>1382 ppm</strong>).</li>
+              <li>Biarkan nilai terbaca stabil, kemudian konfirmasi nilai acuan di dashboard.</li>
+              <li>Sistem akan mengirimkan command <code className="bg-black/5 px-1 rounded">KALIBRASI_TDS</code> via MQTT ke ESP32.</li>
+              <li>Kalibrasi selesai dan koefisien kompensasi suhu baru telah disimpan.</li>
+            </ol>
+          </InfoCard>
+        </div>
       </section>
 
       {/* 4. Communication Protocol */}
@@ -430,22 +393,39 @@ npm run dev`;
         <ChapterPill text="Chapter 4" />
         <h2 className="font-headline-lg text-headline-lg text-doc-primary mb-6">Communication Protocol (MQTT)</h2>
 
-        <h3 className="font-headline-md text-headline-md text-doc-primary mt-8 mb-4">4.1 MQTT Topics</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <InfoCard title="Broker Configuration">
+            <ul className="list-disc pl-5 space-y-1.5 text-on-surface-variant text-sm">
+              <li><strong>Engine:</strong> Eclipse Mosquitto</li>
+              <li><strong>Port:</strong> 1883</li>
+              <li><strong>Authentication:</strong> Username &amp; Password required</li>
+            </ul>
+          </InfoCard>
+          <InfoCard title="Topic Convention">
+            <ul className="list-disc pl-5 space-y-1.5 text-on-surface-variant text-sm">
+              <li><strong>Publish (Upbound):</strong> ESP32 publishes sensor data and ACKs to the broker.</li>
+              <li><strong>Subscribe (Downbound):</strong> ESP32 subscribes to receive commands and registration ACKs.</li>
+              <li><strong>Wildcards:</strong> The <code>+</code> symbol denotes a variable MAC address or rack ID.</li>
+            </ul>
+          </InfoCard>
+        </div>
+
+        <h3 className="font-headline-md text-headline-md text-doc-primary mt-8 mb-4">4.1 MQTT Topics Dictionary</h3>
         <div className="overflow-x-auto rounded-xl border border-glass-border bg-white/40 backdrop-blur-sm mb-8">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-primary-fixed/50">
                 <th className="p-4 font-label-caps text-doc-primary uppercase">Topic</th>
-                <th className="p-4 font-label-caps text-doc-primary uppercase">Direction</th>
+                <th className="p-4 font-label-caps text-doc-primary uppercase">Role (ESP32)</th>
                 <th className="p-4 font-label-caps text-doc-primary uppercase">Purpose</th>
               </tr>
             </thead>
             <tbody className="text-sm text-on-surface-variant">
-              <tr className="border-t border-glass-border"><td className="p-4 font-data-mono">device/+/register</td><td className="p-4">Upbound</td><td className="p-4">Initial registration of ESP32 node.</td></tr>
-              <tr className="border-t border-glass-border"><td className="p-4 font-data-mono">rack/+/data</td><td className="p-4">Upbound</td><td className="p-4">Periodic sensor telemetry (every 5s).</td></tr>
-              <tr className="border-t border-glass-border"><td className="p-4 font-data-mono">rack/+/cmd/ack</td><td className="p-4">Upbound</td><td className="p-4">Acknowledgment after command (SUCCESS/FAILED/TIMEOUT).</td></tr>
-              <tr className="border-t border-glass-border"><td className="p-4 font-data-mono">rack/&#123;id&#125;/cmd</td><td className="p-4">Downbound</td><td className="p-4">Commands to ESP32 (KALIBRASI_PH, KALIBRASI_TDS, RESET_CALIBRATION).</td></tr>
-              <tr className="border-t border-glass-border"><td className="p-4 font-data-mono">device/+/register/ack</td><td className="p-4">Downbound</td><td className="p-4">Registration confirmation.</td></tr>
+              <tr className="border-t border-glass-border"><td className="p-4 font-data-mono">device/+/register</td><td className="p-4 font-bold text-doc-secondary">Publish</td><td className="p-4">Initial registration of ESP32 node.</td></tr>
+              <tr className="border-t border-glass-border"><td className="p-4 font-data-mono">rack/+/data</td><td className="p-4 font-bold text-doc-secondary">Publish</td><td className="p-4">Periodic sensor telemetry (every 5s).</td></tr>
+              <tr className="border-t border-glass-border"><td className="p-4 font-data-mono">rack/+/cmd/ack</td><td className="p-4 font-bold text-doc-secondary">Publish</td><td className="p-4">Acknowledgment topic after command (SUCCESS/FAILED).</td></tr>
+              <tr className="border-t border-glass-border"><td className="p-4 font-data-mono">rack/&#123;id&#125;/cmd</td><td className="p-4 font-bold text-warning-amber">Subscribe</td><td className="p-4">Command topic to receive instructions (KALIBRASI_PH, dll).</td></tr>
+              <tr className="border-t border-glass-border"><td className="p-4 font-data-mono">device/+/register/ack</td><td className="p-4 font-bold text-warning-amber">Subscribe</td><td className="p-4">Registration confirmation from backend.</td></tr>
             </tbody>
           </table>
         </div>
@@ -518,7 +498,7 @@ npm run dev`;
         <p className="text-on-surface-variant font-bold mb-6">Stack: PostgreSQL 18, SQLModel (ORM), Alembic (Migrations).</p>
 
         <h3 className="font-headline-md text-headline-md text-doc-primary mt-8 mb-4">6.1 Entity-Relationship Diagram</h3>
-        <CodeBlock code={mermaidDB} language="mermaid" headerTitle="Database ERD" />
+        <Image src={imgERD} alt="Database ERD" className="w-full rounded-xl border border-glass-border bg-white p-4" />
 
         <h3 className="font-headline-md text-headline-md text-doc-primary mt-8 mb-4">6.2 Seeded Reference Data</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">

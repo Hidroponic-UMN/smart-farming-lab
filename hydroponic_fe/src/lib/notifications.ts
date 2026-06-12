@@ -25,16 +25,16 @@ const REMEDIATION: Record<string, { low: string; high: string }> = {
         high: "Kurangi volume air pada tangki.",
     },
     ph: {
-        low: "Tambahkan larutan pH Up secara bertahap dan ukur kembali setelah 30 menit.",
-        high: "Tambahkan larutan pH Down secara bertahap dan ukur kembali setelah 30 menit.",
+        low: "Siapkan cairan pH Up (Kalium Hidroksida). Larutkan sedikit ke dalam segelas air baku, lalu tuangkan perlahan ke tandon. Biarkan sirkulasi 15-30 menit.",
+        high: "Siapkan cairan pH Down (Asam Fosfat). Larutkan sedikit ke air baku, tuang perlahan. PERINGATAN: Jangan campur pH Up dan Down di wadah yang sama.",
     },
     ec: {
-        low: "Tambahkan larutan nutrisi AB Mix sesuai takaran, lalu aduk rata.",
-        high: "Encerkan larutan nutrisi dengan menambahkan air bersih secara bertahap.",
+        low: "Siapkan larutan pekat AB Mix. Masukkan takaran seimbang (misal 10ml A, aduk, baru 10ml B). Jangan dicampur pekat! Tunggu sirkulasi 15 menit.",
+        high: "Tambahkan air baku/air bersih (pH netral) ke dalam tandon untuk mengencerkan nutrisi. Biarkan bersirkulasi dan pantau penurunan angkanya.",
     },
     waterTemp: {
-        low: "Gunakan heater akuarium atau pindahkan tangki ke tempat yang lebih hangat.",
-        high: "Tambahkan es batu ke tangki atau gunakan water chiller.",
+        low: "Akar bisa shock. Gunakan heater akuarium jika suhu terlalu dingin secara ekstrem.",
+        high: "Masukkan botol air mineral yang dibekukan (es batu) ke tandon. Nyalakan pendingin ruangan. Pastikan pompa tidak memanas.",
     },
     waterFlow: {
         low: "Pump Failure Detected — Immediate action required! Periksa pompa air, kemungkinan tersumbat, rusak, atau mati.",
@@ -45,12 +45,12 @@ const REMEDIATION: Record<string, { low: string; high: string }> = {
         high: "Kurangi intensitas lampu atau tambah jarak dari tanaman. Gunakan timer.",
     },
     roomTemp: {
-        low: "Naikkan suhu ruangan — nyalakan heater atau kurangi AC.",
-        high: "Turunkan suhu ruangan — nyalakan AC atau tingkatkan ventilasi.",
+        low: "Naikkan suhu ruangan — nyalakan heater atau matikan AC.",
+        high: "Nyalakan exhaust fan untuk membuang udara panas. Nyalakan intake fan/AC untuk mendinginkan ruangan.",
     },
     roomHumidity: {
         low: "Gunakan humidifier untuk menaikkan kelembaban ruangan.",
-        high: "Gunakan dehumidifier atau tingkatkan sirkulasi udara.",
+        high: "Nyalakan exhaust fan. Jika >80%, nyalakan dehumidifier atau tingkatkan kipas osilasi agar udara tidak stuck di daun.",
     },
 };
 
