@@ -29,7 +29,7 @@ function getStartDateForRange(range: string): string {
         case "7d": d.setDate(d.getDate() - 7); break;
         default: d.setHours(d.getHours() - 1); break;
     }
-    return d.toISOString();
+    return d.toISOString().replace("Z", "");
 }
 
 export async function GET(
@@ -42,14 +42,14 @@ export async function GET(
     const range = searchParams.get("range") || "1h";
 
     let startDate = "";
-    let endDate = new Date().toISOString();
+    let endDate = new Date().toISOString().replace("Z", "");
 
     if (searchParams.get("start_date") && searchParams.get("end_date")) {
         // user selected YYYY-MM-DD format from the date picker
-        startDate = new Date(searchParams.get("start_date") as string).toISOString();
+        startDate = new Date(searchParams.get("start_date") as string).toISOString().replace("Z", "");
         const endD = new Date(searchParams.get("end_date") as string);
         endD.setHours(23, 59, 59, 999);
-        endDate = endD.toISOString();
+        endDate = endD.toISOString().replace("Z", "");
     } else {
         startDate = getStartDateForRange(range);
     }
