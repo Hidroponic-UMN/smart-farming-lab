@@ -19,16 +19,7 @@ import {
     Sprout,
     BookOpen,
 } from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-    DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import { useSimulationContext, type SimulationMode } from "@/lib/simulation-context";
 import {
     Drawer,
     DrawerContent,
@@ -77,8 +68,6 @@ export function TopNavbar({
     onMarkAllRead,
     onClearAll,
 }: TopNavbarProps) {
-    const { isSimulating, toggleSimulation, simulationMode, setSimulationMode } = useSimulationContext();
-
     return (
         <div className="flex items-center justify-end w-full">
             {/* Desktop & Tablet Menu */}
@@ -181,60 +170,16 @@ export function TopNavbar({
                         <TooltipContent>Sensor Adjustment</TooltipContent>
                     </Tooltip>
 
-                    <DropdownMenu>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <DropdownMenuTrigger asChild>
-                                    <button className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 hover:bg-white/20 active:scale-95 ${isSimulating ? 'bg-[#50705f]/20 text-[#50705f]' : 'text-[#34473d]'}`}>
-                                        <Settings className="w-5 h-5" />
-                                    </button>
-                                </DropdownMenuTrigger>
-                            </TooltipTrigger>
-                            <TooltipContent>Setting</TooltipContent>
-                        </Tooltip>
-                        <DropdownMenuContent align="end" className="w-56 bg-white/90 backdrop-blur-xl border-white/20 shadow-xl rounded-xl p-2">
-                            <DropdownMenuLabel className="flex items-center justify-between">
-                                <span>Simulate Data</span>
-                                <Switch checked={isSimulating} onCheckedChange={toggleSimulation} />
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator className="bg-gray-100" />
-                            <div className="flex items-center justify-between mt-2 px-1 gap-2">
-                                <button
-                                    disabled={!isSimulating}
-                                    onClick={() => setSimulationMode("stable")}
-                                    className={`flex-1 flex justify-center items-center py-2 rounded-lg transition-colors ${!isSimulating ? 'opacity-50 cursor-not-allowed' : simulationMode === 'stable' ? 'bg-[#34473d] text-white' : 'hover:bg-gray-100'}`}
-                                >
-                                    <Activity className="w-4 h-4" />
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Link href="/simulation">
+                                <button className="flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 hover:bg-white/20 active:scale-95 text-[#34473d]">
+                                    <Activity className="w-5 h-5" />
                                 </button>
-                                <button
-                                    disabled={!isSimulating}
-                                    onClick={() => setSimulationMode("trending_up")}
-                                    className={`flex-1 flex justify-center items-center py-2 rounded-lg transition-colors ${!isSimulating ? 'opacity-50 cursor-not-allowed' : simulationMode === 'trending_up' ? 'bg-rose-500 text-white' : 'hover:bg-rose-50 text-rose-500'}`}
-                                >
-                                    <TrendingUp className="w-4 h-4" />
-                                </button>
-                                <button
-                                    disabled={!isSimulating}
-                                    onClick={() => setSimulationMode("trending_down")}
-                                    className={`flex-1 flex justify-center items-center py-2 rounded-lg transition-colors ${!isSimulating ? 'opacity-50 cursor-not-allowed' : simulationMode === 'trending_down' ? 'bg-blue-500 text-white' : 'hover:bg-blue-50 text-blue-500'}`}
-                                >
-                                    <TrendingDown className="w-4 h-4" />
-                                </button>
-                            </div>
-                            <DropdownMenuSeparator className="bg-gray-100 mt-2" />
-                            <DropdownMenuItem asChild>
-                                <a
-                                    href="http://localhost:3000/docs"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2 cursor-pointer w-full text-xs font-semibold text-[#34473d] hover:bg-gray-100 p-2 rounded-lg transition-colors"
-                                >
-                                    <BookOpen className="w-4 h-4 text-[#34473d]" />
-                                    <span>Documentation</span>
-                                </a>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                            </Link>
+                        </TooltipTrigger>
+                        <TooltipContent>Advanced Simulation</TooltipContent>
+                    </Tooltip>
                 </div>
             </div>
 
@@ -312,19 +257,10 @@ export function TopNavbar({
                                         <BookOpen className="w-5 h-5 text-black" />
                                     </a>
 
-                                    <div className="flex flex-col gap-3 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-semibold text-[#34473d] flex items-center gap-2"><Settings className="w-4 h-4" /> Simulation</span>
-                                            <Switch checked={isSimulating} onCheckedChange={toggleSimulation} />
-                                        </div>
-                                        {isSimulating && (
-                                            <div className="flex items-center justify-between pt-2 border-t border-gray-100 gap-2">
-                                                <button onClick={() => setSimulationMode("stable")} className={`flex-1 py-2 rounded-lg flex justify-center transition-colors ${simulationMode === 'stable' ? 'bg-[#34473d] text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-600'}`}><Activity className="w-4 h-4" /></button>
-                                                <button onClick={() => setSimulationMode("trending_up")} className={`flex-1 py-2 rounded-lg flex justify-center transition-colors ${simulationMode === 'trending_up' ? 'bg-rose-500 text-white' : 'bg-rose-50 hover:bg-rose-100 text-rose-500'}`}><TrendingUp className="w-4 h-4" /></button>
-                                                <button onClick={() => setSimulationMode("trending_down")} className={`flex-1 py-2 rounded-lg flex justify-center transition-colors ${simulationMode === 'trending_down' ? 'bg-blue-500 text-white' : 'bg-blue-50 hover:bg-blue-100 text-blue-500'}`}><TrendingDown className="w-4 h-4" /></button>
-                                            </div>
-                                        )}
-                                    </div>
+                                    <Link href="/simulation" className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors">
+                                        <span className="font-semibold text-[#34473d]">Advanced Simulation</span>
+                                        <Activity className="w-5 h-5 text-black" />
+                                    </Link>
                                 </div>
                             </div>
                         </div>

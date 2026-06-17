@@ -8,7 +8,13 @@ import io
 
 from app.db.session import get_session
 from app.crud import telemetry as crud_logs
-from app.models.telemetry import DataLogBase, DataLogWithRack
+from app.models.telemetry import DataLogBase, DataLogWithRack, Device
+from pydantic import BaseModel
+
+class SimulateInput(BaseModel):
+    rack_id: int
+    data: dict
+
 
 router = APIRouter(
     tags=["data logs"],
@@ -128,3 +134,35 @@ def download_all_log_data_by_device_id(
             "Content-Disposition": f"attachment; filename=id_{device_id}_{file_export_name}.{file_type}"
         }
     )
+
+@router.post("/simulate")
+def simulate_telemetry(
+    input_data: SimulateInput,
+    db: Annotated[Session, Depends(get_session)]
+):
+    from sqlalchemy import cast, Integer
+    from sqlmodel import select
+    from fastapi import HTTPException
+    from app.services.mqtt_worker import mqtt_worker
+
+    # Find the mac_addr for the given rack_id
+    statement = select(Device).where(
+        cast(Device.attr["rack_id"].as_string(), Integer) == input_data.rack_id
+    )
+    device = db.exec(statement).first()
+
+    if not device:
+        # Fallback to device id if rack_id attr is missing
+        device = db.get(Device, input_data.rack_id)
+        if not device:
+            raise HTTPException(status_code=404, detail=f"Device for rack_id {input_data.rack_id} not found")
+
+    payload = {
+        "mac_addr": device.mac_addr,
+        "data": input_data.data
+    }
+    
+    topic = f"rack/{device.mac_addr}/data"
+    mqtt_worker.publish(topic, payload)
+    
+    return {"status": "success", "topic": topic, "payload": payload}
