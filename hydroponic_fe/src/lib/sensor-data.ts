@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { getStatus, type Status } from "./thresholds";
-import { useSimulationContext } from "./simulation-context";
 
 export interface SensorData {
     value: number;
@@ -49,14 +48,11 @@ export interface DashboardData {
 export function useRoomSensor() {
     const [roomData, setRoomData] = useState<RoomData | null>(null);
     const [esp32Online, setEsp32Online] = useState(false);
-    const sim = useSimulationContext();
 
     useEffect(() => {
         let active = true;
 
         async function fetchRoom() {
-            if (sim.isSimulating) return; // Skip fetch if simulating
-
             try {
                 const res = await fetch("/api/room", { cache: "no-store" });
                 if (!res.ok) return;
@@ -84,14 +80,7 @@ export function useRoomSensor() {
             active = false;
             clearInterval(interval);
         };
-    }, [sim.isSimulating]);
-
-    if (sim.isSimulating && sim.simulatedData) {
-        return {
-            roomData: sim.simulatedData.room,
-            esp32Online: true,
-        };
-    }
+    }, []);
 
     return { roomData, esp32Online };
 }
